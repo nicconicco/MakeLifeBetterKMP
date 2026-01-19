@@ -33,16 +33,16 @@ import com.carlosnicolaugalves.makelifebetter.util.AppStrings
 fun RegisterScreen(
     strings: AppStrings,
     termsAccepted: Boolean = false,
-    onRegisterClick: () -> Unit = {},
+    onRegisterClick: (String, String) -> Unit = { _, _ -> },
     onBackClick: () -> Unit = {},
     onTermsClick: () -> Unit = {}
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var cpf by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
-    val fieldsCompleted = name.isNotBlank() && email.isNotBlank() && cpf.isNotBlank() && phone.isNotBlank()
+    val fieldsCompleted = email.isNotBlank() && password.isNotBlank()
     val canRegister = fieldsCompleted && termsAccepted
 
     Column(
@@ -82,8 +82,8 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = cpf,
-            onValueChange = { cpf = it },
+            value = password,
+            onValueChange = { password = it },
             label = { Text("${strings.cpf} *") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -119,7 +119,7 @@ fun RegisterScreen(
             Checkbox(
                 checked = termsAccepted,
                 onCheckedChange = null,
-                enabled = false
+                enabled = true
             )
             Text(
                 text = strings.acceptTerms,
@@ -135,7 +135,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = onRegisterClick,
+            onClick = { onRegisterClick(email, password) },
             modifier = Modifier.fillMaxWidth(),
             enabled = canRegister
         ) {

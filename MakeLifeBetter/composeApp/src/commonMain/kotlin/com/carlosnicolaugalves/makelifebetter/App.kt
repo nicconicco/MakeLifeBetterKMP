@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.carlosnicolaugalves.makelifebetter.auth.AuthResult
+import com.carlosnicolaugalves.makelifebetter.auth.RegisterResult
 import com.carlosnicolaugalves.makelifebetter.navigation.Screen
 import com.carlosnicolaugalves.makelifebetter.screens.ForgotPasswordScreen
 import com.carlosnicolaugalves.makelifebetter.screens.LanguageScreen
@@ -35,10 +36,21 @@ fun App(viewModel: SharedLoginViewModel) {
 
 
     val loginState by viewModel.loginState.collectAsState()
+    val registerState by viewModel.registerState.collectAsState()
+
+    when(registerState) {
+        is RegisterResult.Success -> {
+            currentScreen = Screen.Login
+        }
+        is RegisterResult.Error -> {
+
+        }
+        else -> {}
+    }
 
     when (loginState) {
         is AuthResult.Success -> {
-            currentScreen = Screen.Register
+            currentScreen = Screen.Login
         }
         is AuthResult.Error -> {
 
@@ -62,7 +74,7 @@ fun App(viewModel: SharedLoginViewModel) {
                         strings = strings,
                         language = currentLanguage,
                         onLoginClick = { username, password ->
-                            viewModel.login("admin", "password")
+                            viewModel.login(username, password)
                         },
                         onForgotPasswordClick = {
                             currentScreen = Screen.ForgotPassword
@@ -80,8 +92,8 @@ fun App(viewModel: SharedLoginViewModel) {
                     RegisterScreen(
                         strings = strings,
                         termsAccepted = termsAccepted,
-                        onRegisterClick = {
-                            currentScreen = Screen.Login
+                        onRegisterClick = { username, password ->
+                            viewModel.register(username = username, email = "$username@gmail.com", password = password, confirmPassword = password)
                         },
                         onBackClick = {
                             currentScreen = Screen.Login

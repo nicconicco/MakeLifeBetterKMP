@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "749904577078",
+    "project_id": "makelifebetter-7f3c9",
+    "storage_bucket": "makelifebetter-7f3c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:749904577078:android:c7ceb4cd7cd1ed79ba0e97",
+        "android_client_info": {
+          "package_name": "com.carlosnicolaugalves.makelifebetter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_CvOQDdPjGK1pKjvd3bvyCfvnUCG5MVo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

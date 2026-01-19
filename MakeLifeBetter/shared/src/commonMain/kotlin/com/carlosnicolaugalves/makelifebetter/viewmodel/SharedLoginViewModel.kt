@@ -5,7 +5,7 @@ import com.carlosnicolaugalves.makelifebetter.auth.PasswordRecoveryResult
 import com.carlosnicolaugalves.makelifebetter.auth.RegisterResult
 import com.carlosnicolaugalves.makelifebetter.model.User
 import com.carlosnicolaugalves.makelifebetter.repository.AuthRepository
-import com.carlosnicolaugalves.makelifebetter.repository.LocalAuthRepository
+import com.carlosnicolaugalves.makelifebetter.repository.createAuthRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class SharedLoginViewModel(
-    private val repository: AuthRepository = LocalAuthRepository()
+    private val repository: AuthRepository = createAuthRepository()
 ) {
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -111,8 +111,8 @@ class SharedLoginViewModel(
             _passwordRecoveryState.value = PasswordRecoveryResult.Loading
 
             repository.recoverPassword(email)
-                .onSuccess { temporaryPassword ->
-                    _passwordRecoveryState.value = PasswordRecoveryResult.Success(temporaryPassword)
+                .onSuccess { message ->
+                    _passwordRecoveryState.value = PasswordRecoveryResult.Success(message)
                 }
                 .onFailure { exception ->
                     _passwordRecoveryState.value = PasswordRecoveryResult.Error(

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		9A91E09C2F1E5560002A26BF /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		E3151438799AA1A9D6AD38DB /* MakeLifeBetter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MakeLifeBetter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -50,6 +51,7 @@
 		1A8B1B70168A91490AD81E48 = {
 			isa = PBXGroup;
 			children = (
+				9A91E09C2F1E5560002A26BF /* GoogleService-Info.plist */,
 				8615EBDD05367480813940E2 /* Configuration */,
 				D819EA6D43806C5ECB609005 /* iosApp */,
 				CBCB0AE8F202A0B945D853F5 /* Products */,

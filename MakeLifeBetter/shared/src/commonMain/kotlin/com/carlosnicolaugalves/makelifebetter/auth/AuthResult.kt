@@ -19,6 +19,10 @@ sealed class RegisterResult {
 sealed class PasswordRecoveryResult {
     data object Idle : PasswordRecoveryResult()
     data object Loading : PasswordRecoveryResult()
-    data class Success(val temporaryPassword: String) : PasswordRecoveryResult()
+    /**
+     * @param message Para LocalAuth: senha temporária gerada
+     *                Para Firebase: mensagem de confirmação do envio do email
+     */
+    data class Success(val message: String) : PasswordRecoveryResult()
     data class Error(val message: String) : PasswordRecoveryResult()
 }
