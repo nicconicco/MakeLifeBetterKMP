@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.carlosnicolaugalves.makelifebetter.auth.AuthResult
+import com.carlosnicolaugalves.makelifebetter.auth.PasswordRecoveryResult
 import com.carlosnicolaugalves.makelifebetter.auth.RegisterResult
 import com.carlosnicolaugalves.makelifebetter.navigation.Screen
 import com.carlosnicolaugalves.makelifebetter.screens.ForgotPasswordScreen
@@ -39,6 +40,7 @@ fun App(viewModel: SharedLoginViewModel) {
 
     val loginState by viewModel.loginState.collectAsState()
     val registerState by viewModel.registerState.collectAsState()
+    val passwordRecoveryState by viewModel.passwordRecoveryState.collectAsState()
 
     when(registerState) {
         is RegisterResult.Success -> {
@@ -129,18 +131,26 @@ fun App(viewModel: SharedLoginViewModel) {
                 Screen.ForgotPassword -> {
                     ForgotPasswordScreen(
                         strings = strings,
-                        onConfirmClick = {
-                            currentScreen = Screen.TempPassword
+                        passwordRecoveryState = passwordRecoveryState,
+                        onConfirmClick = { email ->
+                            viewModel.recoverPassword(email)
                         },
                         onBackClick = {
+                            viewModel.resetPasswordRecoveryState()
                             currentScreen = Screen.Login
+                        },
+                        onSuccess = {
+                            currentScreen = Screen.TempPassword
                         }
                     )
                 }
                 Screen.TempPassword -> {
+                    val message = (passwordRecoveryState as? PasswordRecoveryResult.Success)?.message ?: ""
                     TempPasswordScreen(
                         strings = strings,
+                        successMessage = message,
                         onConfirmClick = {
+                            viewModel.resetPasswordRecoveryState()
                             currentScreen = Screen.Login
                         }
                     )

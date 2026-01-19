@@ -23,10 +23,20 @@ fun MainScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedItem by remember { mutableStateOf(NavigationItem.EVENTO) }
+    var selectedEventItem by remember { mutableStateOf<ListItem?>(null) }
 
     val currentUser by viewModel.currentUser.collectAsState()
     val profileUpdateState by viewModel.profileUpdateState.collectAsState()
     val passwordChangeState by viewModel.passwordChangeState.collectAsState()
+
+    // Se tiver um item selecionado, mostra a tela de detalhes
+    if (selectedEventItem != null) {
+        EventDetailScreen(
+            item = selectedEventItem!!,
+            onBackClick = { selectedEventItem = null }
+        )
+        return
+    }
 
     Scaffold(
         bottomBar = {
@@ -44,7 +54,12 @@ fun MainScreen(
                 .padding(paddingValues)
         ) {
             when (selectedItem) {
-                NavigationItem.EVENTO -> SectionedListScreen(getSampleSections())
+                NavigationItem.EVENTO -> SectionedListScreen(
+                    sections = getSampleSections(),
+                    onItemClick = { item ->
+                        selectedEventItem = item
+                    }
+                )
                 NavigationItem.PERFIL -> ProfileScreen(
                     currentUser = currentUser,
                     profileUpdateState = profileUpdateState,

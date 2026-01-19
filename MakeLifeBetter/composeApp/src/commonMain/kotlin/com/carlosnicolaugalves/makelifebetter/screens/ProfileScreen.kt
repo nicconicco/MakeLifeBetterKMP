@@ -76,7 +76,7 @@ fun ProfileScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -305,7 +305,5 @@ fun ProfileScreen(
         ) {
             Text("Sair da conta")
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }

@@ -7,13 +7,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,18 +26,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.carlosnicolaugalves.makelifebetter.auth.PasswordRecoveryResult
 import com.carlosnicolaugalves.makelifebetter.util.AppStrings
 
 @Composable
 fun ForgotPasswordScreen(
     strings: AppStrings,
-    onConfirmClick: () -> Unit = {},
-    onBackClick: () -> Unit = {}
+    passwordRecoveryState: PasswordRecoveryResult,
+    onConfirmClick: (email: String) -> Unit,
+    onBackClick: () -> Unit,
+    onSuccess: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var cpf by remember { mutableStateOf("") }
 
     val fieldsCompleted = email.isNotBlank() && cpf.isNotBlank()
+    val isLoading = passwordRecoveryState is PasswordRecoveryResult.Loading
+
+    LaunchedEffect(passwordRecoveryState) {
+        if (passwordRecoveryState is PasswordRecoveryResult.Success) {
+            onSuccess()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -57,7 +70,8 @@ fun ForgotPasswordScreen(
             label = { Text("${strings.email} *") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -68,7 +82,8 @@ fun ForgotPasswordScreen(
             label = { Text("${strings.cpf} *") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -80,20 +95,40 @@ fun ForgotPasswordScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        // Error message
+        if (passwordRecoveryState is PasswordRecoveryResult.Error) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = passwordRecoveryState.message,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = onConfirmClick,
+            onClick = { onConfirmClick(email) },
             modifier = Modifier.fillMaxWidth(),
-            enabled = fieldsCompleted
+            enabled = fieldsCompleted && !isLoading
         ) {
-            Text(strings.confirm)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(strings.confirm)
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(
-            onClick = onBackClick
+            onClick = onBackClick,
+            enabled = !isLoading
         ) {
             Text(strings.backToLogin)
         }

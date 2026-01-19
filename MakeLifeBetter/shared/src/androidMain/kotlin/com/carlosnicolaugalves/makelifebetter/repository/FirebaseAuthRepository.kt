@@ -108,10 +108,11 @@ class FirebaseAuthRepository : AuthRepository {
                 return Result.failure(Exception("Email nao encontrado"))
             }
 
-            // Envia email de recuperacao de senha
+            // Envia email de recuperacao de senha do Firebase
+            // O usuario recebera um link para redefinir a senha
             auth.sendPasswordResetEmail(email)
 
-            Result.success("Email de recuperacao enviado para $email")
+            Result.success("Email de recuperacao enviado para $email. Verifique sua caixa de entrada.")
         } catch (e: Exception) {
             Result.failure(Exception(e.message ?: "Erro ao recuperar senha"))
         }

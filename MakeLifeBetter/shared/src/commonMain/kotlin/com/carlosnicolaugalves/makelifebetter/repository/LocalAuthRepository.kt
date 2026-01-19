@@ -64,13 +64,13 @@ class LocalAuthRepository : AuthRepository {
         val user = users.values.find { it.email == email }
             ?: return Result.failure(Exception("Email não encontrado"))
 
-        val temporaryPassword = generateTemporaryPassword()
+        val newPassword = "123456"
 
-        // Atualiza a senha do usuário
-        val updatedUser = user.copy(passwordHash = hashPassword(temporaryPassword))
+        // Atualiza a senha do usuário para 123456
+        val updatedUser = user.copy(passwordHash = hashPassword(newPassword))
         users[user.username] = updatedUser
 
-        return Result.success(temporaryPassword)
+        return Result.success("Senha redefinida para: $newPassword")
     }
 
     override suspend fun getUserByEmail(email: String): User? {
