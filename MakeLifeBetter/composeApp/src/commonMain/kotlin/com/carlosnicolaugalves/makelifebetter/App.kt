@@ -44,7 +44,7 @@ fun App(viewModel: SharedLoginViewModel) {
 
     when(registerState) {
         is RegisterResult.Success -> {
-            currentScreen = Screen.Login
+            currentScreen = Screen.Home
         }
         is RegisterResult.Error -> {
 
@@ -108,10 +108,12 @@ fun App(viewModel: SharedLoginViewModel) {
                     RegisterScreen(
                         strings = strings,
                         termsAccepted = termsAccepted,
-                        onRegisterClick = { username, password ->
-                            viewModel.register(username = username, email = "$username@gmail.com", password = password, confirmPassword = password)
+                        registerState = registerState,
+                        onRegisterClick = { username, email, password ->
+                            viewModel.register(username = username, email = email, password = password, confirmPassword = password)
                         },
                         onBackClick = {
+                            viewModel.resetRegisterState()
                             currentScreen = Screen.Login
                         },
                         onTermsClick = {

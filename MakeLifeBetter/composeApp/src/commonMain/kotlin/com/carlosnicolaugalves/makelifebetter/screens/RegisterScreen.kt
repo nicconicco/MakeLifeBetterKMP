@@ -9,9 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -24,31 +28,37 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.carlosnicolaugalves.makelifebetter.auth.RegisterResult
 import com.carlosnicolaugalves.makelifebetter.util.AppStrings
 
 @Composable
 fun RegisterScreen(
     strings: AppStrings,
     termsAccepted: Boolean = false,
-    onRegisterClick: (String, String) -> Unit = { _, _ -> },
+    registerState: RegisterResult = RegisterResult.Idle,
+    onRegisterClick: (username: String, email: String, password: String) -> Unit = { _, _, _ -> },
     onBackClick: () -> Unit = {},
     onTermsClick: () -> Unit = {}
 ) {
-    var name by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
 
-    val fieldsCompleted = email.isNotBlank() && password.isNotBlank()
-    val canRegister = fieldsCompleted && termsAccepted
+    val fieldsCompleted = username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()
+    val passwordsMatch = password == confirmPassword
+    val canRegister = fieldsCompleted && termsAccepted && passwordsMatch
+    val isLoading = registerState is RegisterResult.Loading
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 32.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 32.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -61,11 +71,12 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
+            value = username,
+            onValueChange = { username = it },
             label = { Text("${strings.name} *") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -76,7 +87,8 @@ fun RegisterScreen(
             label = { Text("${strings.email} *") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -84,22 +96,36 @@ fun RegisterScreen(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("${strings.cpf} *") },
+            label = { Text("${strings.password} *") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = phone,
-            onValueChange = { phone = it },
-            label = { Text("${strings.phone} *") },
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text("${strings.confirmPassword} *") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            enabled = !isLoading,
+            isError = confirmPassword.isNotBlank() && !passwordsMatch
         )
+
+        if (confirmPassword.isNotBlank() && !passwordsMatch) {
+            Text(
+                text = "As senhas nao coincidem",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Spacer(modifier = Modifier.height(4.dp))
 
@@ -110,6 +136,17 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        // Error message
+        if (registerState is RegisterResult.Error) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = registerState.message,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(
@@ -119,7 +156,7 @@ fun RegisterScreen(
             Checkbox(
                 checked = termsAccepted,
                 onCheckedChange = null,
-                enabled = true
+                enabled = !isLoading
             )
             Text(
                 text = strings.acceptTerms,
@@ -128,24 +165,33 @@ fun RegisterScreen(
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier
                     .padding(start = 5.dp)
-                    .clickable { onTermsClick() }
+                    .clickable { if (!isLoading) onTermsClick() }
             )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { onRegisterClick(email, password) },
+            onClick = { onRegisterClick(username, email, password) },
             modifier = Modifier.fillMaxWidth(),
-            enabled = canRegister
+            enabled = canRegister && !isLoading
         ) {
-            Text(strings.registerButton)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(strings.registerButton)
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(
-            onClick = onBackClick
+            onClick = onBackClick,
+            enabled = !isLoading
         ) {
             Text(strings.backToLogin)
         }
