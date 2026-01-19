@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(xargs:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(./gradlew :shared:compileKotlinIosArm64:*)"
     ]
   }
 }

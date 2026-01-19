@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.carlosnicolaugalves.makelifebetter.util.AppStrings
 import com.carlosnicolaugalves.makelifebetter.util.Language
-import com.carlosnicolaugalves.makelifebetter.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(

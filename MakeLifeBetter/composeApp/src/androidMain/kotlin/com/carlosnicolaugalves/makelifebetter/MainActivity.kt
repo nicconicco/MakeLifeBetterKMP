@@ -4,21 +4,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.carlosnicolaugalves.makelifebetter.viewmodel.LoginViewModel
-import kotlin.getValue
+import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
 
 class MainActivity : ComponentActivity() {
-//    private val loginViewModel: LoginViewModel by viewModels()
+    val viewModel = SharedLoginViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         setContent {
-            App()
+            App(viewModel)
         }
     }
 }
@@ -26,6 +24,7 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-//    val loginViewModel = LoginViewModel()
-    App()
+    val viewModel = SharedLoginViewModel()
+
+    App(viewModel)
 }
