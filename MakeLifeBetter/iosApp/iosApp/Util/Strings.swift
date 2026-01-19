@@ -15,6 +15,9 @@ enum Idioma: String {
 }
 
 struct AppStrings {
+    // Geral
+    let erro: String
+
     // Login
     let appName: String
     let usuario: String
@@ -58,6 +61,7 @@ struct AppStrings {
 
 struct Traducoes {
     static let portugues = AppStrings(
+        erro: "Erro",
         appName: "MakeLifeBetter",
         usuario: "Usuário",
         senha: "Senha",
@@ -94,6 +98,7 @@ struct Traducoes {
     )
 
     static let ingles = AppStrings(
+        erro: "Error",
         appName: "MakeLifeBetter",
         usuario: "Username",
         senha: "Password",
@@ -130,6 +135,7 @@ struct Traducoes {
     )
 
     static let espanhol = AppStrings(
+        erro: "Error",
         appName: "MakeLifeBetter",
         usuario: "Usuario",
         senha: "Contraseña",

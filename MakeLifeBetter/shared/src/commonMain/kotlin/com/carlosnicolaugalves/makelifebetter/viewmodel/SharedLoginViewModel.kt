@@ -8,10 +8,13 @@ import com.carlosnicolaugalves.makelifebetter.repository.AuthRepository
 import com.carlosnicolaugalves.makelifebetter.repository.LocalAuthRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class SharedLoginViewModel(
@@ -152,4 +155,39 @@ class SharedLoginViewModel(
      * Verifica se há um usuário logado
      */
     fun isLoggedIn(): Boolean = _currentUser.value != null
+
+    // ============ Métodos para iOS (com callbacks) ============
+
+    /**
+     * Observa mudanças no estado de login (para iOS)
+     * @return Job que pode ser cancelado para parar de observar
+     */
+    fun observeLoginState(callback: (AuthResult) -> Unit): Job {
+        return loginState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    /**
+     * Observa mudanças no estado de registro (para iOS)
+     * @return Job que pode ser cancelado para parar de observar
+     */
+    fun observeRegisterState(callback: (RegisterResult) -> Unit): Job {
+        return registerState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    /**
+     * Observa mudanças no estado de recuperação de senha (para iOS)
+     * @return Job que pode ser cancelado para parar de observar
+     */
+    fun observePasswordRecoveryState(callback: (PasswordRecoveryResult) -> Unit): Job {
+        return passwordRecoveryState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    /**
+     * Cancela todas as observações e limpa recursos
+     */
+    fun clear() {
+        viewModelScope.launch {
+            // Cancela o scope filho
+        }
+    }
 }

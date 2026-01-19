@@ -8,6 +8,10 @@ struct LoginView: View {
 
     @State private var username: String = ""
     @State private var password: String = ""
+    @State private var showError: Bool = false
+    @State private var errorMessage: String = ""
+
+    @StateObject private var viewModel = LoginViewModel()
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -42,15 +46,25 @@ struct LoginView: View {
                     .frame(height: 16)
 
                 Button(action: {
-                    // TODO: Implementar logica de login
+                    viewModel.login(username: username, password: password)
                 }) {
-                    Text(strings.entrar)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+                    if case .loading = viewModel.loginState {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(8)
+                    } else {
+                        Text(strings.entrar)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
                 }
+                .disabled(viewModel.loginState == .loading)
 
                 Button(strings.criarNovaConta) {
                     termosAceitos = false
@@ -70,6 +84,27 @@ struct LoginView: View {
             .padding(.top, 16)
         }
         .padding(.horizontal, 32)
+        .alert(strings.erro, isPresented: $showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
+        }
+        .onChange(of: viewModel.loginState) { oldState, newState in
+            handleLoginState(newState)
+        }
+    }
+
+    private func handleLoginState(_ state: AuthResultState) {
+        switch state {
+        case .success(let user):
+            print("Login bem sucedido: \(user.username)")
+            // TODO: Navegar para tela principal
+        case .error(let message):
+            errorMessage = message
+            showError = true
+        default:
+            break
+        }
     }
 }
 
