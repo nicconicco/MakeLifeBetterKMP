@@ -99,4 +99,51 @@ class LocalAuthRepository : AuthRepository {
     private fun isValidEmail(email: String): Boolean {
         return email.contains("@") && email.contains(".")
     }
+
+    override suspend fun updateProfile(userId: String, username: String, email: String): Result<User> {
+        val existingUser = users.values.find { it.id == userId }
+            ?: return Result.failure(Exception("Usuario nao encontrado"))
+
+        if (username.length < 3) {
+            return Result.failure(Exception("Nome de usuario deve ter pelo menos 3 caracteres"))
+        }
+
+        if (!isValidEmail(email)) {
+            return Result.failure(Exception("Email invalido"))
+        }
+
+        // Verifica se o novo username ja existe (exceto para o proprio usuario)
+        if (users.containsKey(username) && users[username]?.id != userId) {
+            return Result.failure(Exception("Nome de usuario ja existe"))
+        }
+
+        // Verifica se o novo email ja existe (exceto para o proprio usuario)
+        if (users.values.any { it.email == email && it.id != userId }) {
+            return Result.failure(Exception("Email ja cadastrado"))
+        }
+
+        // Remove o usuario antigo pelo username antigo
+        users.remove(existingUser.username)
+
+        val updatedUser = existingUser.copy(
+            username = username,
+            email = email
+        )
+
+        users[username] = updatedUser
+        return Result.success(updatedUser)
+    }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<String> {
+        // Para LocalAuthRepository, precisamos de um usuario logado
+        // Como nao temos acesso ao usuario atual aqui, vamos apenas simular
+        // Em uma implementacao real, isso seria tratado de forma diferente
+
+        if (newPassword.length < 6) {
+            return Result.failure(Exception("Nova senha deve ter pelo menos 6 caracteres"))
+        }
+
+        // Simula sucesso para testes locais
+        return Result.success("Senha alterada com sucesso")
+    }
 }

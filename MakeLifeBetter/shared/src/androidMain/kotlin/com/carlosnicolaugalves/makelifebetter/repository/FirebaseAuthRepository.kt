@@ -158,4 +158,57 @@ class FirebaseAuthRepository : AuthRepository {
             null
         }
     }
+
+    override suspend fun updateProfile(userId: String, username: String, email: String): Result<User> {
+        return try {
+            // Atualiza os dados no Firestore
+            usersCollection.document(userId).update(
+                mapOf(
+                    "username" to username,
+                    "email" to email
+                )
+            )
+
+            val updatedUser = User(
+                id = userId,
+                username = username,
+                email = email,
+                passwordHash = ""
+            )
+
+            Result.success(updatedUser)
+        } catch (e: Exception) {
+            val message = when {
+                e.message?.contains("network", ignoreCase = true) == true -> "Erro de conexao"
+                else -> e.message ?: "Erro ao atualizar perfil"
+            }
+            Result.failure(Exception(message))
+        }
+    }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<String> {
+        return try {
+            val currentUser = auth.currentUser
+                ?: return Result.failure(Exception("Usuario nao logado"))
+
+            val email = currentUser.email
+                ?: return Result.failure(Exception("Email do usuario nao encontrado"))
+
+            // Reautentica o usuario com a senha atual
+            auth.signInWithEmailAndPassword(email, currentPassword)
+
+            // Atualiza a senha
+            currentUser.updatePassword(newPassword)
+
+            Result.success("Senha alterada com sucesso")
+        } catch (e: Exception) {
+            val message = when {
+                e.message?.contains("password", ignoreCase = true) == true -> "Senha atual incorreta"
+                e.message?.contains("weak", ignoreCase = true) == true -> "Nova senha muito fraca"
+                e.message?.contains("network", ignoreCase = true) == true -> "Erro de conexao"
+                else -> e.message ?: "Erro ao alterar senha"
+            }
+            Result.failure(Exception(message))
+        }
+    }
 }

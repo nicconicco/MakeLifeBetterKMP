@@ -3,7 +3,6 @@ package com.carlosnicolaugalves.makelifebetter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,9 +19,12 @@ import com.carlosnicolaugalves.makelifebetter.navigation.Screen
 import com.carlosnicolaugalves.makelifebetter.screens.ForgotPasswordScreen
 import com.carlosnicolaugalves.makelifebetter.screens.LanguageScreen
 import com.carlosnicolaugalves.makelifebetter.screens.LoginScreen
+import com.carlosnicolaugalves.makelifebetter.screens.MainScreen
 import com.carlosnicolaugalves.makelifebetter.screens.RegisterScreen
+import com.carlosnicolaugalves.makelifebetter.screens.SectionedListScreen
 import com.carlosnicolaugalves.makelifebetter.screens.TempPasswordScreen
 import com.carlosnicolaugalves.makelifebetter.screens.TermsScreen
+import com.carlosnicolaugalves.makelifebetter.screens.getSampleSections
 import com.carlosnicolaugalves.makelifebetter.util.Language
 import com.carlosnicolaugalves.makelifebetter.util.Translations
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
@@ -50,7 +52,7 @@ fun App(viewModel: SharedLoginViewModel) {
 
     when (loginState) {
         is AuthResult.Success -> {
-            currentScreen = Screen.Login
+            currentScreen = Screen.Home
         }
         is AuthResult.Error -> {
 
@@ -64,7 +66,6 @@ fun App(viewModel: SharedLoginViewModel) {
         Column(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
-                .safeContentPadding()
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -85,6 +86,19 @@ fun App(viewModel: SharedLoginViewModel) {
                         },
                         onLanguageClick = {
                             currentScreen = Screen.Language
+                        }
+                    )
+                }
+                Screen.SectionedListScreen -> {
+                    SectionedListScreen(
+                        sections = getSampleSections()
+                    )
+                }
+                Screen.Home -> {
+                    MainScreen(
+                        viewModel = viewModel,
+                        onLogout = {
+                            currentScreen = Screen.Login
                         }
                     )
                 }

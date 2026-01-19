@@ -6,5 +6,7 @@ enum class Screen {
     Terms,
     ForgotPassword,
     TempPassword,
-    Language
+    Language,
+    SectionedListScreen,
+    Home
 }

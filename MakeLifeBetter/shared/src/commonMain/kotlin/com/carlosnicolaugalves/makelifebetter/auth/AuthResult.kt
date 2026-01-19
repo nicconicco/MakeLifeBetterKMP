@@ -26,3 +26,17 @@ sealed class PasswordRecoveryResult {
     data class Success(val message: String) : PasswordRecoveryResult()
     data class Error(val message: String) : PasswordRecoveryResult()
 }
+
+sealed class ProfileUpdateResult {
+    data object Idle : ProfileUpdateResult()
+    data object Loading : ProfileUpdateResult()
+    data class Success(val user: User) : ProfileUpdateResult()
+    data class Error(val message: String) : ProfileUpdateResult()
+}
+
+sealed class PasswordChangeResult {
+    data object Idle : PasswordChangeResult()
+    data object Loading : PasswordChangeResult()
+    data class Success(val message: String) : PasswordChangeResult()
+    data class Error(val message: String) : PasswordChangeResult()
+}
