@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import ComposeApp
 
 // MARK: - Auth States (espelha o Kotlin)
 
@@ -20,7 +21,21 @@ enum RegisterResultState: Equatable {
 enum PasswordRecoveryResultState: Equatable {
     case idle
     case loading
-    case success(String) // senha temporaria
+    case success(String)
+    case error(String)
+}
+
+enum ProfileUpdateResultState: Equatable {
+    case idle
+    case loading
+    case success(User)
+    case error(String)
+}
+
+enum PasswordChangeResultState: Equatable {
+    case idle
+    case loading
+    case success(String)
     case error(String)
 }
 
@@ -30,6 +45,18 @@ struct User: Equatable {
     let id: String
     let username: String
     let email: String
+
+    init(id: String, username: String, email: String) {
+        self.id = id
+        self.username = username
+        self.email = email
+    }
+
+    init(from kotlinUser: ComposeApp.User) {
+        self.id = kotlinUser.id
+        self.username = kotlinUser.username
+        self.email = kotlinUser.email
+    }
 }
 
 // MARK: - LoginViewModel
@@ -39,170 +66,219 @@ class LoginViewModel: ObservableObject {
     @Published var loginState: AuthResultState = .idle
     @Published var registerState: RegisterResultState = .idle
     @Published var passwordRecoveryState: PasswordRecoveryResultState = .idle
+    @Published var profileUpdateState: ProfileUpdateResultState = .idle
+    @Published var passwordChangeState: PasswordChangeResultState = .idle
     @Published var currentUser: User? = nil
 
-    // Repositorio local (usuarios em memoria)
-    private var users: [String: (user: User, passwordHash: String)] = [:]
+    private let sharedViewModel: SharedLoginViewModelWrapper
 
     init() {
-        // Usuario padrao para testes
-        let defaultUser = User(id: "1", username: "admin", email: "admin@example.com")
-        users["admin"] = (user: defaultUser, passwordHash: hashPassword("password"))
+        sharedViewModel = SharedLoginViewModelWrapper()
+        setupObservers()
+    }
+
+    private func setupObservers() {
+        // Observa Login State
+        sharedViewModel.observeLoginState(
+            onIdle: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.loginState = .idle
+                }
+            },
+            onLoading: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.loginState = .loading
+                }
+            },
+            onSuccess: { [weak self] kotlinUser in
+                DispatchQueue.main.async {
+                    let user = User(from: kotlinUser)
+                    self?.currentUser = user
+                    self?.loginState = .success(user)
+                }
+            },
+            onError: { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.loginState = .error(message)
+                }
+            }
+        )
+
+        // Observa Register State
+        sharedViewModel.observeRegisterState(
+            onIdle: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.registerState = .idle
+                }
+            },
+            onLoading: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.registerState = .loading
+                }
+            },
+            onSuccess: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.registerState = .success
+                }
+            },
+            onError: { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.registerState = .error(message)
+                }
+            }
+        )
+
+        // Observa Password Recovery State
+        sharedViewModel.observePasswordRecoveryState(
+            onIdle: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.passwordRecoveryState = .idle
+                }
+            },
+            onLoading: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.passwordRecoveryState = .loading
+                }
+            },
+            onSuccess: { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.passwordRecoveryState = .success(message)
+                }
+            },
+            onError: { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.passwordRecoveryState = .error(message)
+                }
+            }
+        )
+
+        // Observa Profile Update State
+        sharedViewModel.observeProfileUpdateState(
+            onIdle: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.profileUpdateState = .idle
+                }
+            },
+            onLoading: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.profileUpdateState = .loading
+                }
+            },
+            onSuccess: { [weak self] kotlinUser in
+                DispatchQueue.main.async {
+                    let user = User(from: kotlinUser)
+                    self?.currentUser = user
+                    self?.profileUpdateState = .success(user)
+                }
+            },
+            onError: { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.profileUpdateState = .error(message)
+                }
+            }
+        )
+
+        // Observa Password Change State
+        sharedViewModel.observePasswordChangeState(
+            onIdle: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.passwordChangeState = .idle
+                }
+            },
+            onLoading: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.passwordChangeState = .loading
+                }
+            },
+            onSuccess: { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.passwordChangeState = .success(message)
+                }
+            },
+            onError: { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.passwordChangeState = .error(message)
+                }
+            }
+        )
+
+        // Observa Current User
+        sharedViewModel.observeCurrentUser { [weak self] kotlinUser in
+            DispatchQueue.main.async {
+                if let kotlinUser = kotlinUser {
+                    self?.currentUser = User(from: kotlinUser)
+                } else {
+                    self?.currentUser = nil
+                }
+            }
+        }
     }
 
     // MARK: - Login
 
     func login(username: String, password: String) {
-        // Reset para Idle primeiro para garantir que a transicao seja detectada
-        loginState = .idle
-
-        guard !username.isEmpty, !password.isEmpty else {
-            loginState = .error("Preencha todos os campos")
-            return
-        }
-
-        loginState = .loading
-
-        // Simula delay de rede
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            guard let self = self else { return }
-
-            if let userData = self.users[username] {
-                if userData.passwordHash == self.hashPassword(password) {
-                    self.currentUser = userData.user
-                    self.loginState = .success(userData.user)
-                } else {
-                    self.loginState = .error("Senha incorreta")
-                }
-            } else {
-                self.loginState = .error("Usuario nao encontrado")
-            }
-        }
+        sharedViewModel.login(username: username, password: password)
     }
 
     // MARK: - Register
 
     func register(username: String, email: String, password: String, confirmPassword: String) {
-        // Reset para Idle primeiro
-        registerState = .idle
-
-        guard !username.isEmpty, !email.isEmpty, !password.isEmpty else {
-            registerState = .error("Preencha todos os campos")
-            return
-        }
-
-        guard password == confirmPassword else {
-            registerState = .error("As senhas nao coincidem")
-            return
-        }
-
-        guard username.count >= 3 else {
-            registerState = .error("Nome de usuario deve ter pelo menos 3 caracteres")
-            return
-        }
-
-        guard password.count >= 6 else {
-            registerState = .error("Senha deve ter pelo menos 6 caracteres")
-            return
-        }
-
-        guard email.contains("@") && email.contains(".") else {
-            registerState = .error("Email invalido")
-            return
-        }
-
-        registerState = .loading
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            guard let self = self else { return }
-
-            if self.users[username] != nil {
-                self.registerState = .error("Nome de usuario ja existe")
-                return
-            }
-
-            if self.users.values.contains(where: { $0.user.email == email }) {
-                self.registerState = .error("Email ja cadastrado")
-                return
-            }
-
-            let newUser = User(
-                id: String(Int.random(in: 1000000...9999999)),
-                username: username,
-                email: email
-            )
-
-            self.users[username] = (user: newUser, passwordHash: self.hashPassword(password))
-            self.registerState = .success
-        }
+        sharedViewModel.register(username: username, email: email, password: password, confirmPassword: confirmPassword)
     }
 
     // MARK: - Password Recovery
 
     func recoverPassword(email: String) {
-        // Reset para Idle primeiro
-        passwordRecoveryState = .idle
+        sharedViewModel.recoverPassword(email: email)
+    }
 
-        guard !email.isEmpty else {
-            passwordRecoveryState = .error("Informe o email")
-            return
-        }
+    // MARK: - Profile Update
 
-        passwordRecoveryState = .loading
+    func updateProfile(username: String, email: String) {
+        sharedViewModel.updateProfile(username: username, email: email)
+    }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            guard let self = self else { return }
+    // MARK: - Password Change
 
-            guard let userEntry = self.users.first(where: { $0.value.user.email == email }) else {
-                self.passwordRecoveryState = .error("Email nao encontrado")
-                return
-            }
-
-            let temporaryPassword = self.generateTemporaryPassword()
-
-            // Atualiza a senha do usuario
-            self.users[userEntry.key] = (
-                user: userEntry.value.user,
-                passwordHash: self.hashPassword(temporaryPassword)
-            )
-
-            self.passwordRecoveryState = .success(temporaryPassword)
-        }
+    func changePassword(currentPassword: String, newPassword: String, confirmNewPassword: String) {
+        sharedViewModel.changePassword(currentPassword: currentPassword, newPassword: newPassword, confirmNewPassword: confirmNewPassword)
     }
 
     // MARK: - Logout
 
     func logout() {
-        currentUser = nil
-        loginState = .idle
+        sharedViewModel.logout()
     }
 
     // MARK: - Reset States
 
     func resetLoginState() {
-        loginState = .idle
+        sharedViewModel.resetLoginState()
     }
 
     func resetRegisterState() {
-        registerState = .idle
+        sharedViewModel.resetRegisterState()
     }
 
     func resetPasswordRecoveryState() {
-        passwordRecoveryState = .idle
+        sharedViewModel.resetPasswordRecoveryState()
+    }
+
+    func resetProfileUpdateState() {
+        sharedViewModel.resetProfileUpdateState()
+    }
+
+    func resetPasswordChangeState() {
+        sharedViewModel.resetPasswordChangeState()
     }
 
     // MARK: - Helpers
 
     func isLoggedIn() -> Bool {
-        return currentUser != nil
+        return sharedViewModel.isLoggedIn()
     }
 
-    private func hashPassword(_ password: String) -> String {
-        return String(password.hashValue)
-    }
-
-    private func generateTemporaryPassword() -> String {
-        let chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
-        return String((0..<8).map { _ in chars.randomElement()! })
+    deinit {
+        sharedViewModel.clear()
     }
 }

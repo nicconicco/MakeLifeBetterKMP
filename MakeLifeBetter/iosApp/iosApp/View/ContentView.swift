@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var currentScreen: AppScreen = .login
     @State private var termosAceitos: Bool = false
     @State private var idiomaAtual: Idioma = .portugues
+    @StateObject private var loginViewModel = LoginViewModel()
 
     var strings: AppStrings {
         Traducoes.obterStrings(idioma: idiomaAtual)
@@ -21,9 +22,9 @@ struct ContentView: View {
     var body: some View {
         switch currentScreen {
         case .login:
-            LoginView(currentScreen: $currentScreen, termosAceitos: $termosAceitos, idioma: $idiomaAtual, strings: strings)
+            LoginView(currentScreen: $currentScreen, termosAceitos: $termosAceitos, idioma: $idiomaAtual, strings: strings, viewModel: loginViewModel)
         case .cadastro:
-            RegisterView(currentScreen: $currentScreen, termosAceitos: $termosAceitos, strings: strings)
+            RegisterView(currentScreen: $currentScreen, termosAceitos: $termosAceitos, strings: strings, viewModel: loginViewModel)
         case .termos:
             TermsView(currentScreen: $currentScreen, termosAceitos: $termosAceitos, strings: strings)
         case .esqueciSenha:

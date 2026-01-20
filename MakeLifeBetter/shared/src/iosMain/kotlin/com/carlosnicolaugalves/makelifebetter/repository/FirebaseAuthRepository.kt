@@ -4,13 +4,14 @@ import com.carlosnicolaugalves.makelifebetter.model.User
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.firestore
-import kotlinx.datetime.Clock
+import platform.Foundation.NSDate
+import platform.Foundation.timeIntervalSince1970
 
 class FirebaseAuthRepository : AuthRepository {
 
-    private val auth = Firebase.auth
-    private val firestore = Firebase.firestore
-    private val usersCollection = firestore.collection("users")
+    private val auth by lazy { Firebase.auth }
+    private val firestore by lazy { Firebase.firestore }
+    private val usersCollection by lazy { firestore.collection("users") }
 
     override suspend fun login(username: String, password: String): Result<User> {
         return try {
@@ -81,7 +82,7 @@ class FirebaseAuthRepository : AuthRepository {
                     "id" to user.id,
                     "username" to user.username,
                     "email" to user.email,
-                    "createdAt" to Clock.System.now().toEpochMilliseconds()
+                    "createdAt" to (NSDate().timeIntervalSince1970 * 1000).toLong()
                 )
             )
 

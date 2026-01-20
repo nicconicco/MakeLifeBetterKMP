@@ -8,9 +8,9 @@ import kotlinx.datetime.Clock
 
 class FirebaseAuthRepository : AuthRepository {
 
-    private val auth = Firebase.auth
-    private val firestore = Firebase.firestore
-    private val usersCollection = firestore.collection("users")
+    private val auth by lazy { Firebase.auth }
+    private val firestore by lazy { Firebase.firestore }
+    private val usersCollection by lazy { firestore.collection("users") }
 
     override suspend fun login(username: String, password: String): Result<User> {
         return try {

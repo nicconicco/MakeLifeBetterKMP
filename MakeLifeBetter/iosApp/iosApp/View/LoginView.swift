@@ -5,13 +5,12 @@ struct LoginView: View {
     @Binding var termosAceitos: Bool
     @Binding var idioma: Idioma
     let strings: AppStrings
+    @ObservedObject var viewModel: LoginViewModel
 
     @State private var username: String = ""
     @State private var password: String = ""
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
-
-    @StateObject private var viewModel = LoginViewModel()
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -113,6 +112,7 @@ struct LoginView: View {
         currentScreen: .constant(.login),
         termosAceitos: .constant(false),
         idioma: .constant(.portugues),
-        strings: Traducoes.portugues
+        strings: Traducoes.portugues,
+        viewModel: LoginViewModel()
     )
 }

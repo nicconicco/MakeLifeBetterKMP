@@ -19,6 +19,8 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
+            // Add this line to all the targets you want to export this dependency
+            export(libs.androidx.lifecycle.viewmodel)
             baseName = "Shared"
             isStatic = true
         }
@@ -38,8 +40,9 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
-            implementation(libs.kotlinx.datetime)
+            api(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
+            api(libs.androidx.lifecycle.viewmodel)
         }
 
         androidMain.dependencies {
@@ -48,6 +51,8 @@ kotlin {
         }
 
         iosMain.dependencies {
+            api(libs.androidx.lifecycle.viewmodel)
+            api(libs.kotlinx.datetime)
             implementation(libs.firebase.auth)
             implementation(libs.firebase.firestore)
         }

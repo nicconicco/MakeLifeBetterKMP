@@ -30,8 +30,9 @@ struct AppStrings {
     let criarConta: String
     let nome: String
     let email: String
-    let cpf: String
-    let celular: String
+    let confirmarSenha: String
+    let senhasNaoCoincidem: String
+    let cadastroSucesso: String
     let camposObrigatorios: String
     let aceitoTermos: String
     let cadastrar: String
@@ -72,8 +73,9 @@ struct Traducoes {
         criarConta: "Criar Conta",
         nome: "Nome",
         email: "Email",
-        cpf: "CPF",
-        celular: "Celular",
+        confirmarSenha: "Confirmar Senha",
+        senhasNaoCoincidem: "As senhas não coincidem",
+        cadastroSucesso: "Cadastro realizado com sucesso!",
         camposObrigatorios: "* Campos obrigatórios",
         aceitoTermos: "Aceito os termos de compromisso",
         cadastrar: "Cadastrar",
@@ -109,8 +111,9 @@ struct Traducoes {
         criarConta: "Create Account",
         nome: "Name",
         email: "Email",
-        cpf: "CPF",
-        celular: "Phone",
+        confirmarSenha: "Confirm Password",
+        senhasNaoCoincidem: "Passwords do not match",
+        cadastroSucesso: "Registration successful!",
         camposObrigatorios: "* Required fields",
         aceitoTermos: "I accept the terms and conditions",
         cadastrar: "Register",
@@ -146,8 +149,9 @@ struct Traducoes {
         criarConta: "Crear Cuenta",
         nome: "Nombre",
         email: "Correo electrónico",
-        cpf: "CPF",
-        celular: "Teléfono",
+        confirmarSenha: "Confirmar Contraseña",
+        senhasNaoCoincidem: "Las contraseñas no coinciden",
+        cadastroSucesso: "¡Registro exitoso!",
         camposObrigatorios: "* Campos obligatorios",
         aceitoTermos: "Acepto los términos y condiciones",
         cadastrar: "Registrarse",
