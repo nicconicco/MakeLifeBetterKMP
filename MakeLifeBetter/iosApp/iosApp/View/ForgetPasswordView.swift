@@ -5,11 +5,11 @@ struct ForgetPasswordView: View {
     let strings: AppStrings
 
     @State private var email: String = ""
-    @State private var cpf: String = ""
+    @State private var senha: String = ""
 
     private var camposPreenchidos: Bool {
         !email.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !cpf.trimmingCharacters(in: .whitespaces).isEmpty
+        !senha.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     var body: some View {
@@ -29,7 +29,7 @@ struct ForgetPasswordView: View {
                 .autocapitalization(.none)
                 .keyboardType(.emailAddress)
 
-            TextField("\(strings.cpf) *", text: $cpf)
+            TextField("\(strings.senha) *", text: $senha)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.numberPad)
 

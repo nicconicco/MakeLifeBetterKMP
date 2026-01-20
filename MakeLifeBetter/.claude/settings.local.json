@@ -3,7 +3,23 @@
     "allow": [
       "Bash(xargs:*)",
       "Bash(tree:*)",
-      "Bash(./gradlew :shared:compileKotlinIosArm64:*)"
+      "Bash(./gradlew :shared:compileKotlinIosArm64:*)",
+      "Bash(./gradlew:*)",
+      "Bash(/usr/libexec/java_home:*)",
+      "Bash(git stash:*)",
+      "Bash(brew install:*)",
+      "Bash(export JAVA_HOME=/opt/homebrew/opt/openjdk@17)",
+      "Bash(/usr/bin/xcrun xcodebuild:*)",
+      "Bash(xcode-select:*)",
+      "Bash(sudo xcode-select:*)",
+      "Bash(pod install)",
+      "Bash(java:*)",
+      "Bash(echo:*)",
+      "Bash(export JAVA_HOME=\"/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home\")",
+      "Bash($JAVA_HOME/bin/java -version)",
+      "Bash(git reset:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
