@@ -45,6 +45,8 @@ struct AppStrings {
 
     // Esqueci Senha
     let esqueciSenhaTitulo: String
+    let instrucaoRecuperacao: String
+    let emailEnviado: String
     let confirmar: String
     let voltar: String
 
@@ -90,6 +92,8 @@ struct Traducoes {
         concordar: "Concordar",
 
         esqueciSenhaTitulo: "Esqueci a Senha",
+        instrucaoRecuperacao: "Digite seu email para receber um link de recuperação de senha.",
+        emailEnviado: "Email Enviado",
         confirmar: "Confirmar",
         voltar: "Voltar",
 
@@ -131,6 +135,8 @@ struct Traducoes {
         concordar: "Agree",
 
         esqueciSenhaTitulo: "Forgot Password",
+        instrucaoRecuperacao: "Enter your email to receive a password reset link.",
+        emailEnviado: "Email Sent",
         confirmar: "Confirm",
         voltar: "Back",
 
@@ -172,6 +178,8 @@ struct Traducoes {
         concordar: "Aceptar",
 
         esqueciSenhaTitulo: "Olvidé mi Contraseña",
+        instrucaoRecuperacao: "Ingrese su correo electrónico para recibir un enlace de recuperación de contraseña.",
+        emailEnviado: "Correo Enviado",
         confirmar: "Confirmar",
         voltar: "Volver",
 

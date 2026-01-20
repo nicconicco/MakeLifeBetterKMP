@@ -29,7 +29,7 @@ struct ContentView: View {
         case .termos:
             TermsView(currentScreen: $currentScreen, termosAceitos: $termosAceitos, strings: strings)
         case .esqueciSenha:
-            ForgetPasswordView(currentScreen: $currentScreen, strings: strings)
+            ForgetPasswordView(currentScreen: $currentScreen, strings: strings, viewModel: loginViewModel)
         case .senhaTemp:
             TempPasswordView(currentScreen: $currentScreen, strings: strings)
         case .idioma:
