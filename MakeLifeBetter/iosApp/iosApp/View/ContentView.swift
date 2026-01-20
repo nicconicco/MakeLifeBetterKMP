@@ -7,6 +7,7 @@ enum AppScreen {
     case esqueciSenha
     case senhaTemp
     case idioma
+    case home
 }
 
 struct ContentView: View {
@@ -33,6 +34,8 @@ struct ContentView: View {
             TempPasswordView(currentScreen: $currentScreen, strings: strings)
         case .idioma:
             LanguageView(currentScreen: $currentScreen, idioma: $idiomaAtual, strings: strings)
+        case .home:
+            HomeView(currentScreen: $currentScreen, strings: strings, viewModel: loginViewModel)
         }
     }
 }

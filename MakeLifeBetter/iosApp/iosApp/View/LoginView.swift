@@ -12,6 +12,15 @@ struct LoginView: View {
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
 
+    private var isLoading: Bool {
+        viewModel.loginState == .loading
+    }
+
+    private var canLogin: Bool {
+        !username.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !password.isEmpty
+    }
+
     var body: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 16) {
@@ -29,9 +38,11 @@ struct LoginView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .autocapitalization(.none)
                     .keyboardType(.emailAddress)
+                    .disabled(isLoading)
 
                 SecureField(strings.senha, text: $password)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .disabled(isLoading)
 
                 HStack {
                     Spacer()
@@ -39,6 +50,7 @@ struct LoginView: View {
                         currentScreen = .esqueciSenha
                     }
                     .font(.subheadline)
+                    .disabled(isLoading)
                 }
 
                 Spacer()
@@ -47,29 +59,30 @@ struct LoginView: View {
                 Button(action: {
                     viewModel.login(username: username, password: password)
                 }) {
-                    if case .loading = viewModel.loginState {
+                    if isLoading {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(Color.gray)
                             .cornerRadius(8)
                     } else {
                         Text(strings.entrar)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(canLogin ? Color.blue : Color.gray)
                             .foregroundColor(.white)
                             .cornerRadius(8)
                     }
                 }
-                .disabled(viewModel.loginState == .loading)
+                .disabled(!canLogin || isLoading)
 
                 Button(strings.criarNovaConta) {
                     termosAceitos = false
                     currentScreen = .cadastro
                 }
                 .padding(.top, 8)
+                .disabled(isLoading)
 
                 Spacer()
             }
@@ -97,10 +110,11 @@ struct LoginView: View {
         switch state {
         case .success(let user):
             print("Login bem sucedido: \(user.username)")
-            // TODO: Navegar para tela principal
+            currentScreen = .home
         case .error(let message):
             errorMessage = message
             showError = true
+            viewModel.resetLoginState()
         default:
             break
         }

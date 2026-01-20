@@ -58,6 +58,10 @@ struct AppStrings {
     let portugues: String
     let ingles: String
     let espanhol: String
+
+    // Home
+    let bemVindo: String
+    let sair: String
 }
 
 struct Traducoes {
@@ -96,7 +100,10 @@ struct Traducoes {
         selecioneIdioma: "Selecione o Idioma",
         portugues: "Português (Brasil)",
         ingles: "English (US)",
-        espanhol: "Español"
+        espanhol: "Español",
+
+        bemVindo: "Bem-vindo",
+        sair: "Sair"
     )
 
     static let ingles = AppStrings(
@@ -134,7 +141,10 @@ struct Traducoes {
         selecioneIdioma: "Select Language",
         portugues: "Português (Brasil)",
         ingles: "English (US)",
-        espanhol: "Español"
+        espanhol: "Español",
+
+        bemVindo: "Welcome",
+        sair: "Logout"
     )
 
     static let espanhol = AppStrings(
@@ -172,7 +182,10 @@ struct Traducoes {
         selecioneIdioma: "Seleccionar Idioma",
         portugues: "Português (Brasil)",
         ingles: "English (US)",
-        espanhol: "Español"
+        espanhol: "Español",
+
+        bemVindo: "Bienvenido",
+        sair: "Salir"
     )
 
     static func obterStrings(idioma: Idioma) -> AppStrings {
