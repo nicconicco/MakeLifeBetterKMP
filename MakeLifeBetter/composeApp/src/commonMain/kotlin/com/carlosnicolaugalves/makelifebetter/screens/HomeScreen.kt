@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,11 +19,13 @@ import com.carlosnicolaugalves.makelifebetter.model.Event
 import com.carlosnicolaugalves.makelifebetter.navigation.NavigationItem
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedEventViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
+import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedNotificationViewModel
 
 @Composable
 fun MainScreen(
     viewModel: SharedLoginViewModel,
     eventViewModel: SharedEventViewModel = remember { SharedEventViewModel() },
+    notificationViewModel: SharedNotificationViewModel = remember { SharedNotificationViewModel() },
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -37,6 +40,14 @@ fun MainScreen(
     val sectionsState by eventViewModel.sectionsState.collectAsState()
 
     val isLoading = sectionsState is EventSectionsResult.Loading
+
+    // Schedule notifications when events are loaded
+    LaunchedEffect(sectionsState) {
+        if (sectionsState is EventSectionsResult.Success) {
+            val allEvents = eventSections.flatMap { it.eventos }
+            notificationViewModel.scheduleNotificationsForEvents(allEvents)
+        }
+    }
 
     // Se tiver um evento selecionado, mostra a tela de detalhes
     if (selectedEvent != null) {
@@ -85,8 +96,8 @@ fun MainScreen(
                         onLogout()
                     }
                 )
-                NavigationItem.CHAT -> PlaceholderScreen("Chat")
-                NavigationItem.NOTIFICACOES -> NotificationScreen()
+                NavigationItem.CHAT -> ChatScreen()
+                NavigationItem.NOTIFICACOES -> NotificationScreen(viewModel = notificationViewModel)
                 NavigationItem.CONTRATE -> HireMeScreen()
             }
         }
