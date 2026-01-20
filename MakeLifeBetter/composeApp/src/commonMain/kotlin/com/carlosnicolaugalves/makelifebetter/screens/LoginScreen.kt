@@ -51,7 +51,7 @@ fun LoginScreen(
             fontSize = 32.sp,
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(top = 16.dp)
+                .padding(top = 50.dp)
                 .clickable { onLanguageClick() }
         )
 
