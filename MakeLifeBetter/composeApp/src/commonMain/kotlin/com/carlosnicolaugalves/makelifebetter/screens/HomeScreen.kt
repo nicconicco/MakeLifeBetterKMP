@@ -76,8 +76,8 @@ fun MainScreen(
                     }
                 )
                 NavigationItem.CHAT -> PlaceholderScreen("Chat")
-                NavigationItem.NOTIFICACOES -> PlaceholderScreen("Notificações")
-                NavigationItem.CONTRATE -> PlaceholderScreen("Contrate")
+                NavigationItem.NOTIFICACOES -> NotificationScreen()
+                NavigationItem.CONTRATE -> HireMeScreen()
             }
         }
     }
