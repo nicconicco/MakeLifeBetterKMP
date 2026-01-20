@@ -13,27 +13,36 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.carlosnicolaugalves.makelifebetter.event.EventSectionsResult
+import com.carlosnicolaugalves.makelifebetter.model.Event
 import com.carlosnicolaugalves.makelifebetter.navigation.NavigationItem
+import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedEventViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
 
 @Composable
 fun MainScreen(
     viewModel: SharedLoginViewModel,
+    eventViewModel: SharedEventViewModel = remember { SharedEventViewModel() },
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedItem by remember { mutableStateOf(NavigationItem.EVENTO) }
-    var selectedEventItem by remember { mutableStateOf<ListItem?>(null) }
+    var selectedEvent by remember { mutableStateOf<Event?>(null) }
 
     val currentUser by viewModel.currentUser.collectAsState()
     val profileUpdateState by viewModel.profileUpdateState.collectAsState()
     val passwordChangeState by viewModel.passwordChangeState.collectAsState()
 
-    // Se tiver um item selecionado, mostra a tela de detalhes
-    if (selectedEventItem != null) {
+    val eventSections by eventViewModel.eventSections.collectAsState()
+    val sectionsState by eventViewModel.sectionsState.collectAsState()
+
+    val isLoading = sectionsState is EventSectionsResult.Loading
+
+    // Se tiver um evento selecionado, mostra a tela de detalhes
+    if (selectedEvent != null) {
         EventDetailScreen(
-            item = selectedEventItem!!,
-            onBackClick = { selectedEventItem = null }
+            event = selectedEvent!!,
+            onBackClick = { selectedEvent = null }
         )
         return
     }
@@ -55,9 +64,10 @@ fun MainScreen(
         ) {
             when (selectedItem) {
                 NavigationItem.EVENTO -> SectionedListScreen(
-                    sections = getSampleSections(),
-                    onItemClick = { item ->
-                        selectedEventItem = item
+                    sections = eventSections,
+                    isLoading = isLoading,
+                    onItemClick = { event ->
+                        selectedEvent = event
                     }
                 )
                 NavigationItem.PERFIL -> ProfileScreen(

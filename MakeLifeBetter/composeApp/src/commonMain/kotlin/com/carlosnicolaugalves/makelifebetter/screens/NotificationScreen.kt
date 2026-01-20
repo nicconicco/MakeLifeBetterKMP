@@ -163,8 +163,7 @@ fun NotificationScreen() {
     } else {
         NotificationListView(
             notifications = notifications,
-            onDismiss = handleDismiss,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            onDismiss = handleDismiss
         )
     }
 }

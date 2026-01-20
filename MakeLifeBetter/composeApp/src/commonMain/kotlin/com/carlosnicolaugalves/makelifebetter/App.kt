@@ -22,10 +22,8 @@ import com.carlosnicolaugalves.makelifebetter.screens.LanguageScreen
 import com.carlosnicolaugalves.makelifebetter.screens.LoginScreen
 import com.carlosnicolaugalves.makelifebetter.screens.MainScreen
 import com.carlosnicolaugalves.makelifebetter.screens.RegisterScreen
-import com.carlosnicolaugalves.makelifebetter.screens.SectionedListScreen
 import com.carlosnicolaugalves.makelifebetter.screens.TempPasswordScreen
 import com.carlosnicolaugalves.makelifebetter.screens.TermsScreen
-import com.carlosnicolaugalves.makelifebetter.screens.getSampleSections
 import com.carlosnicolaugalves.makelifebetter.util.Language
 import com.carlosnicolaugalves.makelifebetter.util.Translations
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
@@ -89,11 +87,6 @@ fun App(viewModel: SharedLoginViewModel) {
                         onLanguageClick = {
                             currentScreen = Screen.Language
                         }
-                    )
-                }
-                Screen.SectionedListScreen -> {
-                    SectionedListScreen(
-                        sections = getSampleSections()
                     )
                 }
                 Screen.Home -> {
@@ -169,6 +162,8 @@ fun App(viewModel: SharedLoginViewModel) {
                         }
                     )
                 }
+
+                else -> {}
             }
         }
     }

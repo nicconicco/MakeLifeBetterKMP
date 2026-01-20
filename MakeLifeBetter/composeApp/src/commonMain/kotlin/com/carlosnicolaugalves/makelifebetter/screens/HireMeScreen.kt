@@ -34,7 +34,7 @@ fun HireMeScreen() {
                 )
             )
             .verticalScroll(scrollState)
-            .padding(24.dp),
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
