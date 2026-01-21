@@ -18,6 +18,7 @@ import com.carlosnicolaugalves.makelifebetter.components.NotificationPermissionH
 import com.carlosnicolaugalves.makelifebetter.event.EventSectionsResult
 import com.carlosnicolaugalves.makelifebetter.model.Event
 import com.carlosnicolaugalves.makelifebetter.navigation.NavigationItem
+import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedChatViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedEventViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedNotificationViewModel
@@ -27,6 +28,7 @@ fun MainScreen(
     viewModel: SharedLoginViewModel,
     eventViewModel: SharedEventViewModel = remember { SharedEventViewModel() },
     notificationViewModel: SharedNotificationViewModel = remember { SharedNotificationViewModel() },
+    chatViewModel: SharedChatViewModel = remember { SharedChatViewModel() },
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -76,7 +78,7 @@ fun MainScreen(
             BottomNavigationBar(
                 selectedItem = selectedItem,
                 onItemSelected = { selectedItem = it },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                modifier = Modifier.fillMaxWidth()
             )
         },
         modifier = modifier.fillMaxSize()
@@ -110,7 +112,10 @@ fun MainScreen(
                         onLogout()
                     }
                 )
-                NavigationItem.CHAT -> ChatScreen()
+                NavigationItem.CHAT -> ChatScreen(
+                    currentUsername = currentUser?.username ?: "Usuario",
+                    chatViewModel = chatViewModel
+                )
                 NavigationItem.NOTIFICACOES -> NotificationScreen(viewModel = notificationViewModel)
                 NavigationItem.CONTRATE -> HireMeScreen()
             }
