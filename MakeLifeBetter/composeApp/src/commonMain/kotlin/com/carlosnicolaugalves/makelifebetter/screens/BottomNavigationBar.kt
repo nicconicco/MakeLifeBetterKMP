@@ -8,7 +8,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.sp
 import com.carlosnicolaugalves.makelifebetter.navigation.NavigationItem
 
 /**
@@ -32,9 +31,9 @@ fun BottomNavigationBar(
         NavigationItem.entries.forEach { navItem ->
             NavigationBarItem(
                 icon = {
-                    Text(
-                        text = navItem.emoji,
-                        fontSize = 24.sp
+                    Icon(
+                        navItem.icon,
+                        contentDescription = "${navItem.icon}"
                     )
                 },
                 label = {
