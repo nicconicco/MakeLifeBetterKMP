@@ -41,10 +41,22 @@ class SharedNotificationViewModel(
         }
     }
 
+    /**
+     * Re-checks the current permission state.
+     * Call this when the notification screen appears to ensure accurate state.
+     */
+    fun refreshPermissionState() {
+        checkPermission()
+    }
+
     fun requestPermission() {
         viewModelScope.launch {
             _permissionState.value = scheduler.requestPermission()
         }
+    }
+
+    fun updatePermissionState(granted: Boolean) {
+        _permissionState.value = granted
     }
 
     /**

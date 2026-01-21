@@ -21,6 +21,7 @@ import com.carlosnicolaugalves.makelifebetter.screens.ForgotPasswordScreen
 import com.carlosnicolaugalves.makelifebetter.screens.LanguageScreen
 import com.carlosnicolaugalves.makelifebetter.screens.LoginScreen
 import com.carlosnicolaugalves.makelifebetter.screens.MainScreen
+import com.carlosnicolaugalves.makelifebetter.screens.RegisterFormData
 import com.carlosnicolaugalves.makelifebetter.screens.RegisterScreen
 import com.carlosnicolaugalves.makelifebetter.screens.TempPasswordScreen
 import com.carlosnicolaugalves.makelifebetter.screens.TermsScreen
@@ -34,6 +35,7 @@ fun App(viewModel: SharedLoginViewModel) {
     var currentScreen by remember { mutableStateOf(Screen.Login) }
     var termsAccepted by remember { mutableStateOf(false) }
     var currentLanguage by remember { mutableStateOf(Language.PORTUGUESE) }
+    var registerFormData by remember { mutableStateOf(RegisterFormData()) }
 
 
     val loginState by viewModel.loginState.collectAsState()
@@ -82,6 +84,7 @@ fun App(viewModel: SharedLoginViewModel) {
                         },
                         onCreateAccountClick = {
                             termsAccepted = false
+                            registerFormData = RegisterFormData()
                             currentScreen = Screen.Register
                         },
                         onLanguageClick = {
@@ -102,15 +105,22 @@ fun App(viewModel: SharedLoginViewModel) {
                         strings = strings,
                         termsAccepted = termsAccepted,
                         registerState = registerState,
+                        initialFormData = registerFormData,
                         onRegisterClick = { username, email, password ->
                             viewModel.register(username = username, email = email, password = password, confirmPassword = password)
                         },
                         onBackClick = {
                             viewModel.resetRegisterState()
+                            registerFormData = RegisterFormData()
+                            termsAccepted = false
                             currentScreen = Screen.Login
                         },
-                        onTermsClick = {
+                        onTermsClick = { formData ->
+                            registerFormData = formData
                             currentScreen = Screen.Terms
+                        },
+                        onTermsCheckedChange = { checked ->
+                            termsAccepted = checked
                         }
                     )
                 }

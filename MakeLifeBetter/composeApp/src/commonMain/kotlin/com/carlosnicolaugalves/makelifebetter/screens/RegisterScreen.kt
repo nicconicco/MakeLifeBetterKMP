@@ -30,26 +30,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.carlosnicolaugalves.makelifebetter.auth.RegisterResult
 import com.carlosnicolaugalves.makelifebetter.util.AppStrings
+import com.carlosnicolaugalves.makelifebetter.util.Language
+import com.carlosnicolaugalves.makelifebetter.util.Translations
+
+data class RegisterFormData(
+    val username: String = "",
+    val email: String = "",
+    val password: String = "",
+    val confirmPassword: String = ""
+)
 
 @Composable
 fun RegisterScreen(
     strings: AppStrings,
     termsAccepted: Boolean = false,
     registerState: RegisterResult = RegisterResult.Idle,
+    initialFormData: RegisterFormData = RegisterFormData(),
     onRegisterClick: (username: String, email: String, password: String) -> Unit = { _, _, _ -> },
     onBackClick: () -> Unit = {},
-    onTermsClick: () -> Unit = {}
+    onTermsClick: (formData: RegisterFormData) -> Unit = {},
+    onTermsCheckedChange: (Boolean) -> Unit = {}
 ) {
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf(initialFormData.username) }
+    var email by remember { mutableStateOf(initialFormData.email) }
+    var password by remember { mutableStateOf(initialFormData.password) }
+    var confirmPassword by remember { mutableStateOf(initialFormData.confirmPassword) }
 
-    val fieldsCompleted = username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()
+    val fieldsCompleted =
+        username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()
     val passwordsMatch = password == confirmPassword
     val canRegister = fieldsCompleted && termsAccepted && passwordsMatch
     val isLoading = registerState is RegisterResult.Loading
@@ -155,7 +168,9 @@ fun RegisterScreen(
         ) {
             Checkbox(
                 checked = termsAccepted,
-                onCheckedChange = null,
+                onCheckedChange = { checked ->
+                    if (!isLoading) onTermsCheckedChange(checked)
+                },
                 enabled = !isLoading
             )
             Text(
@@ -165,7 +180,11 @@ fun RegisterScreen(
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier
                     .padding(start = 5.dp)
-                    .clickable { if (!isLoading) onTermsClick() }
+                    .clickable {
+                        if (!isLoading) onTermsClick(
+                            RegisterFormData(username, email, password, confirmPassword)
+                        )
+                    }
             )
         }
 
@@ -196,4 +215,20 @@ fun RegisterScreen(
             Text(strings.backToLogin)
         }
     }
+}
+
+@Preview
+@Composable
+fun RegisterScreenPreview() {
+    val strings = Translations.getStrings(Language.PORTUGUESE)
+
+    RegisterScreen(
+        strings = strings,
+        termsAccepted = false,
+        registerState = RegisterResult.Idle,
+        onRegisterClick = { _, _, _ -> },
+        onBackClick = {},
+        onTermsClick = {},
+        onTermsCheckedChange = {}
+    )
 }

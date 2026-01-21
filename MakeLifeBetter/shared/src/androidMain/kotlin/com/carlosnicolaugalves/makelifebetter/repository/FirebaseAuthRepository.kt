@@ -54,13 +54,13 @@ class FirebaseAuthRepository : AuthRepository {
     override suspend fun register(username: String, email: String, password: String): Result<User> {
         return try {
             // Verifica se username ja existe
-//            val existingUserQuery = usersCollection
-//                .where { "username" equalTo username }
-//                .get()
-//
-//            if (existingUserQuery.documents.isNotEmpty()) {
-//                return Result.failure(Exception("Nome de usuario ja existe"))
-//            }
+            val existingUserQuery = usersCollection
+                .where { "username" equalTo username }
+                .get()
+
+            if (existingUserQuery.documents.isNotEmpty()) {
+                return Result.failure(Exception("Nome de usuario ja existe"))
+            }
 
             // Cria usuario no Firebase Auth
             val authResult = auth.createUserWithEmailAndPassword(email, password)

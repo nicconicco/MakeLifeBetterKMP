@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.carlosnicolaugalves.makelifebetter.components.NotificationPermissionButton
 import com.carlosnicolaugalves.makelifebetter.model.AppNotification
 import com.carlosnicolaugalves.makelifebetter.util.TimeUtils
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedNotificationViewModel
@@ -27,6 +28,11 @@ fun NotificationScreen(
     val notifications by viewModel.notifications.collectAsState()
     val hasPermission by viewModel.permissionState.collectAsState()
     val scheduledCount by viewModel.scheduledCount.collectAsState()
+
+    // Re-check permission when screen appears
+    LaunchedEffect(Unit) {
+        viewModel.refreshPermissionState()
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -95,13 +101,21 @@ fun NotificationScreen(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = { viewModel.requestPermission() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
+                    NotificationPermissionButton(
+                        onPermissionResult = { granted ->
+                            viewModel.updatePermissionState(granted)
+                        }
                     ) {
-                        Text("Permitir notificacoes")
+                        Button(
+                            onClick = {
+                                viewModel.requestPermission()
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Permitir notificacoes")
+                        }
                     }
                 }
             }
