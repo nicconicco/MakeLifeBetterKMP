@@ -140,8 +140,10 @@ fun ChatScreen() {
 
             // Content based on selected tab
             when (selectedTab) {
-                0 -> MyChatsContent(onChatClick = { selectedChat = it })
-                1 -> FriendsListContent()
+                //todo: I want to create a simple room chat. If user send a message then appear his message in the list.
+//                0 -> MyChatsContent(onChatClick = { selectedChat = it })
+//                1 -> FriendsListContent()
+                //todo: I want to create the Screen "Fazer uma pergunta" then the user create a question and add to the question content with his name. It's possible to delete this message if the user had his question answered.
                 2 -> QuestionsContent()
             }
         }

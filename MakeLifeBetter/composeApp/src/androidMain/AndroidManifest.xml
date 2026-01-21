@@ -16,10 +16,10 @@
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
         <!-- Google Maps API Key -->
-        <!-- todo ativar no cloud console maps-->
+        <!-- todo jogar api prod para outro lugar seguro-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAPS_API_KEY" />
+            android:value="AIzaSyBRdng5w2ME1KSlm-yhbbtJNmOeecT1Q2A" />
 
         <activity
             android:exported="true"
