@@ -103,13 +103,11 @@ fun NotificationScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     NotificationPermissionButton(
                         onPermissionResult = { granted ->
-                            viewModel.updatePermissionState(granted)
+                            viewModel.onPermissionResult(granted)
                         }
                     ) {
                         Button(
-                            onClick = {
-                                viewModel.requestPermission()
-                            },
+                            onClick = { },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.error
                             )

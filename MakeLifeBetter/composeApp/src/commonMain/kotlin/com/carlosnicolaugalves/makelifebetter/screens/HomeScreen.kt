@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.carlosnicolaugalves.makelifebetter.components.NotificationPermissionHandler
 import com.carlosnicolaugalves.makelifebetter.event.EventSectionsResult
 import com.carlosnicolaugalves.makelifebetter.model.Event
 import com.carlosnicolaugalves.makelifebetter.navigation.NavigationItem
@@ -38,8 +39,20 @@ fun MainScreen(
 
     val eventSections by eventViewModel.eventSections.collectAsState()
     val sectionsState by eventViewModel.sectionsState.collectAsState()
+    val shouldRequestPermission by notificationViewModel.shouldRequestPermission.collectAsState()
 
     val isLoading = sectionsState is EventSectionsResult.Loading
+
+    // Handle notification permission request
+    NotificationPermissionHandler(
+        shouldRequest = shouldRequestPermission,
+        onPermissionResult = { granted ->
+            notificationViewModel.onPermissionResult(granted)
+        },
+        onRequestHandled = {
+            notificationViewModel.onPermissionRequestHandled()
+        }
+    )
 
     // Schedule notifications when events are loaded
     LaunchedEffect(sectionsState) {

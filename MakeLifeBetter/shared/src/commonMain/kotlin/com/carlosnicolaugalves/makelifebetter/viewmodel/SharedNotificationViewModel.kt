@@ -31,6 +31,13 @@ class SharedNotificationViewModel(
     private val _scheduledCount = MutableStateFlow(0)
     val scheduledCount: StateFlow<Int> = _scheduledCount.asStateFlow()
 
+    // Signals when permission should be requested from the UI
+    private val _shouldRequestPermission = MutableStateFlow(false)
+    val shouldRequestPermission: StateFlow<Boolean> = _shouldRequestPermission.asStateFlow()
+
+    // Store pending events to schedule after permission is granted
+    private var pendingEvents: List<Event> = emptyList()
+
     init {
         checkPermission()
     }
@@ -60,6 +67,29 @@ class SharedNotificationViewModel(
     }
 
     /**
+     * Called after the UI has shown the permission dialog.
+     * Clears the request flag.
+     */
+    fun onPermissionRequestHandled() {
+        _shouldRequestPermission.value = false
+    }
+
+    /**
+     * Called when permission result is received.
+     * If granted, schedules the pending events.
+     */
+    fun onPermissionResult(granted: Boolean) {
+        _permissionState.value = granted
+        _shouldRequestPermission.value = false
+
+        if (granted && pendingEvents.isNotEmpty()) {
+            val events = pendingEvents
+            pendingEvents = emptyList()
+            scheduleNotificationsForEvents(events)
+        }
+    }
+
+    /**
      * Schedules notifications for all schedulable events.
      * Called when events are loaded.
      */
@@ -67,6 +97,9 @@ class SharedNotificationViewModel(
         viewModelScope.launch {
             if (!scheduler.hasPermission()) {
                 _permissionState.value = false
+                // Store events and signal UI to request permission
+                pendingEvents = events
+                _shouldRequestPermission.value = true
                 return@launch
             }
 

@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.carlosnicolaugalves.makelifebetter.auth.PasswordChangeResult
@@ -101,15 +102,12 @@ fun ProfileScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = "Meu Perfil",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         // Profile Form Card
         Card(
@@ -306,4 +304,19 @@ fun ProfileScreen(
             Text("Sair da conta")
         }
     }
+}
+
+@Preview
+@Composable
+fun ProfileScreenPreview() {
+
+    val user = User("1", "Usuario Test", "email@gmail.com", "123456")
+    ProfileScreen(
+        currentUser = user,
+        ProfileUpdateResult.Success(user),
+        PasswordChangeResult.Success("ok"),
+        onSaveClick = { _, _ -> },
+        onChangePasswordClick = { _, _, _ -> },
+        onLogoutClick = {}
+    )
 }
