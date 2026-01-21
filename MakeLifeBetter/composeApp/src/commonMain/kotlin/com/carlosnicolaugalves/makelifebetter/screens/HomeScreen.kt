@@ -94,6 +94,7 @@ fun MainScreen(
                         selectedEvent = event
                     }
                 )
+                NavigationItem.MAPA -> MapScreen()
                 NavigationItem.PERFIL -> ProfileScreen(
                     currentUser = currentUser,
                     profileUpdateState = profileUpdateState,

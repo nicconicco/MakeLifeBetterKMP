@@ -5,8 +5,9 @@ enum class NavigationItem(
     val emoji: String
 ) {
     EVENTO("Evento", "🎉"),
+    MAPA("Mapa", "🗺️"),
     PERFIL("Perfil", "👤"),
     CHAT("Chat", "💬"),
-    NOTIFICACOES("Notificações", "🔔"),
+    NOTIFICACOES("Notificacoes", "🔔"),
     CONTRATE("Contrate", "💼")
 }
