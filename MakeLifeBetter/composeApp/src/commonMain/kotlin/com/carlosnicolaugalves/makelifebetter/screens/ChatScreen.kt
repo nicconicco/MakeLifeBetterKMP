@@ -42,7 +42,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,20 +53,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.carlosnicolaugalves.makelifebetter.model.ChatMessage
+import com.carlosnicolaugalves.makelifebetter.model.Question
 import com.carlosnicolaugalves.makelifebetter.util.TimeUtils
+import com.carlosnicolaugalves.makelifebetter.viewmodel.AddQuestionState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.ChatState
+import com.carlosnicolaugalves.makelifebetter.viewmodel.QuestionsState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SendMessageState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedChatViewModel
-import kotlin.random.Random
-
-data class Question(
-    val id: String,
-    val title: String,
-    val preview: String,
-    val author: String,
-    val replies: Int,
-    val time: String
-)
 
 @Composable
 fun ChatScreen(
@@ -78,61 +70,22 @@ fun ChatScreen(
 
     val tabs = listOf("Lista Geral", "Duvidas")
 
+    // Chat messages state
     val messages by chatViewModel.messages.collectAsState()
     val chatState by chatViewModel.chatState.collectAsState()
     val sendMessageState by chatViewModel.sendMessageState.collectAsState()
 
-    // Refresh messages when tab is selected
-    LaunchedEffect(selectedTab) {
-        if (selectedTab == 0) {
-            chatViewModel.refresh()
-        }
-    }
+    // Questions state
+    val questions by chatViewModel.questions.collectAsState()
+    val questionsState by chatViewModel.questionsState.collectAsState()
+    val addQuestionState by chatViewModel.addQuestionState.collectAsState()
 
-    // State for questions that can be modified
-    val questions = remember {
-        mutableStateListOf(
-            Question(
-                Random.nextLong().toString(),
-                "Como configurar o Firebase?",
-                "Estou tendo problemas para configurar o Firebase no meu projeto KMP...",
-                "Carlos",
-                5,
-                "2h"
-            ),
-            Question(
-                Random.nextLong().toString(),
-                "Erro no Compose Navigation",
-                "Alguem ja teve esse erro: NavController not found...",
-                "Maria",
-                3,
-                "4h"
-            ),
-            Question(
-                Random.nextLong().toString(),
-                "Melhor arquitetura para KMP?",
-                "Qual arquitetura voces recomendam para um projeto multiplatform?",
-                "Joao",
-                12,
-                "1d"
-            ),
-            Question(
-                Random.nextLong().toString(),
-                "Duvida sobre StateFlow",
-                "Qual a diferenca entre StateFlow e SharedFlow?",
-                "Ana",
-                8,
-                "2d"
-            ),
-            Question(
-                Random.nextLong().toString(),
-                "Room vs SQLDelight",
-                "Para KMP, qual banco de dados local e melhor?",
-                "Pedro",
-                15,
-                "3d"
-            )
-        )
+    // Refresh data when tab is selected
+    LaunchedEffect(selectedTab) {
+        when (selectedTab) {
+            0 -> chatViewModel.refreshMessages()
+            1 -> chatViewModel.refreshQuestions()
+        }
     }
 
     Column(
@@ -175,21 +128,13 @@ fun ChatScreen(
                 1 -> QuestionsContent(
                     questions = questions,
                     currentUsername = currentUsername,
-                    onAddQuestion = { title, preview ->
-                        questions.add(
-                            0,
-                            Question(
-                                id = Random.nextLong().toString(),
-                                title = title,
-                                preview = preview,
-                                author = currentUsername,
-                                replies = 0,
-                                time = "Agora"
-                            )
-                        )
+                    isLoading = questionsState is QuestionsState.Loading,
+                    isAdding = addQuestionState is AddQuestionState.Adding,
+                    onAddQuestion = { title, description ->
+                        chatViewModel.addQuestion(currentUsername, title, description)
                     },
                     onDeleteQuestion = { questionId ->
-                        questions.removeAll { it.id == questionId }
+                        chatViewModel.deleteQuestion(questionId)
                     }
                 )
             }
@@ -381,58 +326,71 @@ private fun GeneralMessageItem(
 private fun QuestionsContent(
     questions: List<Question>,
     currentUsername: String,
-    onAddQuestion: (title: String, preview: String) -> Unit,
+    isLoading: Boolean,
+    isAdding: Boolean,
+    onAddQuestion: (title: String, description: String) -> Unit,
     onDeleteQuestion: (questionId: String) -> Unit
 ) {
     var showAddQuestionDialog by remember { mutableStateOf(false) }
 
     if (showAddQuestionDialog) {
         AddQuestionDialog(
+            isAdding = isAdding,
             onDismiss = { showAddQuestionDialog = false },
-            onConfirm = { title, preview ->
-                onAddQuestion(title, preview)
+            onConfirm = { title, description ->
+                onAddQuestion(title, description)
                 showAddQuestionDialog = false
             }
         )
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        item {
-            Button(
-                onClick = { showAddQuestionDialog = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text("Fazer uma pergunta")
-            }
+    if (isLoading && questions.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
         }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                Button(
+                    onClick = { showAddQuestionDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Fazer uma pergunta")
+                }
+            }
 
-        items(questions, key = { it.id }) { question ->
-            QuestionListItem(
-                question = question,
-                canDelete = question.author == currentUsername,
-                onDelete = { onDeleteQuestion(question.id) }
-            )
+            items(questions, key = { it.id }) { question ->
+                QuestionListItem(
+                    question = question,
+                    canDelete = question.author == currentUsername,
+                    onDelete = { onDeleteQuestion(question.id) }
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun AddQuestionDialog(
+    isAdding: Boolean,
     onDismiss: () -> Unit,
-    onConfirm: (title: String, preview: String) -> Unit
+    onConfirm: (title: String, description: String) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!isAdding) onDismiss() },
         title = {
             Text(
                 "Fazer uma pergunta",
@@ -448,7 +406,8 @@ private fun AddQuestionDialog(
                     onValueChange = { title = it },
                     label = { Text("Titulo da pergunta") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = !isAdding
                 )
                 OutlinedTextField(
                     value = description,
@@ -456,7 +415,8 @@ private fun AddQuestionDialog(
                     label = { Text("Descricao") },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
-                    maxLines = 5
+                    maxLines = 5,
+                    enabled = !isAdding
                 )
             }
         },
@@ -467,13 +427,24 @@ private fun AddQuestionDialog(
                         onConfirm(title, description)
                     }
                 },
-                enabled = title.isNotBlank() && description.isNotBlank()
+                enabled = title.isNotBlank() && description.isNotBlank() && !isAdding
             ) {
-                Text("Publicar")
+                if (isAdding) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Publicar")
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isAdding
+            ) {
                 Text("Cancelar")
             }
         }
@@ -555,7 +526,7 @@ private fun QuestionListItem(
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = question.preview,
+                text = question.description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
@@ -583,7 +554,7 @@ private fun QuestionListItem(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = question.time,
+                        text = TimeUtils.formatRelativeTime(question.timestamp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
