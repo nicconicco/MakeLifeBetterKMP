@@ -110,7 +110,7 @@ struct LoginView: View {
         switch state {
         case .success(let user):
             print("Login bem sucedido: \(user.username)")
-            currentScreen = .home
+            currentScreen = .main
         case .error(let message):
             errorMessage = message
             showError = true

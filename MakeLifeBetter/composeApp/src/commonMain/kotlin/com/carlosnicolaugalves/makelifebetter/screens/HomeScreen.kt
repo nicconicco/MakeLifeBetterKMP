@@ -13,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.carlosnicolaugalves.makelifebetter.components.NotificationPermissionHandler
 import com.carlosnicolaugalves.makelifebetter.event.EventSectionsResult
 import com.carlosnicolaugalves.makelifebetter.model.Event

@@ -8,9 +8,10 @@ enum AppScreen {
     case senhaTemp
     case idioma
     case home
+    case main
 }
 
-struct ContentView: View {
+struct AppView: View {
     @State private var currentScreen: AppScreen = .login
     @State private var termosAceitos: Bool = false
     @State private var idiomaAtual: Idioma = .portugues
@@ -36,10 +37,13 @@ struct ContentView: View {
             LanguageView(currentScreen: $currentScreen, idioma: $idiomaAtual, strings: strings)
         case .home:
             HomeView(currentScreen: $currentScreen, strings: strings, viewModel: loginViewModel)
+        case .main:
+            MainView(currentScreen: $currentScreen, strings: strings, loginViewModel: loginViewModel)
         }
+    
     }
 }
 
 #Preview {
-    ContentView()
+    AppView()
 }
