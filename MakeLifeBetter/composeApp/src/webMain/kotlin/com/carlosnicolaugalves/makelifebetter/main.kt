@@ -8,6 +8,6 @@ import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
 fun main() {
     val loginViewModel = SharedLoginViewModel()
     ComposeViewport {
-        App(loginViewModel)
+        AppView(loginViewModel)
     }
 }

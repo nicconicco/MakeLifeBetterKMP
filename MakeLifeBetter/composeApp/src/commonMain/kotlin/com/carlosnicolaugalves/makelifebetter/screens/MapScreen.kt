@@ -31,10 +31,10 @@ const val CURITIBA_LNG = -49.2733
 fun MapScreen(
     modifier: Modifier = Modifier
 ) {
-    // Wrap the content in a vertically scrollable Column
     Column(
         modifier = modifier
             .background(Color.White)
+            .padding(bottom = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
         // Header
@@ -81,7 +81,7 @@ fun MapScreen(
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             text = "Rua Emirados Arabes 354 - Curitiba",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
@@ -93,7 +93,7 @@ fun MapScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
@@ -102,7 +102,7 @@ fun MapScreen(
                     Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Contato do Evento",
+                        text = "$i - Contato do Evento",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer

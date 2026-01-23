@@ -5,5 +5,5 @@ import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
 
 fun MainViewController() = ComposeUIViewController {
     val loginViewModel = SharedLoginViewModel()
-    App(loginViewModel)
+    AppView(loginViewModel)
 }

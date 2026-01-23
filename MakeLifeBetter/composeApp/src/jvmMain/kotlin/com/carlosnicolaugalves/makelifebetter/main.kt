@@ -10,6 +10,6 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "MakeLifeBetter",
     ) {
-        App(loginViewModel)
+        AppView(loginViewModel)
     }
 }

@@ -60,6 +60,7 @@ import com.carlosnicolaugalves.makelifebetter.viewmodel.ChatState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.QuestionsState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SendMessageState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedChatViewModel
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun ChatScreen(
@@ -560,6 +561,21 @@ private fun QuestionListItem(
                     )
                 }
             }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun AddQuestionDialogPreview() {
+    MaterialTheme {
+        var showDialog by remember { mutableStateOf(true) }
+        if (showDialog) {
+            AddQuestionDialog(
+                isAdding = false,
+                onDismiss = { showDialog = false },
+                onConfirm = { _, _ -> showDialog = false }
+            )
         }
     }
 }

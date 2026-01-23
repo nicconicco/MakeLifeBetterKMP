@@ -20,15 +20,15 @@ class MainActivity : ComponentActivity() {
         AndroidNotificationScheduler.init(this)
 
         setContent {
-            App(viewModel)
+            AppView(viewModel)
         }
     }
 }
 
 @Preview
 @Composable
-fun AppAndroidPreview() {
+fun AppViewAndroidPreview() {
     val viewModel = SharedLoginViewModel()
 
-    App(viewModel)
+    AppView(viewModel)
 }

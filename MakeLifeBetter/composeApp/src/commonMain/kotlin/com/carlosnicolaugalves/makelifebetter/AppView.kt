@@ -17,6 +17,7 @@ import com.carlosnicolaugalves.makelifebetter.auth.AuthResult
 import com.carlosnicolaugalves.makelifebetter.auth.PasswordRecoveryResult
 import com.carlosnicolaugalves.makelifebetter.auth.RegisterResult
 import com.carlosnicolaugalves.makelifebetter.navigation.Screen
+import com.carlosnicolaugalves.makelifebetter.screens.ErrorDialog
 import com.carlosnicolaugalves.makelifebetter.screens.ForgotPasswordScreen
 import com.carlosnicolaugalves.makelifebetter.screens.LanguageScreen
 import com.carlosnicolaugalves.makelifebetter.screens.LoginScreen
@@ -31,7 +32,7 @@ import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
 
 @Composable
 @Preview
-fun App(viewModel: SharedLoginViewModel) {
+fun AppView(viewModel: SharedLoginViewModel) {
     var currentScreen by remember { mutableStateOf(Screen.Login) }
     var termsAccepted by remember { mutableStateOf(false) }
     var currentLanguage by remember { mutableStateOf(Language.PORTUGUESE) }
@@ -44,10 +45,10 @@ fun App(viewModel: SharedLoginViewModel) {
 
     when(registerState) {
         is RegisterResult.Success -> {
-            currentScreen = Screen.Home
+            currentScreen = Screen.Login
         }
         is RegisterResult.Error -> {
-
+            ErrorDialog((registerState as RegisterResult.Error).message)
         }
         else -> {}
     }
@@ -57,7 +58,7 @@ fun App(viewModel: SharedLoginViewModel) {
             currentScreen = Screen.Home
         }
         is AuthResult.Error -> {
-
+            ErrorDialog((loginState as AuthResult.Error).message)
         }
         else -> {}
     }
