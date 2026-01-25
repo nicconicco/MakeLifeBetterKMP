@@ -12,8 +12,8 @@ service cloud.firestore {
     match /eventos/{eventId} {
       // Allow authenticated users to read events
       allow read: if request.auth != null;
-      // Allow authenticated users to delete events (admin only via secret screen)
-      allow delete: if request.auth != null;
+      // Allow authenticated users to create and delete events (admin only via secret screen)
+      allow create, delete: if request.auth != null;
     }
 
     match /lista_geral/{messageId} {
@@ -39,15 +39,15 @@ service cloud.firestore {
     match /event_location/{locationId} {
       // Allow authenticated users to read event location
       allow read: if request.auth != null;
-      // Allow authenticated users to delete event location (admin only via secret screen)
-      allow delete: if request.auth != null;
+      // Allow authenticated users to create, write and delete event location (admin only via secret screen)
+      allow create, write, delete: if request.auth != null;
 
       // Subcollection for contacts
       match /contacts/{contactId} {
         // Allow authenticated users to read contacts
         allow read: if request.auth != null;
-        // Allow authenticated users to delete contacts (admin only via secret screen)
-        allow delete: if request.auth != null;
+        // Allow authenticated users to create and delete contacts (admin only via secret screen)
+        allow create, delete: if request.auth != null;
       }
     }
   }

@@ -46,8 +46,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.Add
 import com.carlosnicolaugalves.makelifebetter.viewmodel.AdminViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.DeleteDataState
+import com.carlosnicolaugalves.makelifebetter.viewmodel.PopulateDataState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,9 +59,12 @@ fun SecretScreen(
     modifier: Modifier = Modifier
 ) {
     val deleteDataState by adminViewModel.deleteDataState.collectAsState()
+    val populateDataState by adminViewModel.populateDataState.collectAsState()
 
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var showPopulateConfirmDialog by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
+    var showPopulateSuccessDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf<String?>(null) }
 
     // Observar mudanças no estado de deleção
@@ -72,6 +77,21 @@ fun SecretScreen(
             is DeleteDataState.Error -> {
                 showErrorDialog = (deleteDataState as DeleteDataState.Error).message
                 adminViewModel.resetState()
+            }
+            else -> {}
+        }
+    }
+
+    // Observar mudanças no estado de popular dados
+    LaunchedEffect(populateDataState) {
+        when (populateDataState) {
+            is PopulateDataState.Success -> {
+                showPopulateSuccessDialog = true
+                adminViewModel.resetPopulateState()
+            }
+            is PopulateDataState.Error -> {
+                showErrorDialog = (populateDataState as PopulateDataState.Error).message
+                adminViewModel.resetPopulateState()
             }
             else -> {}
         }
@@ -143,7 +163,63 @@ fun SecretScreen(
         )
     }
 
-    // Dialog de sucesso
+    // Dialog de confirmação para popular dados
+    if (showPopulateConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showPopulateConfirmDialog = false },
+            icon = {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Popular Dados de Exemplo?",
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Esta acao ira ADICIONAR dados de exemplo:",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("• 6 eventos de exemplo")
+                    Text("• Localizacao do evento (Sao Paulo)")
+                    Text("• 3 contatos de exemplo")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Ideal para testes e demonstracoes.",
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showPopulateConfirmDialog = false
+                        adminViewModel.populateAllSampleData()
+                    }
+                ) {
+                    Text("Sim, Popular Dados")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPopulateConfirmDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Dialog de sucesso para deletar
     if (showSuccessDialog) {
         AlertDialog(
             onDismissRequest = { showSuccessDialog = false },
@@ -158,6 +234,27 @@ fun SecretScreen(
             },
             confirmButton = {
                 Button(onClick = { showSuccessDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    // Dialog de sucesso para popular
+    if (showPopulateSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { showPopulateSuccessDialog = false },
+            title = {
+                Text(
+                    text = "Sucesso!",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text("Dados de exemplo foram adicionados com sucesso.")
+            },
+            confirmButton = {
+                Button(onClick = { showPopulateSuccessDialog = false }) {
                     Text("OK")
                 }
             }
@@ -275,6 +372,61 @@ fun SecretScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
+                }
+            }
+
+            // Card de popular dados
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Popular Dados",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Adicione dados de exemplo para testes e demonstracoes.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { showPopulateConfirmDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        enabled = populateDataState !is PopulateDataState.Populating
+                    ) {
+                        if (populateDataState is PopulateDataState.Populating) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text("Adicionando...")
+                        } else {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text("Popular Dados de Exemplo")
+                        }
+                    }
                 }
             }
 

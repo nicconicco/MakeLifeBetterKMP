@@ -108,4 +108,124 @@ class FirebaseAdminRepository : AdminRepository {
             Result.failure(e)
         }
     }
+
+    override suspend fun populateSampleEvents(): Result<Unit> {
+        return try {
+            val eventsCollection = firestore.collection("eventos")
+
+            // Eventos de exemplo
+            val sampleEvents = listOf(
+                mapOf(
+                    "titulo" to "Cerimonia de Abertura",
+                    "subtitulo" to "Bem-vindos ao evento",
+                    "descricao" to "Cerimonia oficial de abertura com discursos e apresentacoes especiais.",
+                    "hora" to "09:00",
+                    "lugar" to "Salao Principal",
+                    "categoria" to "cerimonia"
+                ),
+                mapOf(
+                    "titulo" to "Coffee Break",
+                    "subtitulo" to "Pausa para cafe",
+                    "descricao" to "Momento de networking e degustacao de cafe e lanches.",
+                    "hora" to "10:30",
+                    "lugar" to "Area de Convivencia",
+                    "categoria" to "intervalo"
+                ),
+                mapOf(
+                    "titulo" to "Palestra Principal",
+                    "subtitulo" to "Tema especial do dia",
+                    "descricao" to "Palestra inspiradora sobre inovacao e tecnologia.",
+                    "hora" to "11:00",
+                    "lugar" to "Auditorio",
+                    "categoria" to "palestra"
+                ),
+                mapOf(
+                    "titulo" to "Almoco",
+                    "subtitulo" to "Refeicao",
+                    "descricao" to "Almoco servido no restaurante do local.",
+                    "hora" to "12:30",
+                    "lugar" to "Restaurante",
+                    "categoria" to "refeicao"
+                ),
+                mapOf(
+                    "titulo" to "Workshop",
+                    "subtitulo" to "Atividade pratica",
+                    "descricao" to "Workshop interativo com atividades em grupo.",
+                    "hora" to "14:00",
+                    "lugar" to "Sala de Treinamento",
+                    "categoria" to "workshop"
+                ),
+                mapOf(
+                    "titulo" to "Encerramento",
+                    "subtitulo" to "Despedida",
+                    "descricao" to "Cerimonia de encerramento e agradecimentos.",
+                    "hora" to "17:00",
+                    "lugar" to "Salao Principal",
+                    "categoria" to "cerimonia"
+                )
+            )
+
+            sampleEvents.forEach { event ->
+                eventsCollection.add(event)
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun populateSampleEventLocation(): Result<Unit> {
+        return try {
+            val locationCollection = firestore.collection("event_location")
+
+            // Criar documento de localizacao
+            val locationDoc = locationCollection.document("main_location")
+            locationDoc.set(
+                mapOf(
+                    "name" to "Centro de Convencoes",
+                    "address" to "Av. Principal, 1000",
+                    "city" to "Sao Paulo - SP",
+                    "latitude" to -23.550520,
+                    "longitude" to -46.633308
+                )
+            )
+
+            // Adicionar contatos na subcoleção
+            val contactsCollection = locationDoc.collection("contacts")
+
+            val contacts = listOf(
+                mapOf(
+                    "name" to "Recepcao",
+                    "phone" to "(11) 1234-5678"
+                ),
+                mapOf(
+                    "name" to "Organizacao",
+                    "phone" to "(11) 9876-5432"
+                ),
+                mapOf(
+                    "name" to "Emergencia",
+                    "phone" to "(11) 9999-9999"
+                )
+            )
+
+            contacts.forEach { contact ->
+                contactsCollection.add(contact)
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun populateAllSampleData(): Result<Unit> {
+        return try {
+            populateSampleEvents()
+            populateSampleEventLocation()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

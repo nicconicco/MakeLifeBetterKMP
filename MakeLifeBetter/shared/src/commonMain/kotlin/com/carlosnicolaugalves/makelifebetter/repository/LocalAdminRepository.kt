@@ -21,4 +21,16 @@ class LocalAdminRepository : AdminRepository {
     override suspend fun deleteAllData(): Result<Unit> {
         return Result.success(Unit)
     }
+
+    override suspend fun populateSampleEvents(): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun populateSampleEventLocation(): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun populateAllSampleData(): Result<Unit> {
+        return Result.success(Unit)
+    }
 }

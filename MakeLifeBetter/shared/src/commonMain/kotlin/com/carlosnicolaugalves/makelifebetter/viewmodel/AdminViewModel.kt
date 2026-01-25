@@ -17,6 +17,13 @@ sealed class DeleteDataState {
     data class Error(val message: String) : DeleteDataState()
 }
 
+sealed class PopulateDataState {
+    object Idle : PopulateDataState()
+    object Populating : PopulateDataState()
+    object Success : PopulateDataState()
+    data class Error(val message: String) : PopulateDataState()
+}
+
 class AdminViewModel(
     private val adminRepository: AdminRepository = createAdminRepository()
 ) {
@@ -24,6 +31,9 @@ class AdminViewModel(
 
     private val _deleteDataState = MutableStateFlow<DeleteDataState>(DeleteDataState.Idle)
     val deleteDataState: StateFlow<DeleteDataState> = _deleteDataState.asStateFlow()
+
+    private val _populateDataState = MutableStateFlow<PopulateDataState>(PopulateDataState.Idle)
+    val populateDataState: StateFlow<PopulateDataState> = _populateDataState.asStateFlow()
 
     fun deleteAllData() {
         viewModelScope.launch {
@@ -107,5 +117,57 @@ class AdminViewModel(
 
     fun resetState() {
         _deleteDataState.value = DeleteDataState.Idle
+    }
+
+    fun resetPopulateState() {
+        _populateDataState.value = PopulateDataState.Idle
+    }
+
+    fun populateAllSampleData() {
+        viewModelScope.launch {
+            _populateDataState.value = PopulateDataState.Populating
+
+            adminRepository.populateAllSampleData()
+                .onSuccess {
+                    _populateDataState.value = PopulateDataState.Success
+                }
+                .onFailure { exception ->
+                    _populateDataState.value = PopulateDataState.Error(
+                        exception.message ?: "Erro ao popular dados"
+                    )
+                }
+        }
+    }
+
+    fun populateSampleEvents() {
+        viewModelScope.launch {
+            _populateDataState.value = PopulateDataState.Populating
+
+            adminRepository.populateSampleEvents()
+                .onSuccess {
+                    _populateDataState.value = PopulateDataState.Success
+                }
+                .onFailure { exception ->
+                    _populateDataState.value = PopulateDataState.Error(
+                        exception.message ?: "Erro ao popular eventos"
+                    )
+                }
+        }
+    }
+
+    fun populateSampleEventLocation() {
+        viewModelScope.launch {
+            _populateDataState.value = PopulateDataState.Populating
+
+            adminRepository.populateSampleEventLocation()
+                .onSuccess {
+                    _populateDataState.value = PopulateDataState.Success
+                }
+                .onFailure { exception ->
+                    _populateDataState.value = PopulateDataState.Error(
+                        exception.message ?: "Erro ao popular localizacao"
+                    )
+                }
+        }
     }
 }

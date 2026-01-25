@@ -6,4 +6,9 @@ interface AdminRepository {
     suspend fun deleteAllChatMessages(): Result<Unit>
     suspend fun deleteAllQuestions(): Result<Unit>
     suspend fun deleteAllData(): Result<Unit>
+
+    // Populate sample data
+    suspend fun populateSampleEvents(): Result<Unit>
+    suspend fun populateSampleEventLocation(): Result<Unit>
+    suspend fun populateAllSampleData(): Result<Unit>
 }

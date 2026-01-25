@@ -12,9 +12,8 @@ class FirebaseEventRepository : EventRepository {
     private val eventsCollection by lazy { firestore.collection("eventos") }
 
     override suspend fun getEvents(): Result<List<Event>> {
-        val sampleEvents = getSampleEvents()
-
         return try {
+            // Primeiro tenta buscar do servidor
             val querySnapshot = eventsCollection.get()
 
             val firebaseEvents = querySnapshot.documents.mapNotNull { doc ->
@@ -29,51 +28,29 @@ class FirebaseEventRepository : EventRepository {
                         categoria = doc.get<String?>("categoria") ?: ""
                     )
                 } catch (e: Exception) {
+                    Log.e("FirebaseEventRepository", "Erro ao parsear evento: ${e.message}")
                     null
                 }
             }
 
             if (firebaseEvents.isNotEmpty()) {
+                Log.d("FirebaseEventRepository", "Eventos carregados do servidor: ${firebaseEvents.size}")
                 Result.success(firebaseEvents)
             } else {
-                // Se nao encontrou dados, sobe os de exemplo para o Firebase
-                uploadSampleEventsToFirebase(sampleEvents)
-                Result.success(sampleEvents)
+                // Se nao encontrou dados no servidor, usa dados locais como fallback
+                Log.d("FirebaseEventRepository", "Servidor vazio, usando dados locais")
+                Result.success(getSampleEvents())
             }
         } catch (e: Exception) {
-            // Em caso de erro, tenta subir os dados de exemplo
-            try {
-                uploadSampleEventsToFirebase(sampleEvents)
-            } catch (uploadError: Exception) {
-                // Ignora erro de upload, apenas retorna os dados locais
-            }
-            Result.success(sampleEvents)
-        }
-    }
-
-    private suspend fun uploadSampleEventsToFirebase(events: List<Event>) {
-        events.forEach { event ->
-            try {
-                eventsCollection.document(event.id).set(
-                    mapOf(
-                        "titulo" to event.titulo,
-                        "subtitulo" to event.subtitulo,
-                        "descricao" to event.descricao,
-                        "hora" to event.hora,
-                        "lugar" to event.lugar,
-                        "categoria" to event.categoria
-                    )
-                )
-            } catch (e: Exception) {
-                Log.e("uploadSampleEventsToFirebase", e.message.toString())
-            }
+            // Em caso de erro de conexao, usa dados locais como fallback
+            Log.e("FirebaseEventRepository", "Erro ao buscar eventos: ${e.message}, usando dados locais")
+            Result.success(getSampleEvents())
         }
     }
 
     override suspend fun getEventsByCategory(categoria: String): Result<List<Event>> {
-        val sampleEvents = getSampleEvents().filter { it.categoria == categoria }
-
         return try {
+            // Primeiro tenta buscar do servidor
             val querySnapshot = eventsCollection
                 .where { "categoria" equalTo categoria }
                 .get()
@@ -97,17 +74,16 @@ class FirebaseEventRepository : EventRepository {
             if (firebaseEvents.isNotEmpty()) {
                 Result.success(firebaseEvents)
             } else {
-                Result.success(sampleEvents)
+                // Fallback para dados locais filtrados por categoria
+                Result.success(getSampleEvents().filter { it.categoria == categoria })
             }
         } catch (e: Exception) {
-            Result.success(sampleEvents)
+            // Fallback para dados locais filtrados por categoria
+            Result.success(getSampleEvents().filter { it.categoria == categoria })
         }
     }
 
     override suspend fun getEventSections(): Result<List<EventSection>> {
-        // Primeiro prepara os dados de exemplo
-        val sampleSections = getSampleEventSections()
-
         return try {
             val eventsResult = getEvents()
 
@@ -117,15 +93,18 @@ class FirebaseEventRepository : EventRepository {
                     if (sections.isNotEmpty()) {
                         Result.success(sections)
                     } else {
-                        Result.success(sampleSections)
+                        // Fallback para secoes locais
+                        Result.success(getSampleEventSections())
                     }
                 },
                 onFailure = {
-                    Result.success(sampleSections)
+                    // Fallback para secoes locais
+                    Result.success(getSampleEventSections())
                 }
             )
         } catch (e: Exception) {
-            Result.success(sampleSections)
+            // Fallback para secoes locais
+            Result.success(getSampleEventSections())
         }
     }
 
@@ -135,7 +114,12 @@ class FirebaseEventRepository : EventRepository {
             "programado" to "Ainda vai rolar",
             "novidade" to "Novidades",
             "contato" to "Canais de Contato",
-            "cupom" to "Cupons"
+            "cupom" to "Cupons",
+            "cerimonia" to "Cerimonias",
+            "intervalo" to "Intervalos",
+            "palestra" to "Palestras",
+            "refeicao" to "Refeicoes",
+            "workshop" to "Workshops"
         )
 
         return sectionMap.mapNotNull { (categoria, titulo) ->
