@@ -2,6 +2,7 @@ package com.carlosnicolaugalves.makelifebetter.viewmodel
 
 import com.carlosnicolaugalves.makelifebetter.model.ChatMessage
 import com.carlosnicolaugalves.makelifebetter.model.Question
+import com.carlosnicolaugalves.makelifebetter.model.QuestionReply
 import com.carlosnicolaugalves.makelifebetter.repository.GeneralChatRepository
 import com.carlosnicolaugalves.makelifebetter.repository.QuestionRepository
 import com.carlosnicolaugalves.makelifebetter.repository.createGeneralChatRepository
@@ -42,6 +43,20 @@ sealed class AddQuestionState {
     data class Error(val message: String) : AddQuestionState()
 }
 
+sealed class RepliesState {
+    object Idle : RepliesState()
+    object Loading : RepliesState()
+    data class Success(val replies: List<QuestionReply>) : RepliesState()
+    data class Error(val message: String) : RepliesState()
+}
+
+sealed class AddReplyState {
+    object Idle : AddReplyState()
+    object Adding : AddReplyState()
+    object Success : AddReplyState()
+    data class Error(val message: String) : AddReplyState()
+}
+
 class SharedChatViewModel(
     private val chatRepository: GeneralChatRepository = createGeneralChatRepository(),
     private val questionRepository: QuestionRepository = createQuestionRepository()
@@ -67,6 +82,19 @@ class SharedChatViewModel(
 
     private val _addQuestionState = MutableStateFlow<AddQuestionState>(AddQuestionState.Idle)
     val addQuestionState: StateFlow<AddQuestionState> = _addQuestionState.asStateFlow()
+
+    // Replies state
+    private val _repliesState = MutableStateFlow<RepliesState>(RepliesState.Idle)
+    val repliesState: StateFlow<RepliesState> = _repliesState.asStateFlow()
+
+    private val _replies = MutableStateFlow<List<QuestionReply>>(emptyList())
+    val replies: StateFlow<List<QuestionReply>> = _replies.asStateFlow()
+
+    private val _addReplyState = MutableStateFlow<AddReplyState>(AddReplyState.Idle)
+    val addReplyState: StateFlow<AddReplyState> = _addReplyState.asStateFlow()
+
+    private val _selectedQuestion = MutableStateFlow<Question?>(null)
+    val selectedQuestion: StateFlow<Question?> = _selectedQuestion.asStateFlow()
 
     init {
         loadMessages()
@@ -167,5 +195,98 @@ class SharedChatViewModel(
 
     fun resetAddQuestionState() {
         _addQuestionState.value = AddQuestionState.Idle
+    }
+
+    // Replies functions
+    fun selectQuestion(question: Question) {
+        _selectedQuestion.value = question
+        loadReplies(question.id)
+    }
+
+    fun clearSelectedQuestion() {
+        _selectedQuestion.value = null
+        _replies.value = emptyList()
+        _repliesState.value = RepliesState.Idle
+    }
+
+    fun loadReplies(questionId: String) {
+        viewModelScope.launch {
+            _repliesState.value = RepliesState.Loading
+
+            questionRepository.getReplies(questionId)
+                .onSuccess { replyList ->
+                    _replies.value = replyList
+                    _repliesState.value = RepliesState.Success(replyList)
+                }
+                .onFailure { exception ->
+                    _repliesState.value = RepliesState.Error(exception.message ?: "Erro ao carregar respostas")
+                }
+        }
+    }
+
+    fun addReply(questionId: String, author: String, content: String) {
+        if (content.isBlank()) return
+
+        viewModelScope.launch {
+            _addReplyState.value = AddReplyState.Adding
+
+            questionRepository.addReply(questionId, author, content)
+                .onSuccess { reply ->
+                    _replies.value = _replies.value + reply
+                    _addReplyState.value = AddReplyState.Success
+                    _addReplyState.value = AddReplyState.Idle
+
+                    // Atualizar contador de respostas na lista de perguntas
+                    _questions.value = _questions.value.map { question ->
+                        if (question.id == questionId) {
+                            question.copy(replies = question.replies + 1)
+                        } else {
+                            question
+                        }
+                    }
+
+                    // Atualizar pergunta selecionada
+                    _selectedQuestion.value?.let { selected ->
+                        if (selected.id == questionId) {
+                            _selectedQuestion.value = selected.copy(replies = selected.replies + 1)
+                        }
+                    }
+                }
+                .onFailure { exception ->
+                    _addReplyState.value = AddReplyState.Error(exception.message ?: "Erro ao adicionar resposta")
+                }
+        }
+    }
+
+    fun deleteReply(questionId: String, replyId: String) {
+        viewModelScope.launch {
+            questionRepository.deleteReply(questionId, replyId)
+                .onSuccess {
+                    _replies.value = _replies.value.filter { it.id != replyId }
+
+                    // Atualizar contador de respostas na lista de perguntas
+                    _questions.value = _questions.value.map { question ->
+                        if (question.id == questionId) {
+                            question.copy(replies = maxOf(0, question.replies - 1))
+                        } else {
+                            question
+                        }
+                    }
+
+                    // Atualizar pergunta selecionada
+                    _selectedQuestion.value?.let { selected ->
+                        if (selected.id == questionId) {
+                            _selectedQuestion.value = selected.copy(replies = maxOf(0, selected.replies - 1))
+                        }
+                    }
+                }
+                .onFailure { exception ->
+                    // Handle error if needed
+                }
+        }
+    }
+
+    fun resetAddReplyState() {
+        _addReplyState.value = AddReplyState.Idle
     }
 }
