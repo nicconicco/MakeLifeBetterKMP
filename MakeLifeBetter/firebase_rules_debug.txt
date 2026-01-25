@@ -33,5 +33,16 @@ service cloud.firestore {
         allow delete: if request.auth != null;
       }
     }
+
+    match /event_location/{locationId} {
+      // Allow authenticated users to read event location
+      allow read: if request.auth != null;
+
+      // Subcollection for contacts
+      match /contacts/{contactId} {
+        // Allow authenticated users to read contacts
+        allow read: if request.auth != null;
+      }
+    }
   }
 }
