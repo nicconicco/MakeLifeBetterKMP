@@ -19,7 +19,8 @@
       "Bash($JAVA_HOME/bin/java -version)",
       "Bash(git reset:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(chmod:*)"
     ]
   }
 }
