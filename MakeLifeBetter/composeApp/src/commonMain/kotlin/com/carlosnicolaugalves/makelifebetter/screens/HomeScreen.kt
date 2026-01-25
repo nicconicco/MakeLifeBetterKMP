@@ -67,7 +67,11 @@ fun MainScreen(
     // Se tiver a tela secreta ativa, mostra ela
     if (showSecretScreen) {
         SecretScreen(
-            onBackClick = { showSecretScreen = false }
+            onBackClick = {
+                showSecretScreen = false
+                // Recarregar eventos ao voltar da tela secreta
+                eventViewModel.refreshSections()
+            }
         )
         return
     }
