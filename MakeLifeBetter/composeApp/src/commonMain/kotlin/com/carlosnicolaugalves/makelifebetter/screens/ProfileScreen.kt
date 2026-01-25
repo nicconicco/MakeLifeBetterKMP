@@ -1,5 +1,7 @@
 package com.carlosnicolaugalves.makelifebetter.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -22,6 +26,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,6 +45,9 @@ import com.carlosnicolaugalves.makelifebetter.auth.PasswordChangeResult
 import com.carlosnicolaugalves.makelifebetter.auth.ProfileUpdateResult
 import com.carlosnicolaugalves.makelifebetter.model.User
 
+private const val SECRET_PASSWORD = "0000"
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProfileScreen(
     currentUser: User?,
@@ -47,6 +56,7 @@ fun ProfileScreen(
     onSaveClick: (username: String, email: String) -> Unit,
     onChangePasswordClick: (currentPassword: String, newPassword: String, confirmPassword: String) -> Unit,
     onLogoutClick: () -> Unit,
+    onSecretAccessGranted: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var username by remember(currentUser) { mutableStateOf(currentUser?.username ?: "") }
@@ -57,6 +67,85 @@ fun ProfileScreen(
     var newPassword by remember { mutableStateOf("") }
     var confirmNewPassword by remember { mutableStateOf("") }
     var showPasswordSuccess by remember { mutableStateOf(false) }
+
+    // Secret access dialog state
+    var showSecretDialog by remember { mutableStateOf(false) }
+    var secretPassword by remember { mutableStateOf("") }
+    var secretPasswordError by remember { mutableStateOf(false) }
+
+    // Secret password dialog
+    if (showSecretDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showSecretDialog = false
+                secretPassword = ""
+                secretPasswordError = false
+            },
+            title = {
+                Text(
+                    text = "Acesso Restrito",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Digite a senha para continuar:",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = secretPassword,
+                        onValueChange = {
+                            secretPassword = it
+                            secretPasswordError = false
+                        },
+                        label = { Text("Senha") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        singleLine = true,
+                        isError = secretPasswordError,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (secretPasswordError) {
+                        Text(
+                            text = "Senha incorreta",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (secretPassword == SECRET_PASSWORD) {
+                            showSecretDialog = false
+                            secretPassword = ""
+                            secretPasswordError = false
+                            onSecretAccessGranted()
+                        } else {
+                            secretPasswordError = true
+                        }
+                    }
+                ) {
+                    Text("Entrar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showSecretDialog = false
+                        secretPassword = ""
+                        secretPasswordError = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     LaunchedEffect(profileUpdateState) {
         if (profileUpdateState is ProfileUpdateResult.Success) {
@@ -83,9 +172,14 @@ fun ProfileScreen(
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Avatar
+        // Avatar com long press para acesso secreto
         Surface(
-            modifier = Modifier.size(100.dp),
+            modifier = Modifier
+                .size(100.dp)
+                .combinedClickable(
+                    onClick = { },
+                    onLongClick = { showSecretDialog = true }
+                ),
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primaryContainer
         ) {

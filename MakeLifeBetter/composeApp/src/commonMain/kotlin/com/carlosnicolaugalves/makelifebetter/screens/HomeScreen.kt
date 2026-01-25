@@ -33,6 +33,7 @@ fun MainScreen(
 ) {
     var selectedItem by remember { mutableStateOf(NavigationItem.EVENTO) }
     var selectedEvent by remember { mutableStateOf<Event?>(null) }
+    var showSecretScreen by remember { mutableStateOf(false) }
 
     val currentUser by viewModel.currentUser.collectAsState()
     val profileUpdateState by viewModel.profileUpdateState.collectAsState()
@@ -61,6 +62,14 @@ fun MainScreen(
             val allEvents = eventSections.flatMap { it.eventos }
             notificationViewModel.scheduleNotificationsForEvents(allEvents)
         }
+    }
+
+    // Se tiver a tela secreta ativa, mostra ela
+    if (showSecretScreen) {
+        SecretScreen(
+            onBackClick = { showSecretScreen = false }
+        )
+        return
     }
 
     // Se tiver um evento selecionado, mostra a tela de detalhes
@@ -109,6 +118,9 @@ fun MainScreen(
                     onLogoutClick = {
                         viewModel.logout()
                         onLogout()
+                    },
+                    onSecretAccessGranted = {
+                        showSecretScreen = true
                     }
                 )
                 NavigationItem.CHAT -> ChatScreen(
