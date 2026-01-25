@@ -11,4 +11,9 @@ interface AdminRepository {
     suspend fun populateSampleEvents(): Result<Unit>
     suspend fun populateSampleEventLocation(): Result<Unit>
     suspend fun populateAllSampleData(): Result<Unit>
+
+    // Import from Excel
+    suspend fun uploadEvents(events: List<Map<String, String>>): Result<Int>
+    suspend fun uploadLocation(location: Map<String, Any>): Result<Boolean>
+    suspend fun uploadContacts(contacts: List<Map<String, String>>): Result<Int>
 }

@@ -33,4 +33,16 @@ class LocalAdminRepository : AdminRepository {
     override suspend fun populateAllSampleData(): Result<Unit> {
         return Result.success(Unit)
     }
+
+    override suspend fun uploadEvents(events: List<Map<String, String>>): Result<Int> {
+        return Result.success(0)
+    }
+
+    override suspend fun uploadLocation(location: Map<String, Any>): Result<Boolean> {
+        return Result.success(false)
+    }
+
+    override suspend fun uploadContacts(contacts: List<Map<String, String>>): Result<Int> {
+        return Result.success(0)
+    }
 }

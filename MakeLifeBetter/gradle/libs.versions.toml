@@ -4,7 +4,7 @@ mapsCompose = "6.4.1"
 playServicesMaps = "19.0.0"
 androidx-viewmodel = "2.10.0"
 android-compileSdk = "36"
-android-minSdk = "24"
+android-minSdk = "26"
 android-targetSdk = "36"
 androidx-activity = "1.12.2"
 androidx-appcompat = "1.7.1"
@@ -24,6 +24,7 @@ kotlinx-serialization = "1.7.3"
 ktor = "3.3.3"
 lifecycleViewmodelKtx = "2.6.1"
 logback = "1.5.24"
+apache-poi = "5.2.5"
 
 [libraries]
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleViewmodelKtx" }
@@ -51,6 +52,8 @@ firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+apache-poi = { module = "org.apache.poi:poi", version.ref = "apache-poi" }
+apache-poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "apache-poi" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -228,4 +228,57 @@ class FirebaseAdminRepository : AdminRepository {
             Result.failure(e)
         }
     }
+
+    override suspend fun uploadEvents(events: List<Map<String, String>>): Result<Int> {
+        return try {
+            var count = 0
+            val eventsCollection = firestore.collection("eventos")
+
+            events.forEach { event ->
+                try {
+                    eventsCollection.add(event)
+                    count++
+                } catch (e: Exception) {
+                    // Ignora erros individuais
+                }
+            }
+
+            Result.success(count)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun uploadLocation(location: Map<String, Any>): Result<Boolean> {
+        return try {
+            val locationDoc = firestore.collection("event_location").document("main_location")
+            locationDoc.set(location)
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun uploadContacts(contacts: List<Map<String, String>>): Result<Int> {
+        return try {
+            var count = 0
+            val contactsCollection = firestore
+                .collection("event_location")
+                .document("main_location")
+                .collection("contacts")
+
+            contacts.forEach { contact ->
+                try {
+                    contactsCollection.add(contact)
+                    count++
+                } catch (e: Exception) {
+                    // Ignora erros individuais
+                }
+            }
+
+            Result.success(count)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

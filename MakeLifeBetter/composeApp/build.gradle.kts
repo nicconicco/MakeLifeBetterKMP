@@ -54,6 +54,10 @@ kotlin {
             // Google Maps
             implementation(libs.maps.compose)
             implementation(libs.play.services.maps)
+
+            // Apache POI for Excel import
+            implementation(libs.apache.poi)
+            implementation(libs.apache.poi.ooxml)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -100,6 +104,16 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/DEPENDENCIES"
+            excludes += "/META-INF/LICENSE"
+            excludes += "/META-INF/LICENSE.txt"
+            excludes += "/META-INF/license.txt"
+            excludes += "/META-INF/NOTICE"
+            excludes += "/META-INF/NOTICE.txt"
+            excludes += "/META-INF/notice.txt"
+            excludes += "/META-INF/*.SF"
+            excludes += "/META-INF/*.DSA"
+            excludes += "/META-INF/*.RSA"
         }
     }
     buildTypes {

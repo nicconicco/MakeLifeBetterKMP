@@ -47,6 +47,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.Add
+import com.carlosnicolaugalves.makelifebetter.components.ExcelImportResult
+import com.carlosnicolaugalves.makelifebetter.components.ImportExcelSection
 import com.carlosnicolaugalves.makelifebetter.viewmodel.AdminViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.DeleteDataState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.PopulateDataState
@@ -65,6 +67,7 @@ fun SecretScreen(
     var showPopulateConfirmDialog by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showPopulateSuccessDialog by remember { mutableStateOf(false) }
+    var showImportSuccessDialog by remember { mutableStateOf<ExcelImportResult?>(null) }
     var showErrorDialog by remember { mutableStateOf<String?>(null) }
 
     // Observar mudanças no estado de deleção
@@ -261,6 +264,45 @@ fun SecretScreen(
         )
     }
 
+    // Dialog de sucesso para importacao Excel
+    if (showImportSuccessDialog != null) {
+        val result = showImportSuccessDialog!!
+        AlertDialog(
+            onDismissRequest = { showImportSuccessDialog = null },
+            title = {
+                Text(
+                    text = "Importacao Concluida!",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column {
+                    Text("Dados importados com sucesso:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("• Eventos: ${result.eventsImported}")
+                    Text("• Localizacao: ${if (result.locationImported) "Sim" else "Nao"}")
+                    Text("• Contatos: ${result.contactsImported}")
+                    if (result.errors.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Avisos:",
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        result.errors.forEach { error ->
+                            Text("• $error", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showImportSuccessDialog = null }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
     // Dialog de erro
     if (showErrorDialog != null) {
         AlertDialog(
@@ -429,6 +471,16 @@ fun SecretScreen(
                     }
                 }
             }
+
+            // Secao de importar Excel
+            ImportExcelSection(
+                onImportSuccess = { result ->
+                    showImportSuccessDialog = result
+                },
+                onImportError = { error ->
+                    showErrorDialog = error
+                }
+            )
 
             // Card de administração - DELETAR DADOS
             Card(
