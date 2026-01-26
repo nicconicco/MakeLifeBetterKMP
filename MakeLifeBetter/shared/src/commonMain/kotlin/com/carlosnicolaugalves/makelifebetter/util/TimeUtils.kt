@@ -1,6 +1,7 @@
 package com.carlosnicolaugalves.makelifebetter.util
 
 import kotlinx.datetime.*
+import kotlin.time.Clock
 
 object TimeUtils {
     private val TIME_REGEX = Regex("^([01]?[0-9]|2[0-3]):([0-5][0-9])$")

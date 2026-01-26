@@ -6,7 +6,7 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.firestore
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class FirebaseQuestionRepository : QuestionRepository {
 

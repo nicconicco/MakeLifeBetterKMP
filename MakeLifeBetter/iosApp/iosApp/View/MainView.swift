@@ -14,6 +14,7 @@ struct MainView: View {
     let strings: AppStrings
     var loginViewModel: LoginViewModel
     @State var eventViewModel = EventViewModel()
+    @State var chatViewModel = ChatViewModel()
 
     @State private var selectedItem: NavigationItem = .evento
     @State private var navigationPath = NavigationPath()
@@ -34,8 +35,14 @@ struct MainView: View {
                     }
                 ).tabItem { Label("Eventos", systemImage: "calendar") }
 
+                ChatView(
+                    currentUsername: loginViewModel.currentUser?.username ?? "Usuario",
+                    viewModel: chatViewModel
+                )
+                .tabItem { Label("Chat", systemImage: "message") }
+
                 MeView(currentScreen: $currentScreen, strings: strings, viewModel: loginViewModel)
-                    .tabItem { Label("Me", systemImage: "briefcase") }
+                    .tabItem { Label("Me", systemImage: "person") }
 
                 HireMeView()
                     .tabItem { Label("Contrate", systemImage: "briefcase") }

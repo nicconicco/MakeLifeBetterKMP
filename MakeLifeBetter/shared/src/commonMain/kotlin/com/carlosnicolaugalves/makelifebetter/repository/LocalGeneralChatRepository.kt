@@ -1,7 +1,7 @@
 package com.carlosnicolaugalves.makelifebetter.repository
 
 import com.carlosnicolaugalves.makelifebetter.model.ChatMessage
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class LocalGeneralChatRepository : GeneralChatRepository {
 

@@ -2,7 +2,7 @@ package com.carlosnicolaugalves.makelifebetter.repository
 
 import com.carlosnicolaugalves.makelifebetter.model.Question
 import com.carlosnicolaugalves.makelifebetter.model.QuestionReply
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class LocalQuestionRepository : QuestionRepository {
 

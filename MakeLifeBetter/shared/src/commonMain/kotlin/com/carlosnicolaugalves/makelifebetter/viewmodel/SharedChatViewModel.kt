@@ -7,12 +7,16 @@ import com.carlosnicolaugalves.makelifebetter.repository.GeneralChatRepository
 import com.carlosnicolaugalves.makelifebetter.repository.QuestionRepository
 import com.carlosnicolaugalves.makelifebetter.repository.createGeneralChatRepository
 import com.carlosnicolaugalves.makelifebetter.repository.createQuestionRepository
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 sealed class ChatState {
@@ -61,7 +65,10 @@ class SharedChatViewModel(
     private val chatRepository: GeneralChatRepository = createGeneralChatRepository(),
     private val questionRepository: QuestionRepository = createQuestionRepository()
 ) {
-    private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        println("SharedChatViewModel coroutine exception: ${throwable.message}")
+    }
+    private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main + exceptionHandler)
 
     // Chat messages state
     private val _chatState = MutableStateFlow<ChatState>(ChatState.Idle)
@@ -104,16 +111,20 @@ class SharedChatViewModel(
     // Chat messages functions
     fun loadMessages() {
         viewModelScope.launch {
-            _chatState.value = ChatState.Loading
+            try {
+                _chatState.value = ChatState.Loading
 
-            chatRepository.getMessages()
-                .onSuccess { messageList ->
-                    _messages.value = messageList
-                    _chatState.value = ChatState.Success(messageList)
-                }
-                .onFailure { exception ->
-                    _chatState.value = ChatState.Error(exception.message ?: "Erro ao carregar mensagens")
-                }
+                chatRepository.getMessages()
+                    .onSuccess { messageList ->
+                        _messages.value = messageList
+                        _chatState.value = ChatState.Success(messageList)
+                    }
+                    .onFailure { exception ->
+                        _chatState.value = ChatState.Error(exception.message ?: "Erro ao carregar mensagens")
+                    }
+            } catch (e: Exception) {
+                _chatState.value = ChatState.Error(e.message ?: "Erro ao carregar mensagens")
+            }
         }
     }
 
@@ -121,17 +132,21 @@ class SharedChatViewModel(
         if (message.isBlank()) return
 
         viewModelScope.launch {
-            _sendMessageState.value = SendMessageState.Sending
+            try {
+                _sendMessageState.value = SendMessageState.Sending
 
-            chatRepository.sendMessage(author, message)
-                .onSuccess { chatMessage ->
-                    _messages.value = _messages.value + chatMessage
-                    _sendMessageState.value = SendMessageState.Success
-                    _sendMessageState.value = SendMessageState.Idle
-                }
-                .onFailure { exception ->
-                    _sendMessageState.value = SendMessageState.Error(exception.message ?: "Erro ao enviar mensagem")
-                }
+                chatRepository.sendMessage(author, message)
+                    .onSuccess { chatMessage ->
+                        _messages.value = _messages.value + chatMessage
+                        _sendMessageState.value = SendMessageState.Success
+                        _sendMessageState.value = SendMessageState.Idle
+                    }
+                    .onFailure { exception ->
+                        _sendMessageState.value = SendMessageState.Error(exception.message ?: "Erro ao enviar mensagem")
+                    }
+            } catch (e: Exception) {
+                _sendMessageState.value = SendMessageState.Error(e.message ?: "Erro ao enviar mensagem")
+            }
         }
     }
 
@@ -288,5 +303,50 @@ class SharedChatViewModel(
 
     fun resetAddReplyState() {
         _addReplyState.value = AddReplyState.Idle
+    }
+
+    // Observe methods for iOS bridge
+    fun observeChatState(callback: (ChatState) -> Unit): Job {
+        return chatState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeMessages(callback: (List<ChatMessage>) -> Unit): Job {
+        return messages.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeSendMessageState(callback: (SendMessageState) -> Unit): Job {
+        return sendMessageState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeQuestionsState(callback: (QuestionsState) -> Unit): Job {
+        return questionsState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeQuestions(callback: (List<Question>) -> Unit): Job {
+        return questions.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeAddQuestionState(callback: (AddQuestionState) -> Unit): Job {
+        return addQuestionState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeRepliesState(callback: (RepliesState) -> Unit): Job {
+        return repliesState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeReplies(callback: (List<QuestionReply>) -> Unit): Job {
+        return replies.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeAddReplyState(callback: (AddReplyState) -> Unit): Job {
+        return addReplyState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeSelectedQuestion(callback: (Question?) -> Unit): Job {
+        return selectedQuestion.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun clear() {
+        // Cleanup if needed
     }
 }
