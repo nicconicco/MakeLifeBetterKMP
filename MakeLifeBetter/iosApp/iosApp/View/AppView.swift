@@ -36,7 +36,7 @@ struct AppView: View {
         case .idioma:
             LanguageView(currentScreen: $currentScreen, idioma: $idiomaAtual, strings: strings)
         case .home:
-            HomeView(currentScreen: $currentScreen, strings: strings, viewModel: loginViewModel)
+            MeView(currentScreen: $currentScreen, strings: strings, viewModel: loginViewModel)
         case .main:
             MainView(currentScreen: $currentScreen, strings: strings, loginViewModel: loginViewModel)
         }

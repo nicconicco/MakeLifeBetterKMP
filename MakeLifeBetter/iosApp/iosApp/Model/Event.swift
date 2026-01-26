@@ -7,6 +7,7 @@
 
 
 import Foundation
+import ComposeApp
 
 struct Event: Identifiable {
     var id: String
@@ -27,6 +28,16 @@ struct Event: Identifiable {
         self.lugar = lugar
         self.categoria = categoria
     }
+
+    init(from kotlinEvent: ComposeApp.Event) {
+        self.id = kotlinEvent.id
+        self.titulo = kotlinEvent.titulo
+        self.subtitulo = kotlinEvent.subtitulo
+        self.descricao = kotlinEvent.descricao
+        self.hora = kotlinEvent.hora
+        self.lugar = kotlinEvent.lugar
+        self.categoria = kotlinEvent.categoria
+    }
 }
 
 struct EventSection {
@@ -36,5 +47,10 @@ struct EventSection {
     init(titulo: String, eventos: [Event]) {
         self.titulo = titulo
         self.eventos = eventos
+    }
+
+    init(from kotlinSection: ComposeApp.EventSection) {
+        self.titulo = kotlinSection.titulo
+        self.eventos = kotlinSection.eventos.map { Event(from: $0 as! ComposeApp.Event) }
     }
 }
