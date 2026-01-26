@@ -5,6 +5,7 @@
 xcuserdata
 !src/**/build/
 local.properties
+local.properties.bak
 .idea
 .DS_Store
 captures
@@ -17,6 +18,10 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+
+# Keystore
+*.jks
+*.keystore
 
 # CocoaPods
 iosApp/Pods/
