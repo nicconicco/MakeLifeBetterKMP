@@ -9,7 +9,7 @@
 import Foundation
 import ComposeApp
 
-struct Event: Identifiable {
+struct Event: Identifiable, Hashable {
     var id: String
     var titulo: String
     var subtitulo: String

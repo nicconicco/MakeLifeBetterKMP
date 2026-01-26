@@ -16,7 +16,7 @@ struct MainView: View {
     @StateObject var eventViewModel = EventViewModel()
 
     @State private var selectedItem: NavigationItem = .evento
-    @State private var selectedEvent: Event? = nil
+    @State private var navigationPath = NavigationPath()
 
     var body: some View {
         @State var idiomaAtual: Idioma = .portugues
@@ -25,27 +25,24 @@ struct MainView: View {
             Traducoes.obterStrings(idioma: idiomaAtual)
         }
 
-        VStack {
-            if let selectedEvent = selectedEvent {
-                EventDetailScreen(event: selectedEvent, onBackClick: {
-                    self.selectedEvent = nil
-                })
-            } else {
-                TabView {
-                    SectionedListView(
-                        viewModel: eventViewModel,
-                        onItemClick: { event in
-                            self.selectedEvent = event
-                        }
-                    ).tabItem { Label("Eventos", systemImage: "calendar") }
-                    
-                    MeView(currentScreen: $currentScreen, strings: strings, viewModel: loginViewModel)
-                        .tabItem { Label("Me", systemImage: "briefcase") }
-                 
-                    HireMeView()
-                        .tabItem { Label("Contrate", systemImage: "briefcase") }
-                        .tag(NavigationItem.contrate)
-                }
+        NavigationStack(path: $navigationPath) {
+            TabView {
+                SectionedListView(
+                    viewModel: eventViewModel,
+                    onItemClick: { event in
+                        navigationPath.append(event)
+                    }
+                ).tabItem { Label("Eventos", systemImage: "calendar") }
+
+                MeView(currentScreen: $currentScreen, strings: strings, viewModel: loginViewModel)
+                    .tabItem { Label("Me", systemImage: "briefcase") }
+
+                HireMeView()
+                    .tabItem { Label("Contrate", systemImage: "briefcase") }
+                    .tag(NavigationItem.contrate)
+            }
+            .navigationDestination(for: Event.self) { event in
+                EventDetailScreen(event: event)
             }
         }
     }

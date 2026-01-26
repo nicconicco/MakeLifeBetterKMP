@@ -1,95 +1,88 @@
 import SwiftUI
-import ComposeApp
 
 struct EventDetailScreen: View {
     var event: Event
-    var onBackClick: () -> Void
 
     var body: some View {
         let emoji = getEmojiForCategory(categoria: event.categoria)
 
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    // Header with large emoji
-                    VStack(alignment: .center, spacing: 16) {
-                        Text(emoji)
-                            .font(.system(size: 64))
-                        Text(event.titulo)
+        ScrollView {
+            VStack(spacing: 16) {
+                // Header with large emoji
+                VStack(alignment: .center, spacing: 16) {
+                    Text(emoji)
+                        .font(.system(size: 64))
+                    Text(event.titulo)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Text(event.subtitulo)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(24)
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(12)
+
+                // Event information
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Informacoes")
+                        .font(.headline)
+                        .fontWeight(.bold)
+
+                    InfoRow(label: "Horario", value: event.hora)
+                    InfoRow(label: "Local", value: event.lugar)
+                    if !event.categoria.isEmpty {
+                        InfoRow(label: "Categoria", value: getCategoryDisplayName(categoria: event.categoria))
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(Color(.systemBackground))
+                .cornerRadius(12)
+                .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+
+                // Description
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Descricao")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                    Text(event.descricao)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(Color(.systemBackground))
+                .cornerRadius(12)
+                .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+
+                // Category Tag
+                if !event.categoria.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Categoria")
                             .font(.headline)
                             .fontWeight(.bold)
-                        Text(event.subtitulo)
-                            .font(.subheadline)
-                            .foregroundColor(Color.gray.opacity(0.8))
+                        Text(getCategoryDisplayName(categoria: event.categoria))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .foregroundColor(.white)
+                            .background(Color.blue)
+                            .cornerRadius(8)
                     }
-                    .padding(24)
-                    .background(Color.blue.opacity(0.1)) // Background color for card effect
-                    .cornerRadius(12) // Rounded corners
-                    .padding(.horizontal)
-
-                    // Event information
-                    VStack(spacing: 12) {
-                        Text("Informações")
-                            .font(.title2)
-                            .fontWeight(.bold)
-
-                        InfoRow(label: "Horário", value: event.hora)
-                        InfoRow(label: "Local", value: event.lugar)
-                        if !event.categoria.isEmpty {
-                            InfoRow(label: "Categoria", value: getCategoryDisplayName(categoria: event.categoria))
-                        }
-                    }
-                    .padding()
-                    .background(Color.white) // Background color for card effect
-                    .cornerRadius(12) // Rounded corners
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2) // Shadow effect
-                    .padding(.horizontal)
-
-                    // Description
-                    VStack(spacing: 8) {
-                        Text("Descrição")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        Text(event.descricao)
-                            .font(.body)
-                            .foregroundColor(Color.black.opacity(0.8))
-                    }
-                    .padding()
-                    .background(Color.white) // Background color for card effect
-                    .cornerRadius(12) // Rounded corners
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2) // Shadow effect
-                    .padding(.horizontal)
-
-                    // Category Tag
-                    if !event.categoria.isEmpty {
-                        VStack(spacing: 8) {
-                            Text("Categoria")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            Text(getCategoryDisplayName(categoria: event.categoria))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .foregroundColor(.white)
-                                .background(Color.blue)
-                                .cornerRadius(8)
-                        }
-                        .padding()
-                        .background(Color.white) // Background color for card effect
-                        .cornerRadius(12) // Rounded corners
-                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2) // Shadow effect
-                        .padding(.horizontal)
-                    }
-
-                    Spacer(minLength: 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(12)
                 }
-                .padding(.vertical)
+
+                Spacer(minLength: 8)
             }
-            .navigationBarTitle("Detalhes", displayMode: .inline)
-            .navigationBarItems(leading: Button(action: onBackClick) {
-                Image(systemName: "arrow.left")
-                    .foregroundColor(.blue)
-            })
+            .padding(16)
         }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle("Detalhes")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -101,7 +94,7 @@ struct InfoRow: View {
         HStack {
             Text(label)
                 .font(.body)
-                .foregroundColor(Color.gray.opacity(0.6))
+                .foregroundColor(.secondary)
             Spacer()
             Text(value)
                 .font(.body)
@@ -122,6 +115,16 @@ func getEmojiForCategory(categoria: String) -> String {
         return "💬"
     case "cupom":
         return "🎟️"
+    case "cerimonia":
+        return "🎭"
+    case "intervalo":
+        return "☕"
+    case "palestra":
+        return "🎤"
+    case "refeicao":
+        return "🍽️"
+    case "workshop":
+        return "🛠️"
     default:
         return "📌"
     }
@@ -139,6 +142,16 @@ func getCategoryDisplayName(categoria: String) -> String {
         return "Contato"
     case "cupom":
         return "Cupom"
+    case "cerimonia":
+        return "Cerimonia"
+    case "intervalo":
+        return "Intervalo"
+    case "palestra":
+        return "Palestra"
+    case "refeicao":
+        return "Refeicao"
+    case "workshop":
+        return "Workshop"
     default:
         return categoria.capitalized
     }
