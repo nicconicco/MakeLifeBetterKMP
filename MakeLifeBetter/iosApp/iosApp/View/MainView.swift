@@ -15,6 +15,7 @@ struct MainView: View {
     var loginViewModel: LoginViewModel
     @State var eventViewModel = EventViewModel()
     @State var chatViewModel = ChatViewModel()
+    @State var mapViewModel = MapViewModel()
 
     @State private var selectedItem: NavigationItem = .evento
     @State private var navigationPath = NavigationPath()
@@ -34,6 +35,10 @@ struct MainView: View {
                         navigationPath.append(event)
                     }
                 ).tabItem { Label("Eventos", systemImage: "calendar") }
+
+                MapView(viewModel: mapViewModel)
+                    .tabItem { Label("Mapa", systemImage: "map") }
+                    .tag(NavigationItem.mapa)
 
                 ChatView(
                     currentUsername: loginViewModel.currentUser?.username ?? "Usuario",
