@@ -60,11 +60,14 @@ fun RegisterScreen(
     var email by remember { mutableStateOf(initialFormData.email) }
     var password by remember { mutableStateOf(initialFormData.password) }
     var confirmPassword by remember { mutableStateOf(initialFormData.confirmPassword) }
+    var accessCode by remember { mutableStateOf("") }
+    var accessCodeError by remember { mutableStateOf(false) }
 
     val fieldsCompleted =
         username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()
     val passwordsMatch = password == confirmPassword
-    val canRegister = fieldsCompleted && termsAccepted && passwordsMatch
+    val validAccessCode = accessCode == "makelifebetter2026"
+    val canRegister = fieldsCompleted && termsAccepted && passwordsMatch && validAccessCode
     val isLoading = registerState is RegisterResult.Loading
 
     Column(
@@ -134,6 +137,31 @@ fun RegisterScreen(
         if (confirmPassword.isNotBlank() && !passwordsMatch) {
             Text(
                 text = "As senhas nao coincidem",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = accessCode,
+            onValueChange = {
+                accessCode = it
+                accessCodeError = false
+            },
+            label = { Text("${strings.accessCode} *") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation(),
+            enabled = !isLoading,
+            isError = accessCodeError
+        )
+
+        if (accessCodeError) {
+            Text(
+                text = strings.invalidAccessCode,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.fillMaxWidth()

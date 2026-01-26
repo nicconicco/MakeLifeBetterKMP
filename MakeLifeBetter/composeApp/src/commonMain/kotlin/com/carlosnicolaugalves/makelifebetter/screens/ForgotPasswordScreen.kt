@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.carlosnicolaugalves.makelifebetter.auth.PasswordRecoveryResult
@@ -39,6 +40,8 @@ fun ForgotPasswordScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var cpf by remember { mutableStateOf("") }
+    var accessCode by remember { mutableStateOf("") }
+    var accessCodeError by remember { mutableStateOf(false) }
 
     val fieldsCompleted = email.isNotBlank() && cpf.isNotBlank()
     val isLoading = passwordRecoveryState is PasswordRecoveryResult.Loading
@@ -86,6 +89,31 @@ fun ForgotPasswordScreen(
             enabled = !isLoading
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = accessCode,
+            onValueChange = {
+                accessCode = it
+                accessCodeError = false
+            },
+            label = { Text("${strings.accessCode} *") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation(),
+            enabled = !isLoading,
+            isError = accessCodeError
+        )
+
+        if (accessCodeError) {
+            Text(
+                text = strings.invalidAccessCode,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
@@ -109,7 +137,14 @@ fun ForgotPasswordScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { onConfirmClick(email) },
+            onClick = {
+                if (accessCode == "makelifebetter2026") {
+                    accessCodeError = false
+                    onConfirmClick(email)
+                } else {
+                    accessCodeError = true
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = fieldsCompleted && !isLoading
         ) {

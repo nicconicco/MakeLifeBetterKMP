@@ -42,6 +42,10 @@ data class AppStrings(
     val yourNewPassword: String,
     val useTempPassword: String,
 
+    // Access Code
+    val accessCode: String,
+    val invalidAccessCode: String,
+
     // Language
     val selectLanguage: String,
     val portuguese: String,
@@ -81,6 +85,9 @@ object Translations {
         yourNewPassword = "Sua nova senha é:",
         useTempPassword = "Use esta senha para fazer login e depois altere para uma senha de sua preferência.",
 
+        accessCode = "Código de acesso",
+        invalidAccessCode = "Código de acesso inválido",
+
         selectLanguage = "Selecione o Idioma",
         portuguese = "Português (Brasil)",
         english = "English (US)",
@@ -118,6 +125,9 @@ object Translations {
         yourNewPassword = "Your new password is:",
         useTempPassword = "Use this password to log in and then change it to a password of your choice.",
 
+        accessCode = "Access code",
+        invalidAccessCode = "Invalid access code",
+
         selectLanguage = "Select Language",
         portuguese = "Português (Brasil)",
         english = "English (US)",
@@ -154,6 +164,9 @@ object Translations {
         tempPasswordTitle = "Contraseña Temporal",
         yourNewPassword = "Su nueva contraseña es:",
         useTempPassword = "Use esta contraseña para iniciar sesión y luego cámbiela por una contraseña de su preferencia.",
+
+        accessCode = "Código de acceso",
+        invalidAccessCode = "Código de acceso inválido",
 
         selectLanguage = "Seleccionar Idioma",
         portuguese = "Português (Brasil)",

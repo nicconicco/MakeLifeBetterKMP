@@ -47,6 +47,8 @@ fun LoginScreen(
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var accessCode by remember { mutableStateOf("") }
+    var accessCodeError by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -106,6 +108,30 @@ fun LoginScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = accessCode,
+                onValueChange = {
+                    accessCode = it
+                    accessCodeError = false
+                },
+                label = { Text(strings.accessCode) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                isError = accessCodeError
+            )
+
+            if (accessCodeError) {
+                Text(
+                    text = strings.invalidAccessCode,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(
@@ -118,7 +144,14 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { onLoginClick(username, password) },
+                onClick = {
+                    if (accessCode == "makelifebetter2026") {
+                        accessCodeError = false
+                        onLoginClick(username, password)
+                    } else {
+                        accessCodeError = true
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(strings.signIn)
