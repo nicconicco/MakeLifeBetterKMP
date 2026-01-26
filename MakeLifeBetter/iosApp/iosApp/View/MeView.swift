@@ -3,7 +3,7 @@ import SwiftUI
 struct MeView: View {
     @Binding var currentScreen: AppScreen
     let strings: AppStrings
-    @ObservedObject var viewModel: LoginViewModel
+    var viewModel: LoginViewModel
 
     @State private var username: String = ""
     @State private var email: String = ""

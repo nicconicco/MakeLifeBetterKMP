@@ -1,5 +1,5 @@
 import Foundation
-import Combine
+import Observation
 import ComposeApp
 
 // MARK: - Auth States (espelha o Kotlin)
@@ -61,14 +61,15 @@ struct User: Equatable {
 
 // MARK: - LoginViewModel
 
-class LoginViewModel: ObservableObject {
+@Observable
+class LoginViewModel {
 
-    @Published var loginState: AuthResultState = .idle
-    @Published var registerState: RegisterResultState = .idle
-    @Published var passwordRecoveryState: PasswordRecoveryResultState = .idle
-    @Published var profileUpdateState: ProfileUpdateResultState = .idle
-    @Published var passwordChangeState: PasswordChangeResultState = .idle
-    @Published var currentUser: User? = nil
+    var loginState: AuthResultState = .idle
+    var registerState: RegisterResultState = .idle
+    var passwordRecoveryState: PasswordRecoveryResultState = .idle
+    var profileUpdateState: ProfileUpdateResultState = .idle
+    var passwordChangeState: PasswordChangeResultState = .idle
+    var currentUser: User? = nil
 
     private let sharedViewModel: SharedLoginViewModelWrapper
 

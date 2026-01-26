@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct SectionedListView: View {
-    @ObservedObject var viewModel: EventViewModel
+    var viewModel: EventViewModel
     var onItemClick: (Event) -> Void = { _ in }
 
     var body: some View {

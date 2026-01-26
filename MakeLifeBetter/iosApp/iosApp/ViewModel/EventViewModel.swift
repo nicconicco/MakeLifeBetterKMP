@@ -4,12 +4,14 @@
 //
 
 import Foundation
+import Observation
 import ComposeApp
 
-class EventViewModel: ObservableObject {
+@Observable
+class EventViewModel {
 
-    @Published var sections: [EventSection] = []
-    @Published var isLoading: Bool = true
+    var sections: [EventSection] = []
+    var isLoading: Bool = true
 
     private let sharedViewModel: SharedEventViewModelWrapper
 

@@ -12,8 +12,8 @@ import ComposeApp
 struct MainView: View {
     @Binding var currentScreen: AppScreen
     let strings: AppStrings
-    @ObservedObject var loginViewModel: LoginViewModel
-    @StateObject var eventViewModel = EventViewModel()
+    var loginViewModel: LoginViewModel
+    @State var eventViewModel = EventViewModel()
 
     @State private var selectedItem: NavigationItem = .evento
     @State private var navigationPath = NavigationPath()

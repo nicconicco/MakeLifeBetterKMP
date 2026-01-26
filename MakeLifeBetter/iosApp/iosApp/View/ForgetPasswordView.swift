@@ -3,7 +3,7 @@ import SwiftUI
 struct ForgetPasswordView: View {
     @Binding var currentScreen: AppScreen
     let strings: AppStrings
-    @ObservedObject var viewModel: LoginViewModel
+    var viewModel: LoginViewModel
 
     @State private var email: String = ""
     @State private var showError: Bool = false

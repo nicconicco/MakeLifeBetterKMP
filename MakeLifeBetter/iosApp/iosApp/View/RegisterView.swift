@@ -4,7 +4,7 @@ struct RegisterView: View {
     @Binding var currentScreen: AppScreen
     @Binding var termosAceitos: Bool
     let strings: AppStrings
-    @ObservedObject var viewModel: LoginViewModel
+    var viewModel: LoginViewModel
 
     @State private var nome: String = ""
     @State private var email: String = ""

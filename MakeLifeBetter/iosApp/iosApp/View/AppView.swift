@@ -15,7 +15,7 @@ struct AppView: View {
     @State private var currentScreen: AppScreen = .login
     @State private var termosAceitos: Bool = false
     @State private var idiomaAtual: Idioma = .portugues
-    @StateObject private var loginViewModel = LoginViewModel()
+    @State private var loginViewModel = LoginViewModel()
 
     var strings: AppStrings {
         Traducoes.obterStrings(idioma: idiomaAtual)

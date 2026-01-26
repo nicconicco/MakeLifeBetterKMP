@@ -5,7 +5,7 @@ struct LoginView: View {
     @Binding var termosAceitos: Bool
     @Binding var idioma: Idioma
     let strings: AppStrings
-    @ObservedObject var viewModel: LoginViewModel
+    var viewModel: LoginViewModel
 
     @State private var username: String = ""
     @State private var password: String = ""
