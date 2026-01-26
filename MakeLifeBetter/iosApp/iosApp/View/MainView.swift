@@ -16,6 +16,7 @@ struct MainView: View {
     @State var eventViewModel = EventViewModel()
     @State var chatViewModel = ChatViewModel()
     @State var mapViewModel = MapViewModel()
+    @State var notificationViewModel = NotificationViewModel()
 
     @State private var selectedItem: NavigationItem = .evento
     @State private var navigationPath = NavigationPath()
@@ -48,7 +49,11 @@ struct MainView: View {
 
                 MeView(currentScreen: $currentScreen, strings: strings, viewModel: loginViewModel)
                     .tabItem { Label("Me", systemImage: "person") }
-
+                
+                NotificationView(viewModel: notificationViewModel)
+                    .tabItem { Label("Notificacoes", systemImage: "bell") }
+                    .tag(NavigationItem.notificacoes)
+                
                 HireMeView()
                     .tabItem { Label("Contrate", systemImage: "briefcase") }
                     .tag(NavigationItem.contrate)
