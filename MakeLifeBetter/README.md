@@ -10,6 +10,22 @@ MakeLifeBetter helps communities organize and participate in events. Users can b
 
 ---
 
+## Demo
+
+### Video Walkthrough
+
+A full app demonstration video is available in the repository:
+
+[App_full_stage_2.mov](evidence/App_full_stage_2.mov)
+
+### Screenshots
+
+| All Screens | iOS | Firebase | Play Store |
+|---|---|---|---|
+| ![All Screens](images_app/allscreens.jpeg) | ![iOS](images_app/ios.jpeg) | ![Firebase](images_app/firebase.jpeg) | ![Play Store](images_app/playstore.jpeg) |
+
+---
+
 ## Features
 
 | Feature | Description |
