@@ -47,7 +47,7 @@ fun LoginScreen(
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var accessCode by remember { mutableStateOf("") }
+    var accessCode by remember { mutableStateOf("makelifebetter2026") }
     var accessCodeError by remember { mutableStateOf(false) }
 
     Box(
