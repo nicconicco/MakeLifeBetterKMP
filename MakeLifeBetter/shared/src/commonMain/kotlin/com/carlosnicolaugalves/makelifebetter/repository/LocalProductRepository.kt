@@ -6,20 +6,18 @@ import com.carlosnicolaugalves.makelifebetter.model.ProductCategory
 class LocalProductRepository : ProductRepository {
 
     override suspend fun getProducts(): Result<List<Product>> {
-        return Result.success(getSampleProducts())
+        return Result.success(emptyList())
     }
 
     override suspend fun getProductById(id: String): Result<Product?> {
-        val product = getSampleProducts().find { it.id == id }
-        return Result.success(product)
+        return Result.success(null)
     }
 
     override suspend fun getProductsByCategory(categoryId: String): Result<List<Product>> {
-        val products = getSampleProducts().filter { it.categoriaId == categoryId }
-        return Result.success(products)
+        return Result.success(emptyList())
     }
 
     override suspend fun getCategories(): Result<List<ProductCategory>> {
-        return Result.success(getSampleCategories())
+        return Result.success(emptyList())
     }
 }

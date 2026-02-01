@@ -267,7 +267,7 @@ private fun CartItemCard(
                 )
 
                 Text(
-                    text = item.product.subtitulo,
+                    text = item.product.descricao,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

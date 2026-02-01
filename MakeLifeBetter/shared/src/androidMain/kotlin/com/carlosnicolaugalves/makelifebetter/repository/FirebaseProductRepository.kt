@@ -24,11 +24,10 @@ class FirebaseProductRepository : ProductRepository {
                     Product(
                         id = doc.id,
                         nome = doc.get<String>("nome"),
-                        subtitulo = doc.get<String>("subtitulo"),
                         descricao = doc.get<String>("descricao"),
                         preco = doc.get<Double>("preco"),
-                        imageUrl = doc.get<String>("imageUrl"),
-                        categoriaId = doc.get<String>("categoriaId"),
+                        imagem = doc.get<String>("imagem"),
+                        categoria = doc.get<String>("categoria"),
                         ativo = ativo
                     )
                 } catch (e: Exception) {
@@ -37,16 +36,11 @@ class FirebaseProductRepository : ProductRepository {
                 }
             }
 
-            if (products.isNotEmpty()) {
-                Log.d("FirebaseProductRepo", "Produtos carregados: ${products.size}")
-                Result.success(products)
-            } else {
-                Log.d("FirebaseProductRepo", "Servidor vazio, usando dados locais")
-                Result.success(getSampleProducts())
-            }
+            Log.d("FirebaseProductRepo", "Produtos carregados: ${products.size}")
+            Result.success(products)
         } catch (e: Exception) {
-            Log.e("FirebaseProductRepo", "Erro ao buscar produtos: ${e.message}")
-            Result.success(getSampleProducts())
+            Log.e("FirebaseProductRepo", "Erro ao carregar produtos: ${e.message}")
+            Result.failure(Exception("Erro ao carregar produtos: ${e.message}"))
         }
     }
 
@@ -58,27 +52,26 @@ class FirebaseProductRepository : ProductRepository {
                 val product = Product(
                     id = doc.id,
                     nome = doc.get<String>("nome"),
-                    subtitulo = doc.get<String>("subtitulo"),
                     descricao = doc.get<String>("descricao"),
                     preco = doc.get<Double>("preco"),
-                    imageUrl = doc.get<String>("imageUrl"),
-                    categoriaId = doc.get<String>("categoriaId"),
+                    imagem = doc.get<String>("imagem"),
+                    categoria = doc.get<String>("categoria"),
                     ativo = doc.get<Boolean?>("ativo") ?: true
                 )
                 Result.success(product)
             } else {
-                Result.success(getSampleProducts().find { it.id == id })
+                Result.success(null)
             }
         } catch (e: Exception) {
             Log.e("FirebaseProductRepo", "Erro ao buscar produto: ${e.message}")
-            Result.success(getSampleProducts().find { it.id == id })
+            Result.failure(Exception("Erro ao buscar produto: ${e.message}"))
         }
     }
 
     override suspend fun getProductsByCategory(categoryId: String): Result<List<Product>> {
         return try {
             val querySnapshot = productsCollection
-                .where { "categoriaId" equalTo categoryId }
+                .where { "categoria" equalTo categoryId }
                 .get()
 
             val products = querySnapshot.documents.mapNotNull { doc ->
@@ -89,11 +82,10 @@ class FirebaseProductRepository : ProductRepository {
                     Product(
                         id = doc.id,
                         nome = doc.get<String>("nome"),
-                        subtitulo = doc.get<String>("subtitulo"),
                         descricao = doc.get<String>("descricao"),
                         preco = doc.get<Double>("preco"),
-                        imageUrl = doc.get<String>("imageUrl"),
-                        categoriaId = doc.get<String>("categoriaId"),
+                        imagem = doc.get<String>("imagem"),
+                        categoria = doc.get<String>("categoria"),
                         ativo = ativo
                     )
                 } catch (e: Exception) {
@@ -101,13 +93,10 @@ class FirebaseProductRepository : ProductRepository {
                 }
             }
 
-            if (products.isNotEmpty()) {
-                Result.success(products)
-            } else {
-                Result.success(getSampleProducts().filter { it.categoriaId == categoryId })
-            }
+            Result.success(products)
         } catch (e: Exception) {
-            Result.success(getSampleProducts().filter { it.categoriaId == categoryId })
+            Log.e("FirebaseProductRepo", "Erro ao buscar produtos por categoria: ${e.message}")
+            Result.failure(Exception("Erro ao buscar produtos: ${e.message}"))
         }
     }
 
@@ -128,16 +117,11 @@ class FirebaseProductRepository : ProductRepository {
                 }
             }.sortedBy { it.ordem }
 
-            if (categories.isNotEmpty()) {
-                Log.d("FirebaseProductRepo", "Categorias carregadas: ${categories.size}")
-                Result.success(categories)
-            } else {
-                Log.d("FirebaseProductRepo", "Categorias vazias, usando dados locais")
-                Result.success(getSampleCategories())
-            }
+            Log.d("FirebaseProductRepo", "Categorias carregadas: ${categories.size}")
+            Result.success(categories)
         } catch (e: Exception) {
-            Log.e("FirebaseProductRepo", "Erro ao buscar categorias: ${e.message}")
-            Result.success(getSampleCategories())
+            Log.e("FirebaseProductRepo", "Erro ao carregar categorias: ${e.message}")
+            Result.failure(Exception("Erro ao carregar categorias: ${e.message}"))
         }
     }
 }

@@ -8,12 +8,13 @@ class LocalAuthRepository : AuthRepository {
     private val users = mutableMapOf<String, User>()
 
     init {
-        // Usuário padrão para testes
+        // Usuário padrão para testes (admin)
         val defaultUser = User(
             id = "1",
             username = "admin",
             email = "admin@example.com",
-            passwordHash = hashPassword("password")
+            passwordHash = hashPassword("password"),
+            isAdmin = true
         )
         users[defaultUser.username] = defaultUser
     }

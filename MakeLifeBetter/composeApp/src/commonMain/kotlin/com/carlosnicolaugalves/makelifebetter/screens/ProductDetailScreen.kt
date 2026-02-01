@@ -146,7 +146,7 @@ fun ProductDetailScreen(
 
                 // Subtitle
                 Text(
-                    text = product.subtitulo,
+                    text = product.descricao,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -32,6 +32,14 @@ private enum class StoreScreenState {
     ORDER_CONFIRMATION
 }
 
+// More screen sub-navigation states
+private enum class MoreSubScreen {
+    MENU,
+    PROFILE,
+    ALARMS,
+    CONTACT
+}
+
 @Composable
 fun MainScreen(
     viewModel: SharedLoginViewModel,
@@ -49,6 +57,9 @@ fun MainScreen(
     // Store navigation states
     var storeScreenState by remember { mutableStateOf(StoreScreenState.LIST) }
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
+
+    // More screen navigation state
+    var moreSubScreen by remember { mutableStateOf(MoreSubScreen.MENU) }
 
     val currentUser by viewModel.currentUser.collectAsState()
     val profileUpdateState by viewModel.profileUpdateState.collectAsState()
@@ -143,6 +154,52 @@ fun MainScreen(
         return
     }
 
+    // More screen sub-navigation
+    if (selectedItem == NavigationItem.MORE && moreSubScreen != MoreSubScreen.MENU) {
+        when (moreSubScreen) {
+            MoreSubScreen.PROFILE -> {
+                ProfileScreen(
+                    currentUser = currentUser,
+                    profileUpdateState = profileUpdateState,
+                    passwordChangeState = passwordChangeState,
+                    onSaveClick = { username, email ->
+                        viewModel.updateProfile(username, email)
+                    },
+                    onChangePasswordClick = { current, new, confirm ->
+                        viewModel.changePassword(current, new, confirm)
+                    },
+                    onLogoutClick = {
+                        viewModel.logout()
+                        onLogout()
+                    },
+                    onSecretAccessGranted = {
+                        showSecretScreen = true
+                    },
+                    onBackClick = {
+                        moreSubScreen = MoreSubScreen.MENU
+                    }
+                )
+            }
+            MoreSubScreen.ALARMS -> {
+                NotificationScreen(
+                    viewModel = notificationViewModel,
+                    onBackClick = {
+                        moreSubScreen = MoreSubScreen.MENU
+                    }
+                )
+            }
+            MoreSubScreen.CONTACT -> {
+                HireMeScreen(
+                    onBackClick = {
+                        moreSubScreen = MoreSubScreen.MENU
+                    }
+                )
+            }
+            else -> {}
+        }
+        return
+    }
+
     // Set user ID for store when user is available
     LaunchedEffect(currentUser) {
         currentUser?.let {
@@ -154,7 +211,19 @@ fun MainScreen(
         bottomBar = {
             BottomNavigationBar(
                 selectedItem = selectedItem,
-                onItemSelected = { selectedItem = it },
+                onItemSelected = { newItem ->
+                    if (newItem != selectedItem) {
+                        // Reset sub-navigation states when switching tabs
+                        if (selectedItem == NavigationItem.LOJA) {
+                            storeScreenState = StoreScreenState.LIST
+                            selectedProduct = null
+                        }
+                        if (selectedItem == NavigationItem.MORE) {
+                            moreSubScreen = MoreSubScreen.MENU
+                        }
+                    }
+                    selectedItem = newItem
+                },
                 modifier = Modifier.fillMaxWidth()
             )
         },
@@ -173,9 +242,9 @@ fun MainScreen(
                         selectedEvent = event
                     }
                 )
-                NavigationItem.MAPA -> MapScreen()
                 NavigationItem.LOJA -> StoreScreen(
                     viewModel = storeViewModel,
+                    isAdmin = currentUser?.isAdmin ?: false,
                     onProductClick = { product ->
                         selectedProduct = product
                         storeScreenState = StoreScreenState.DETAIL
@@ -184,30 +253,20 @@ fun MainScreen(
                         storeScreenState = StoreScreenState.CART
                     }
                 )
-                NavigationItem.PERFIL -> ProfileScreen(
-                    currentUser = currentUser,
-                    profileUpdateState = profileUpdateState,
-                    passwordChangeState = passwordChangeState,
-                    onSaveClick = { username, email ->
-                        viewModel.updateProfile(username, email)
-                    },
-                    onChangePasswordClick = { current, new, confirm ->
-                        viewModel.changePassword(current, new, confirm)
-                    },
-                    onLogoutClick = {
-                        viewModel.logout()
-                        onLogout()
-                    },
-                    onSecretAccessGranted = {
-                        showSecretScreen = true
-                    }
-                )
                 NavigationItem.CHAT -> ChatScreen(
                     currentUsername = currentUser?.username ?: "Usuario",
                     chatViewModel = chatViewModel
                 )
-                NavigationItem.NOTIFICACOES -> NotificationScreen(viewModel = notificationViewModel)
-                NavigationItem.CONTRATE -> HireMeScreen()
+                NavigationItem.MAPA -> MapScreen()
+                NavigationItem.MORE -> MoreScreen(
+                    onMenuItemClick = { menuItem ->
+                        when (menuItem) {
+                            MoreMenuItem.PROFILE -> moreSubScreen = MoreSubScreen.PROFILE
+                            MoreMenuItem.ALARMS -> moreSubScreen = MoreSubScreen.ALARMS
+                            MoreMenuItem.CONTACT -> moreSubScreen = MoreSubScreen.CONTACT
+                        }
+                    }
+                )
             }
         }
     }

@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // Allow authenticated users to read/write their own document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Allow unauthenticated users to query by username (for login lookup)
+      allow read: if resource.data.username != null;
+    }
+
+    match /eventos/{eventId} {
+      // Allow authenticated users to read events
+      allow read: if request.auth != null;
+      // Allow authenticated users to create and delete events (admin only via secret screen)
+      allow create, delete: if request.auth != null;
+    }
+
+    match /lista_geral/{messageId} {
+      // Allow authenticated users to read and write chat messages
+      allow read, write: if request.auth != null;
+    }
+
+    match /produtos/{productId} {
+      // Allow anyone to read produtos (public store)
+      allow read: if true;
+      // Allow authenticated users to write produtos (admin only via secret screen)
+      allow write: if request.auth != null;
+    }
+
+    match /categorias/{categoryId} {
+      // Allow anyone to read categories (public store)
+      allow read: if true;
+      // Allow authenticated users to write categories (admin only via secret screen)
+      allow write: if request.auth != null;
+    }
+
+    match /carrinho/{cartId} {
+      // Allow authenticated users to read and write cart
+      allow read, write: if request.auth != null;
+
+      // Subcollection for cart items
+      match /items/{itemId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+
+    match /pedidos/{orderId} {
+      // Allow authenticated users to read and write orders
+      allow read, write: if request.auth != null;
+    }
+
+    match /duvidas/{questionId} {
+      // Allow authenticated users to read and write questions
+      allow read, write: if request.auth != null;
+
+      // Subcollection for replies/answers
+      match /respostas/{replyId} {
+        // Allow authenticated users to read all replies
+        allow read: if request.auth != null;
+        // Allow authenticated users to create replies
+        allow create: if request.auth != null;
+        // Allow users to delete only their own replies
+        allow delete: if request.auth != null;
+      }
+    }
+
+    match /event_location/{locationId} {
+      // Allow authenticated users to read event location
+      allow read: if request.auth != null;
+      // Allow authenticated users to create, write and delete event location (admin only via secret screen)
+      allow create, write, delete: if request.auth != null;
+
+      // Subcollection for contacts
+      match /contacts/{contactId} {
+        // Allow authenticated users to read contacts
+        allow read: if request.auth != null;
+        // Allow authenticated users to create and delete contacts (admin only via secret screen)
+        allow create, delete: if request.auth != null;
+      }
+    }
+  }
+}

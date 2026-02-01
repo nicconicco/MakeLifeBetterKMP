@@ -359,8 +359,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "100% Algodao",
                     "descricao" to "Camiseta confortavel para desenvolvedores que amam codigo. Estampa exclusiva com design moderno.",
                     "preco" to 79.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Camiseta+Dev",
-                    "categoriaId" to (categoryMap["Camisetas"] ?: "1"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Camiseta+Dev",
+                    "categoria" to (categoryMap["Camisetas"] ?: "1"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -368,8 +368,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "Edicao Limitada",
                     "descricao" to "Para os amantes de Kotlin. Design exclusivo com o logo da linguagem.",
                     "preco" to 89.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Kotlin+Shirt",
-                    "categoriaId" to (categoryMap["Camisetas"] ?: "1"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Kotlin+Shirt",
+                    "categoria" to (categoryMap["Camisetas"] ?: "1"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -377,8 +377,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "350ml",
                     "descricao" to "Caneca perfeita para suas sessoes de coding. Mantem o cafe quente por mais tempo.",
                     "preco" to 49.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Caneca+Code",
-                    "categoriaId" to (categoryMap["Canecas"] ?: "2"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Caneca+Code",
+                    "categoria" to (categoryMap["Canecas"] ?: "2"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -386,8 +386,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "Ceramica Premium",
                     "descricao" to "Para aqueles momentos de debugging intenso. Capacidade de 400ml.",
                     "preco" to 54.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Debug+Mug",
-                    "categoriaId" to (categoryMap["Canecas"] ?: "2"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Debug+Mug",
+                    "categoria" to (categoryMap["Canecas"] ?: "2"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -395,8 +395,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "80x30cm",
                     "descricao" to "Mousepad grande para sua estacao de trabalho. Superficie suave e base antiderrapante.",
                     "preco" to 69.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Mousepad",
-                    "categoriaId" to (categoryMap["Acessorios"] ?: "3"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Mousepad",
+                    "categoria" to (categoryMap["Acessorios"] ?: "3"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -404,8 +404,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "16GB",
                     "descricao" to "Pendrive compacto em formato de chaveiro. Perfeito para carregar seus projetos.",
                     "preco" to 39.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=USB+Key",
-                    "categoriaId" to (categoryMap["Acessorios"] ?: "3"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=USB+Key",
+                    "categoria" to (categoryMap["Acessorios"] ?: "3"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -413,8 +413,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "10 unidades",
                     "descricao" to "Pack com 10 adesivos variados sobre programacao. Perfeitos para seu notebook.",
                     "preco" to 24.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Stickers",
-                    "categoriaId" to (categoryMap["Adesivos"] ?: "4"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Stickers",
+                    "categoria" to (categoryMap["Adesivos"] ?: "4"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -422,8 +422,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "Edicao Especial",
                     "descricao" to "Adesivo holografico exclusivo de Kotlin Multiplatform. Brilha em diferentes angulos.",
                     "preco" to 14.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=KMP+Sticker",
-                    "categoriaId" to (categoryMap["Adesivos"] ?: "4"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=KMP+Sticker",
+                    "categoria" to (categoryMap["Adesivos"] ?: "4"),
                     "ativo" to true
                 )
             )
@@ -539,8 +539,8 @@ class FirebaseAdminRepository : AdminRepository {
                         "subtitulo" to (product["subtitulo"] ?: ""),
                         "descricao" to (product["descricao"] ?: ""),
                         "preco" to (product["preco"]?.replace(",", ".")?.toDoubleOrNull() ?: 0.0),
-                        "imageUrl" to (product["imageUrl"] ?: ""),
-                        "categoriaId" to (product["categoriaId"] ?: ""),
+                        "imagem" to (product["imagem"] ?: ""),
+                        "categoria" to (product["categoria"] ?: ""),
                         "ativo" to ((product["ativo"]?.lowercase() ?: "true") == "true")
                     )
                     productsCollection.add(productData)

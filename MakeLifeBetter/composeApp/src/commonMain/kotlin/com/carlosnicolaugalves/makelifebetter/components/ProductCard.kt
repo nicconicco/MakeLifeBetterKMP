@@ -60,7 +60,7 @@ fun ProductCard(
                 )
 
                 Text(
-                    text = product.subtitulo,
+                    text = product.descricao,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

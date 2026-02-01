@@ -12,6 +12,8 @@ data class ImportResult(
     val eventsImported: Int = 0,
     val locationImported: Boolean = false,
     val contactsImported: Int = 0,
+    val productsImported: Int = 0,
+    val categoriesImported: Int = 0,
     val errors: List<String> = emptyList()
 )
 
@@ -19,6 +21,8 @@ data class ParsedExcelData(
     val events: List<Map<String, String>> = emptyList(),
     val location: Map<String, Any>? = null,
     val contacts: List<Map<String, String>> = emptyList(),
+    val products: List<Map<String, String>> = emptyList(),
+    val categories: List<Map<String, String>> = emptyList(),
     val errors: List<String> = emptyList()
 )
 
@@ -28,7 +32,9 @@ class ExcelImportService(private val context: Context) {
         uri: Uri,
         uploadEvents: suspend (List<Map<String, String>>) -> Int,
         uploadLocation: suspend (Map<String, Any>) -> Boolean,
-        uploadContacts: suspend (List<Map<String, String>>) -> Int
+        uploadContacts: suspend (List<Map<String, String>>) -> Int,
+        uploadProducts: suspend (List<Map<String, String>>) -> Int = { 0 },
+        uploadCategories: suspend (List<Map<String, String>>) -> Int = { 0 }
     ): Result<ImportResult> {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri)
@@ -41,6 +47,13 @@ class ExcelImportService(private val context: Context) {
             var eventsImported = 0
             var locationImported = false
             var contactsImported = 0
+            var productsImported = 0
+            var categoriesImported = 0
+
+            // First upload categories (products depend on them)
+            if (parsedData.categories.isNotEmpty()) {
+                categoriesImported = uploadCategories(parsedData.categories)
+            }
 
             if (parsedData.events.isNotEmpty()) {
                 eventsImported = uploadEvents(parsedData.events)
@@ -54,11 +67,17 @@ class ExcelImportService(private val context: Context) {
                 contactsImported = uploadContacts(parsedData.contacts)
             }
 
+            if (parsedData.products.isNotEmpty()) {
+                productsImported = uploadProducts(parsedData.products)
+            }
+
             Result.success(
                 ImportResult(
                     eventsImported = eventsImported,
                     locationImported = locationImported,
                     contactsImported = contactsImported,
+                    productsImported = productsImported,
+                    categoriesImported = categoriesImported,
                     errors = parsedData.errors
                 )
             )
@@ -74,6 +93,8 @@ class ExcelImportService(private val context: Context) {
         var events = emptyList<Map<String, String>>()
         var location: Map<String, Any>? = null
         var contacts = emptyList<Map<String, String>>()
+        var products = emptyList<Map<String, String>>()
+        var categories = emptyList<Map<String, String>>()
 
         // Procurar aba "Eventos"
         val eventosSheet = workbook.getSheet("Eventos")
@@ -102,12 +123,28 @@ class ExcelImportService(private val context: Context) {
             errors.add("Aba 'Contatos' nao encontrada")
         }
 
+        // Procurar aba "Categorias"
+        val categoriasSheet = workbook.getSheet("Categorias")
+        if (categoriasSheet != null) {
+            categories = parseCategoriesSheet(categoriasSheet, errors)
+            Log.d("ExcelImportService", "Categorias parseadas: ${categories.size}")
+        }
+
+        // Procurar aba "Produtos"
+        val produtosSheet = workbook.getSheet("Produtos")
+        if (produtosSheet != null) {
+            products = parseProductsSheet(produtosSheet, errors)
+            Log.d("ExcelImportService", "Produtos parseados: ${products.size}")
+        }
+
         workbook.close()
 
         return ParsedExcelData(
             events = events,
             location = location,
             contacts = contacts,
+            products = products,
+            categories = categories,
             errors = errors
         )
     }
@@ -200,6 +237,70 @@ class ExcelImportService(private val context: Context) {
         }
 
         return contacts
+    }
+
+    private fun parseCategoriesSheet(sheet: org.apache.poi.ss.usermodel.Sheet, errors: MutableList<String>): List<Map<String, String>> {
+        val categories = mutableListOf<Map<String, String>>()
+
+        // Pular cabecalho (linha 0)
+        for (rowIndex in 1..sheet.lastRowNum) {
+            val row = sheet.getRow(rowIndex) ?: continue
+
+            try {
+                val nome = getCellValueAsString(row, 0)
+                val ordem = getCellValueAsString(row, 1)
+
+                if (nome.isNotBlank()) {
+                    categories.add(
+                        mapOf(
+                            "nome" to nome,
+                            "ordem" to ordem.ifBlank { rowIndex.toString() }
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                errors.add("Erro na linha ${rowIndex + 1} de Categorias: ${e.message}")
+            }
+        }
+
+        return categories
+    }
+
+    private fun parseProductsSheet(sheet: org.apache.poi.ss.usermodel.Sheet, errors: MutableList<String>): List<Map<String, String>> {
+        val products = mutableListOf<Map<String, String>>()
+
+        // Pular cabecalho (linha 0)
+        for (rowIndex in 1..sheet.lastRowNum) {
+            val row = sheet.getRow(rowIndex) ?: continue
+
+            try {
+                val nome = getCellValueAsString(row, 0)
+                val subtitulo = getCellValueAsString(row, 1)
+                val descricao = getCellValueAsString(row, 2)
+                val preco = getCellValueAsString(row, 3)
+                val imagem = getCellValueAsString(row, 4)
+                val categoria = getCellValueAsString(row, 5)
+                val ativo = getCellValueAsString(row, 6)
+
+                if (nome.isNotBlank()) {
+                    products.add(
+                        mapOf(
+                            "nome" to nome,
+                            "subtitulo" to subtitulo,
+                            "descricao" to descricao,
+                            "preco" to preco,
+                            "imagem" to imagem,
+                            "categoria" to categoria,
+                            "ativo" to ativo.ifBlank { "true" }
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                errors.add("Erro na linha ${rowIndex + 1} de Produtos: ${e.message}")
+            }
+        }
+
+        return products
     }
 
     private fun getCellValueAsString(row: Row, cellIndex: Int): String {

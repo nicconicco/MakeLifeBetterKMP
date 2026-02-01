@@ -7,6 +7,8 @@ data class ExcelImportResult(
     val eventsImported: Int = 0,
     val locationImported: Boolean = false,
     val contactsImported: Int = 0,
+    val productsImported: Int = 0,
+    val categoriesImported: Int = 0,
     val errors: List<String> = emptyList()
 )
 

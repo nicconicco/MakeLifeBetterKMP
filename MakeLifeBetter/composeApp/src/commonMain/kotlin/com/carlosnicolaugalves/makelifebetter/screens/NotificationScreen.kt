@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,7 +25,8 @@ import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedNotificationViewMo
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationScreen(
-    viewModel: SharedNotificationViewModel = remember { SharedNotificationViewModel() }
+    viewModel: SharedNotificationViewModel = remember { SharedNotificationViewModel() },
+    onBackClick: (() -> Unit)? = null
 ) {
     val notifications by viewModel.notifications.collectAsState()
     val hasPermission by viewModel.permissionState.collectAsState()
@@ -34,9 +37,10 @@ fun NotificationScreen(
         viewModel.refreshPermissionState()
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    val content: @Composable (Modifier) -> Unit = { contentModifier ->
+        Column(
+            modifier = contentModifier.fillMaxSize()
+        ) {
         // Header with scheduled count
         if (scheduledCount > 0) {
             Card(
@@ -163,6 +167,32 @@ fun NotificationScreen(
                 }
             }
         }
+        }
+    }
+
+    if (onBackClick != null) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Alarmes", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Voltar"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }
+        ) { paddingValues ->
+            content(Modifier.padding(paddingValues))
+        }
+    } else {
+        content(Modifier)
     }
 }
 

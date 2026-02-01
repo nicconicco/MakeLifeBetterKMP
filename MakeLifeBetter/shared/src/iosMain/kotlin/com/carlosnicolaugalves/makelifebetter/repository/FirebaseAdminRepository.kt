@@ -337,8 +337,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "100% Algodao",
                     "descricao" to "Camiseta confortavel para desenvolvedores.",
                     "preco" to 79.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Camiseta+Dev",
-                    "categoriaId" to (categoryMap["Camisetas"] ?: "1"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Camiseta+Dev",
+                    "categoria" to (categoryMap["Camisetas"] ?: "1"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -346,8 +346,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "Edicao Limitada",
                     "descricao" to "Para os amantes de Kotlin.",
                     "preco" to 89.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Kotlin+Shirt",
-                    "categoriaId" to (categoryMap["Camisetas"] ?: "1"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Kotlin+Shirt",
+                    "categoria" to (categoryMap["Camisetas"] ?: "1"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -355,8 +355,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "350ml",
                     "descricao" to "Caneca perfeita para suas sessoes de coding.",
                     "preco" to 49.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Caneca+Code",
-                    "categoriaId" to (categoryMap["Canecas"] ?: "2"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Caneca+Code",
+                    "categoria" to (categoryMap["Canecas"] ?: "2"),
                     "ativo" to true
                 ),
                 mapOf(
@@ -364,8 +364,8 @@ class FirebaseAdminRepository : AdminRepository {
                     "subtitulo" to "10 unidades",
                     "descricao" to "Pack com 10 adesivos variados.",
                     "preco" to 24.90,
-                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Stickers",
-                    "categoriaId" to (categoryMap["Adesivos"] ?: "4"),
+                    "imagem" to "https://via.placeholder.com/300x300.png?text=Stickers",
+                    "categoria" to (categoryMap["Adesivos"] ?: "4"),
                     "ativo" to true
                 )
             )
@@ -475,8 +475,8 @@ class FirebaseAdminRepository : AdminRepository {
                         "subtitulo" to (product["subtitulo"] ?: ""),
                         "descricao" to (product["descricao"] ?: ""),
                         "preco" to (product["preco"]?.replace(",", ".")?.toDoubleOrNull() ?: 0.0),
-                        "imageUrl" to (product["imageUrl"] ?: ""),
-                        "categoriaId" to (product["categoriaId"] ?: ""),
+                        "imagem" to (product["imagem"] ?: ""),
+                        "categoria" to (product["categoria"] ?: ""),
                         "ativo" to ((product["ativo"]?.lowercase() ?: "true") == "true")
                     )
                     productsCollection.add(productData)

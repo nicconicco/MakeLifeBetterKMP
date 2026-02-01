@@ -33,11 +33,18 @@ class FirebaseAuthRepository : AuthRepository {
             val firebaseUser = authResult.user
                 ?: return Result.failure(Exception("Erro ao fazer login"))
 
+            val isAdmin = try {
+                userDoc.get<Boolean>("isAdmin")
+            } catch (e: Exception) {
+                false
+            }
+
             val user = User(
                 id = firebaseUser.uid,
                 username = userDoc.get<String>("username"),
                 email = email,
-                passwordHash = ""
+                passwordHash = "",
+                isAdmin = isAdmin
             )
 
             Result.success(user)
@@ -119,11 +126,17 @@ class FirebaseAuthRepository : AuthRepository {
             val userDoc = querySnapshot.documents.firstOrNull()
 
             userDoc?.let {
+                val isAdmin = try {
+                    it.get<Boolean>("isAdmin")
+                } catch (e: Exception) {
+                    false
+                }
                 User(
                     id = it.get<String>("id"),
                     username = it.get<String>("username"),
                     email = it.get<String>("email"),
-                    passwordHash = ""
+                    passwordHash = "",
+                    isAdmin = isAdmin
                 )
             }
         } catch (e: Exception) {
@@ -140,11 +153,17 @@ class FirebaseAuthRepository : AuthRepository {
             val userDoc = querySnapshot.documents.firstOrNull()
 
             userDoc?.let {
+                val isAdmin = try {
+                    it.get<Boolean>("isAdmin")
+                } catch (e: Exception) {
+                    false
+                }
                 User(
                     id = it.get<String>("id"),
                     username = it.get<String>("username"),
                     email = it.get<String>("email"),
-                    passwordHash = ""
+                    passwordHash = "",
+                    isAdmin = isAdmin
                 )
             }
         } catch (e: Exception) {

@@ -131,6 +131,10 @@ fun SecretScreen(
                     Text("• Dados de localizacao do mapa")
                     Text("• Todas as mensagens do chat")
                     Text("• Todas as perguntas e respostas")
+                    Text("• Todos os produtos")
+                    Text("• Todas as categorias")
+                    Text("• Todos os carrinhos")
+                    Text("• Todos os pedidos")
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Os usuarios NAO serao deletados.",
@@ -196,6 +200,8 @@ fun SecretScreen(
                     Text("• 6 eventos de exemplo")
                     Text("• Localizacao do evento (Sao Paulo)")
                     Text("• 3 contatos de exemplo")
+                    Text("• 4 categorias de produtos")
+                    Text("• 4 produtos de exemplo")
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Ideal para testes e demonstracoes.",
@@ -282,6 +288,8 @@ fun SecretScreen(
                     Text("• Eventos: ${result.eventsImported}")
                     Text("• Localizacao: ${if (result.locationImported) "Sim" else "Nao"}")
                     Text("• Contatos: ${result.contactsImported}")
+                    Text("• Categorias: ${result.categoriesImported}")
+                    Text("• Produtos: ${result.productsImported}")
                     if (result.errors.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(

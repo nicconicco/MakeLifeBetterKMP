@@ -23,11 +23,10 @@ class FirebaseProductRepository : ProductRepository {
                     Product(
                         id = doc.id,
                         nome = doc.get<String>("nome"),
-                        subtitulo = doc.get<String>("subtitulo"),
                         descricao = doc.get<String>("descricao"),
                         preco = doc.get<Double>("preco"),
-                        imageUrl = doc.get<String>("imageUrl"),
-                        categoriaId = doc.get<String>("categoriaId"),
+                        imagem = doc.get<String>("imagem"),
+                        categoria = doc.get<String>("categoria"),
                         ativo = ativo
                     )
                 } catch (e: Exception) {
@@ -35,13 +34,9 @@ class FirebaseProductRepository : ProductRepository {
                 }
             }
 
-            if (products.isNotEmpty()) {
-                Result.success(products)
-            } else {
-                Result.success(getSampleProducts())
-            }
+            Result.success(products)
         } catch (e: Exception) {
-            Result.success(getSampleProducts())
+            Result.failure(Exception("Erro ao carregar produtos: ${e.message}"))
         }
     }
 
@@ -56,23 +51,23 @@ class FirebaseProductRepository : ProductRepository {
                     subtitulo = doc.get<String>("subtitulo"),
                     descricao = doc.get<String>("descricao"),
                     preco = doc.get<Double>("preco"),
-                    imageUrl = doc.get<String>("imageUrl"),
-                    categoriaId = doc.get<String>("categoriaId"),
+                    imagem = doc.get<String>("imagem"),
+                    categoria = doc.get<String>("categoria"),
                     ativo = doc.get<Boolean?>("ativo") ?: true
                 )
                 Result.success(product)
             } else {
-                Result.success(getSampleProducts().find { it.id == id })
+                Result.success(null)
             }
         } catch (e: Exception) {
-            Result.success(getSampleProducts().find { it.id == id })
+            Result.failure(Exception("Erro ao buscar produto: ${e.message}"))
         }
     }
 
     override suspend fun getProductsByCategory(categoryId: String): Result<List<Product>> {
         return try {
             val querySnapshot = productsCollection
-                .where { "categoriaId" equalTo categoryId }
+                .where { "categoria" equalTo categoryId }
                 .get()
 
             val products = querySnapshot.documents.mapNotNull { doc ->
@@ -86,8 +81,8 @@ class FirebaseProductRepository : ProductRepository {
                         subtitulo = doc.get<String>("subtitulo"),
                         descricao = doc.get<String>("descricao"),
                         preco = doc.get<Double>("preco"),
-                        imageUrl = doc.get<String>("imageUrl"),
-                        categoriaId = doc.get<String>("categoriaId"),
+                        imagem = doc.get<String>("imagem"),
+                        categoria = doc.get<String>("categoria"),
                         ativo = ativo
                     )
                 } catch (e: Exception) {
@@ -95,13 +90,9 @@ class FirebaseProductRepository : ProductRepository {
                 }
             }
 
-            if (products.isNotEmpty()) {
-                Result.success(products)
-            } else {
-                Result.success(getSampleProducts().filter { it.categoriaId == categoryId })
-            }
+            Result.success(products)
         } catch (e: Exception) {
-            Result.success(getSampleProducts().filter { it.categoriaId == categoryId })
+            Result.failure(Exception("Erro ao buscar produtos: ${e.message}"))
         }
     }
 
@@ -121,13 +112,9 @@ class FirebaseProductRepository : ProductRepository {
                 }
             }.sortedBy { it.ordem }
 
-            if (categories.isNotEmpty()) {
-                Result.success(categories)
-            } else {
-                Result.success(getSampleCategories())
-            }
+            Result.success(categories)
         } catch (e: Exception) {
-            Result.success(getSampleCategories())
+            Result.failure(Exception("Erro ao carregar categorias: ${e.message}"))
         }
     }
 }

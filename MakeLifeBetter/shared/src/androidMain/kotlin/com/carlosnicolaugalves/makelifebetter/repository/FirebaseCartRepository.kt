@@ -56,18 +56,17 @@ class FirebaseCartRepository : CartRepository {
                 Product(
                     id = doc.id,
                     nome = doc.get<String>("nome"),
-                    subtitulo = doc.get<String>("subtitulo"),
                     descricao = doc.get<String>("descricao"),
                     preco = doc.get<Double>("preco"),
-                    imageUrl = doc.get<String>("imageUrl"),
-                    categoriaId = doc.get<String>("categoriaId"),
+                    imagem = doc.get<String>("imagem"),
+                    categoria = doc.get<String>("categoria"),
                     ativo = doc.get<Boolean?>("ativo") ?: true
                 )
             } else {
-                getSampleProducts().find { it.id == productId }
+                null
             }
         } catch (e: Exception) {
-            getSampleProducts().find { it.id == productId }
+            null
         }
     }
 

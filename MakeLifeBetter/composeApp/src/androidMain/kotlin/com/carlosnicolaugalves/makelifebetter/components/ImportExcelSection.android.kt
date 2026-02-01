@@ -57,6 +57,12 @@ actual fun ImportExcelSection(
                 },
                 uploadContacts = { contacts ->
                     adminRepository.uploadContacts(contacts).getOrDefault(0)
+                },
+                uploadProducts = { products ->
+                    adminRepository.uploadProducts(products).getOrDefault(0)
+                },
+                uploadCategories = { categories ->
+                    adminRepository.uploadCategories(categories).getOrDefault(0)
                 }
             )
                 .onSuccess { result ->
@@ -66,6 +72,8 @@ actual fun ImportExcelSection(
                             eventsImported = result.eventsImported,
                             locationImported = result.locationImported,
                             contactsImported = result.contactsImported,
+                            productsImported = result.productsImported,
+                            categoriesImported = result.categoriesImported,
                             errors = result.errors
                         )
                     )
@@ -96,7 +104,7 @@ actual fun ImportExcelSection(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Importe dados de uma planilha Excel (.xlsx) com as abas: Eventos, Localizacao, Contatos.",
+                text = "Importe dados de uma planilha Excel (.xlsx) com as abas: Eventos, Localizacao, Contatos, Categorias, Produtos.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onTertiaryContainer
             )
