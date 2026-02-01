@@ -97,12 +97,90 @@ class FirebaseAdminRepository : AdminRepository {
         }
     }
 
+    override suspend fun deleteAllProducts(): Result<Unit> {
+        return try {
+            val productsCollection = firestore.collection("produtos")
+            val snapshot = productsCollection.get()
+
+            snapshot.documents.forEach { doc ->
+                productsCollection.document(doc.id).delete()
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteAllCategories(): Result<Unit> {
+        return try {
+            val categoriesCollection = firestore.collection("categorias")
+            val snapshot = categoriesCollection.get()
+
+            snapshot.documents.forEach { doc ->
+                categoriesCollection.document(doc.id).delete()
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteAllCarts(): Result<Unit> {
+        return try {
+            val cartsCollection = firestore.collection("carrinho")
+            val snapshot = cartsCollection.get()
+
+            snapshot.documents.forEach { doc ->
+                // Deletar subcoleção de items primeiro
+                val itemsSnapshot = cartsCollection
+                    .document(doc.id)
+                    .collection("items")
+                    .get()
+
+                itemsSnapshot.documents.forEach { itemDoc ->
+                    cartsCollection
+                        .document(doc.id)
+                        .collection("items")
+                        .document(itemDoc.id)
+                        .delete()
+                }
+
+                cartsCollection.document(doc.id).delete()
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteAllOrders(): Result<Unit> {
+        return try {
+            val ordersCollection = firestore.collection("pedidos")
+            val snapshot = ordersCollection.get()
+
+            snapshot.documents.forEach { doc ->
+                ordersCollection.document(doc.id).delete()
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun deleteAllData(): Result<Unit> {
         return try {
             deleteAllEvents()
             deleteEventLocation()
             deleteAllChatMessages()
             deleteAllQuestions()
+            deleteAllProducts()
+            deleteAllCategories()
+            deleteAllCarts()
+            deleteAllOrders()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -219,10 +297,153 @@ class FirebaseAdminRepository : AdminRepository {
         }
     }
 
+    override suspend fun populateSampleCategories(): Result<Unit> {
+        return try {
+            val categoriesCollection = firestore.collection("categorias")
+
+            val sampleCategories = listOf(
+                mapOf(
+                    "nome" to "Camisetas",
+                    "ordem" to 1
+                ),
+                mapOf(
+                    "nome" to "Canecas",
+                    "ordem" to 2
+                ),
+                mapOf(
+                    "nome" to "Acessorios",
+                    "ordem" to 3
+                ),
+                mapOf(
+                    "nome" to "Adesivos",
+                    "ordem" to 4
+                )
+            )
+
+            sampleCategories.forEach { category ->
+                categoriesCollection.add(category)
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun populateSampleProducts(): Result<Unit> {
+        return try {
+            // Primeiro, obter os IDs das categorias
+            val categoriesSnapshot = firestore.collection("categorias").get()
+            val categoryMap = mutableMapOf<String, String>()
+
+            categoriesSnapshot.documents.forEach { doc ->
+                val nome = doc.get<String?>("nome") ?: ""
+                categoryMap[nome] = doc.id
+            }
+
+            // Se nao houver categorias, criar primeiro
+            if (categoryMap.isEmpty()) {
+                populateSampleCategories()
+                val newSnapshot = firestore.collection("categorias").get()
+                newSnapshot.documents.forEach { doc ->
+                    val nome = doc.get<String?>("nome") ?: ""
+                    categoryMap[nome] = doc.id
+                }
+            }
+
+            val productsCollection = firestore.collection("produtos")
+
+            val sampleProducts = listOf(
+                mapOf(
+                    "nome" to "Camiseta Dev Life",
+                    "subtitulo" to "100% Algodao",
+                    "descricao" to "Camiseta confortavel para desenvolvedores que amam codigo. Estampa exclusiva com design moderno.",
+                    "preco" to 79.90,
+                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Camiseta+Dev",
+                    "categoriaId" to (categoryMap["Camisetas"] ?: "1"),
+                    "ativo" to true
+                ),
+                mapOf(
+                    "nome" to "Camiseta Kotlin Lover",
+                    "subtitulo" to "Edicao Limitada",
+                    "descricao" to "Para os amantes de Kotlin. Design exclusivo com o logo da linguagem.",
+                    "preco" to 89.90,
+                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Kotlin+Shirt",
+                    "categoriaId" to (categoryMap["Camisetas"] ?: "1"),
+                    "ativo" to true
+                ),
+                mapOf(
+                    "nome" to "Caneca Coffee & Code",
+                    "subtitulo" to "350ml",
+                    "descricao" to "Caneca perfeita para suas sessoes de coding. Mantem o cafe quente por mais tempo.",
+                    "preco" to 49.90,
+                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Caneca+Code",
+                    "categoriaId" to (categoryMap["Canecas"] ?: "2"),
+                    "ativo" to true
+                ),
+                mapOf(
+                    "nome" to "Caneca Debug Mode",
+                    "subtitulo" to "Ceramica Premium",
+                    "descricao" to "Para aqueles momentos de debugging intenso. Capacidade de 400ml.",
+                    "preco" to 54.90,
+                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Debug+Mug",
+                    "categoriaId" to (categoryMap["Canecas"] ?: "2"),
+                    "ativo" to true
+                ),
+                mapOf(
+                    "nome" to "Mousepad Extended",
+                    "subtitulo" to "80x30cm",
+                    "descricao" to "Mousepad grande para sua estacao de trabalho. Superficie suave e base antiderrapante.",
+                    "preco" to 69.90,
+                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Mousepad",
+                    "categoriaId" to (categoryMap["Acessorios"] ?: "3"),
+                    "ativo" to true
+                ),
+                mapOf(
+                    "nome" to "Chaveiro USB-C",
+                    "subtitulo" to "16GB",
+                    "descricao" to "Pendrive compacto em formato de chaveiro. Perfeito para carregar seus projetos.",
+                    "preco" to 39.90,
+                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=USB+Key",
+                    "categoriaId" to (categoryMap["Acessorios"] ?: "3"),
+                    "ativo" to true
+                ),
+                mapOf(
+                    "nome" to "Pack Adesivos Dev",
+                    "subtitulo" to "10 unidades",
+                    "descricao" to "Pack com 10 adesivos variados sobre programacao. Perfeitos para seu notebook.",
+                    "preco" to 24.90,
+                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=Stickers",
+                    "categoriaId" to (categoryMap["Adesivos"] ?: "4"),
+                    "ativo" to true
+                ),
+                mapOf(
+                    "nome" to "Adesivo Holografico KMP",
+                    "subtitulo" to "Edicao Especial",
+                    "descricao" to "Adesivo holografico exclusivo de Kotlin Multiplatform. Brilha em diferentes angulos.",
+                    "preco" to 14.90,
+                    "imageUrl" to "https://via.placeholder.com/300x300.png?text=KMP+Sticker",
+                    "categoriaId" to (categoryMap["Adesivos"] ?: "4"),
+                    "ativo" to true
+                )
+            )
+
+            sampleProducts.forEach { product ->
+                productsCollection.add(product)
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun populateAllSampleData(): Result<Unit> {
         return try {
             populateSampleEvents()
             populateSampleEventLocation()
+            populateSampleCategories()
+            populateSampleProducts()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -270,6 +491,59 @@ class FirebaseAdminRepository : AdminRepository {
             contacts.forEach { contact ->
                 try {
                     contactsCollection.add(contact)
+                    count++
+                } catch (e: Exception) {
+                    // Ignora erros individuais
+                }
+            }
+
+            Result.success(count)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun uploadCategories(categories: List<Map<String, String>>): Result<Int> {
+        return try {
+            var count = 0
+            val categoriesCollection = firestore.collection("categorias")
+
+            categories.forEachIndexed { index, category ->
+                try {
+                    val categoryData = mapOf(
+                        "nome" to (category["nome"] ?: ""),
+                        "ordem" to (category["ordem"]?.toIntOrNull() ?: (index + 1))
+                    )
+                    categoriesCollection.add(categoryData)
+                    count++
+                } catch (e: Exception) {
+                    // Ignora erros individuais
+                }
+            }
+
+            Result.success(count)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun uploadProducts(products: List<Map<String, String>>): Result<Int> {
+        return try {
+            var count = 0
+            val productsCollection = firestore.collection("produtos")
+
+            products.forEach { product ->
+                try {
+                    val productData = mapOf(
+                        "nome" to (product["nome"] ?: ""),
+                        "subtitulo" to (product["subtitulo"] ?: ""),
+                        "descricao" to (product["descricao"] ?: ""),
+                        "preco" to (product["preco"]?.replace(",", ".")?.toDoubleOrNull() ?: 0.0),
+                        "imageUrl" to (product["imageUrl"] ?: ""),
+                        "categoriaId" to (product["categoriaId"] ?: ""),
+                        "ativo" to ((product["ativo"]?.lowercase() ?: "true") == "true")
+                    )
+                    productsCollection.add(productData)
                     count++
                 } catch (e: Exception) {
                     // Ignora erros individuais

@@ -18,6 +18,22 @@ class LocalAdminRepository : AdminRepository {
         return Result.success(Unit)
     }
 
+    override suspend fun deleteAllProducts(): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun deleteAllCategories(): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun deleteAllCarts(): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun deleteAllOrders(): Result<Unit> {
+        return Result.success(Unit)
+    }
+
     override suspend fun deleteAllData(): Result<Unit> {
         return Result.success(Unit)
     }
@@ -27,6 +43,14 @@ class LocalAdminRepository : AdminRepository {
     }
 
     override suspend fun populateSampleEventLocation(): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun populateSampleProducts(): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun populateSampleCategories(): Result<Unit> {
         return Result.success(Unit)
     }
 
@@ -43,6 +67,14 @@ class LocalAdminRepository : AdminRepository {
     }
 
     override suspend fun uploadContacts(contacts: List<Map<String, String>>): Result<Int> {
+        return Result.success(0)
+    }
+
+    override suspend fun uploadProducts(products: List<Map<String, String>>): Result<Int> {
+        return Result.success(0)
+    }
+
+    override suspend fun uploadCategories(categories: List<Map<String, String>>): Result<Int> {
         return Result.success(0)
     }
 }

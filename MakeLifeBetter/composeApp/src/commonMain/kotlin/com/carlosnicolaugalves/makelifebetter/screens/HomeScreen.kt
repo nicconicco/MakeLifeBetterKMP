@@ -16,11 +16,21 @@ import androidx.compose.ui.Modifier
 import com.carlosnicolaugalves.makelifebetter.components.NotificationPermissionHandler
 import com.carlosnicolaugalves.makelifebetter.event.EventSectionsResult
 import com.carlosnicolaugalves.makelifebetter.model.Event
+import com.carlosnicolaugalves.makelifebetter.model.Product
 import com.carlosnicolaugalves.makelifebetter.navigation.NavigationItem
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedChatViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedEventViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedNotificationViewModel
+import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedStoreViewModel
+
+// Store screen states
+private enum class StoreScreenState {
+    LIST,
+    DETAIL,
+    CART,
+    ORDER_CONFIRMATION
+}
 
 @Composable
 fun MainScreen(
@@ -28,12 +38,17 @@ fun MainScreen(
     eventViewModel: SharedEventViewModel = remember { SharedEventViewModel() },
     notificationViewModel: SharedNotificationViewModel = remember { SharedNotificationViewModel() },
     chatViewModel: SharedChatViewModel = remember { SharedChatViewModel() },
+    storeViewModel: SharedStoreViewModel = remember { SharedStoreViewModel() },
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedItem by remember { mutableStateOf(NavigationItem.EVENTO) }
     var selectedEvent by remember { mutableStateOf<Event?>(null) }
     var showSecretScreen by remember { mutableStateOf(false) }
+
+    // Store navigation states
+    var storeScreenState by remember { mutableStateOf(StoreScreenState.LIST) }
+    var selectedProduct by remember { mutableStateOf<Product?>(null) }
 
     val currentUser by viewModel.currentUser.collectAsState()
     val profileUpdateState by viewModel.profileUpdateState.collectAsState()
@@ -85,6 +100,56 @@ fun MainScreen(
         return
     }
 
+    // Store screen navigation
+    if (selectedItem == NavigationItem.LOJA && storeScreenState != StoreScreenState.LIST) {
+        when (storeScreenState) {
+            StoreScreenState.DETAIL -> {
+                selectedProduct?.let { product ->
+                    ProductDetailScreen(
+                        product = product,
+                        onBackClick = {
+                            selectedProduct = null
+                            storeScreenState = StoreScreenState.LIST
+                        },
+                        onAddToCart = { prod, qty ->
+                            storeViewModel.addToCart(prod, qty)
+                            selectedProduct = null
+                            storeScreenState = StoreScreenState.LIST
+                        }
+                    )
+                }
+            }
+            StoreScreenState.CART -> {
+                CartScreen(
+                    viewModel = storeViewModel,
+                    onBackClick = {
+                        storeScreenState = StoreScreenState.LIST
+                    },
+                    onCheckout = {
+                        storeScreenState = StoreScreenState.ORDER_CONFIRMATION
+                    }
+                )
+            }
+            StoreScreenState.ORDER_CONFIRMATION -> {
+                OrderConfirmationScreen(
+                    viewModel = storeViewModel,
+                    onBackToStore = {
+                        storeScreenState = StoreScreenState.LIST
+                    }
+                )
+            }
+            else -> {}
+        }
+        return
+    }
+
+    // Set user ID for store when user is available
+    LaunchedEffect(currentUser) {
+        currentUser?.let {
+            storeViewModel.setUserId(it.id)
+        }
+    }
+
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
@@ -109,6 +174,16 @@ fun MainScreen(
                     }
                 )
                 NavigationItem.MAPA -> MapScreen()
+                NavigationItem.LOJA -> StoreScreen(
+                    viewModel = storeViewModel,
+                    onProductClick = { product ->
+                        selectedProduct = product
+                        storeScreenState = StoreScreenState.DETAIL
+                    },
+                    onCartClick = {
+                        storeScreenState = StoreScreenState.CART
+                    }
+                )
                 NavigationItem.PERFIL -> ProfileScreen(
                     currentUser = currentUser,
                     profileUpdateState = profileUpdateState,
