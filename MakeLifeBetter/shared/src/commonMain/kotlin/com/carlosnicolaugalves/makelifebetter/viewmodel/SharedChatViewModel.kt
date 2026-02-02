@@ -15,6 +15,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -103,28 +104,35 @@ class SharedChatViewModel(
     private val _selectedQuestion = MutableStateFlow<Question?>(null)
     val selectedQuestion: StateFlow<Question?> = _selectedQuestion.asStateFlow()
 
+    private var messagesObserverJob: Job? = null
+
     init {
-        loadMessages()
+        startObservingMessages()
         loadQuestions()
+    }
+
+    // Start observing real-time messages from Firebase Realtime Database
+    private fun startObservingMessages() {
+        messagesObserverJob?.cancel()
+        _chatState.value = ChatState.Loading
+
+        messagesObserverJob = chatRepository.observeMessages()
+            .onEach { messageList ->
+                _messages.value = messageList
+                _chatState.value = ChatState.Success(messageList)
+            }
+            .catch { e ->
+                _chatState.value = ChatState.Error(e.message ?: "Erro ao carregar mensagens")
+            }
+            .launchIn(viewModelScope)
     }
 
     // Chat messages functions
     fun loadMessages() {
-        viewModelScope.launch {
-            try {
-                _chatState.value = ChatState.Loading
-
-                chatRepository.getMessages()
-                    .onSuccess { messageList ->
-                        _messages.value = messageList
-                        _chatState.value = ChatState.Success(messageList)
-                    }
-                    .onFailure { exception ->
-                        _chatState.value = ChatState.Error(exception.message ?: "Erro ao carregar mensagens")
-                    }
-            } catch (e: Exception) {
-                _chatState.value = ChatState.Error(e.message ?: "Erro ao carregar mensagens")
-            }
+        // Real-time updates are handled by the observer
+        // This function can be used to restart the observer if needed
+        if (messagesObserverJob?.isActive != true) {
+            startObservingMessages()
         }
     }
 
@@ -136,8 +144,8 @@ class SharedChatViewModel(
                 _sendMessageState.value = SendMessageState.Sending
 
                 chatRepository.sendMessage(author, message)
-                    .onSuccess { chatMessage ->
-                        _messages.value = _messages.value + chatMessage
+                    .onSuccess {
+                        // Message will be automatically updated by the real-time observer
                         _sendMessageState.value = SendMessageState.Success
                         _sendMessageState.value = SendMessageState.Idle
                     }
@@ -151,7 +159,7 @@ class SharedChatViewModel(
     }
 
     fun refreshMessages() {
-        loadMessages()
+        startObservingMessages()
     }
 
     fun resetSendMessageState() {
@@ -347,6 +355,6 @@ class SharedChatViewModel(
     }
 
     fun clear() {
-        // Cleanup if needed
+        messagesObserverJob?.cancel()
     }
 }

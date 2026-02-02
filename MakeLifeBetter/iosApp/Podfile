@@ -6,6 +6,7 @@ target 'iosApp' do
   pod 'FirebaseCore'
   pod 'FirebaseAuth'
   pod 'FirebaseFirestore'
+  pod 'FirebaseDatabase'
 end
 
 post_install do |installer|

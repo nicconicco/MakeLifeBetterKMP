@@ -16,4 +16,8 @@ data class Cart(
 
     val totalPrice: Double
         get() = items.sumOf { it.product.preco * it.quantidade }
+
+    companion object {
+        fun empty(): Cart = Cart(emptyList())
+    }
 }

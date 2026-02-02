@@ -1213,6 +1213,12 @@ PODS:
     - FirebaseCore (~> 12.8.0)
   - FirebaseCoreInternal (12.8.0):
     - "GoogleUtilities/NSData+zlib (~> 8.1)"
+  - FirebaseDatabase (12.8.0):
+    - FirebaseAppCheckInterop (~> 12.8.0)
+    - FirebaseCore (~> 12.8.0)
+    - FirebaseSharedSwift (~> 12.8.0)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - leveldb-library (~> 1.22)
   - FirebaseFirestore (12.8.0):
     - FirebaseCore (~> 12.8.0)
     - FirebaseCoreExtension (~> 12.8.0)
@@ -1253,6 +1259,9 @@ PODS:
     - GoogleUtilities/Privacy
   - GoogleUtilities/Privacy (8.1.0)
   - GoogleUtilities/Reachability (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/UserDefaults (8.1.0):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
   - "gRPC-C++ (1.69.0)":
@@ -1359,6 +1368,7 @@ PODS:
 DEPENDENCIES:
   - FirebaseAuth
   - FirebaseCore
+  - FirebaseDatabase
   - FirebaseFirestore
 
 SPEC REPOS:
@@ -1371,6 +1381,7 @@ SPEC REPOS:
     - FirebaseCore
     - FirebaseCoreExtension
     - FirebaseCoreInternal
+    - FirebaseDatabase
     - FirebaseFirestore
     - FirebaseFirestoreInternal
     - FirebaseSharedSwift
@@ -1391,6 +1402,7 @@ SPEC CHECKSUMS:
   FirebaseCore: 0dbad74bda10b8fb9ca34ad8f375fb9dd3ebef7c
   FirebaseCoreExtension: 6605938d51f765d8b18bfcafd2085276a252bee2
   FirebaseCoreInternal: fe5fa466aeb314787093a7dce9f0beeaad5a2a21
+  FirebaseDatabase: d4b7fce656dcdf9bd8b2c2c29023fb2074b280e9
   FirebaseFirestore: 67f23000ca238ccbab79127ed59636a9a2689e74
   FirebaseFirestoreInternal: a0e7382af3d208898dcd1d4d52d8a7870632e881
   FirebaseSharedSwift: f57ed48f4542b2d7eb4738f4f23ba443f78b3780
@@ -1402,6 +1414,6 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
 
-PODFILE CHECKSUM: 8a0d35c36d2f4d0c4fdb8cda19933716ad1c664f
+PODFILE CHECKSUM: 2fd2ba706bb934e21b32535ef229afe729186add
 
 COCOAPODS: 1.16.2

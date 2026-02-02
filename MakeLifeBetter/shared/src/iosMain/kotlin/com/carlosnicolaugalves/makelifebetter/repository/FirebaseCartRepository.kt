@@ -60,10 +60,10 @@ class FirebaseCartRepository : CartRepository {
                     ativo = doc.get<Boolean?>("ativo") ?: true
                 )
             } else {
-                getSampleProducts().find { it.id == productId }
+                null
             }
         } catch (e: Exception) {
-            getSampleProducts().find { it.id == productId }
+            null
         }
     }
 

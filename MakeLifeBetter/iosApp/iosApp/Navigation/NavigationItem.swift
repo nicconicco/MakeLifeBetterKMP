@@ -10,11 +10,10 @@ import SwiftUI
 
 enum NavigationItem: String, CaseIterable {
     case evento = "Event"
-    case mapa = "Map"
-    case perfil = "Me"
+    case loja = "Store"
     case chat = "Chat"
-    case notificacoes = "Alarm"
-    case contrate = "Contact"
+    case mapa = "Map"
+    case more = "More"
 
     var title: String {
         return self.rawValue
@@ -24,16 +23,14 @@ enum NavigationItem: String, CaseIterable {
         switch self {
         case .evento:
             return Image(systemName: "calendar")
-        case .mapa:
-            return Image(systemName: "map")
-        case .perfil:
-            return Image(systemName: "person")
+        case .loja:
+            return Image(systemName: "cart")
         case .chat:
             return Image(systemName: "message")
-        case .notificacoes:
-            return Image(systemName: "bell")
-        case .contrate:
-            return Image(systemName: "briefcase")
+        case .mapa:
+            return Image(systemName: "map")
+        case .more:
+            return Image(systemName: "ellipsis")
         }
     }
 }

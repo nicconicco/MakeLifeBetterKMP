@@ -48,7 +48,6 @@ class FirebaseProductRepository : ProductRepository {
                 val product = Product(
                     id = doc.id,
                     nome = doc.get<String>("nome"),
-                    subtitulo = doc.get<String>("subtitulo"),
                     descricao = doc.get<String>("descricao"),
                     preco = doc.get<Double>("preco"),
                     imagem = doc.get<String>("imagem"),
@@ -78,7 +77,6 @@ class FirebaseProductRepository : ProductRepository {
                     Product(
                         id = doc.id,
                         nome = doc.get<String>("nome"),
-                        subtitulo = doc.get<String>("subtitulo"),
                         descricao = doc.get<String>("descricao"),
                         preco = doc.get<Double>("preco"),
                         imagem = doc.get<String>("imagem"),
