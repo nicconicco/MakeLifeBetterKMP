@@ -5,12 +5,11 @@
 //  Created by Carlos Nicolau Galves on 22/01/26.
 //
 
-
 import SwiftUI
 import ComposeApp
 
 // Store screen states
-private enum StoreScreenState {
+private enum StoreScreen {
     case list
     case detail
     case cart
@@ -39,7 +38,7 @@ struct MainView: View {
     @State private var navigationPath = NavigationPath()
 
     // Store navigation states
-    @State private var storeScreenState: StoreScreenState = .list
+    @State private var storeScreen: StoreScreen = .list
     @State private var selectedProduct: Product? = nil
 
     // More screen navigation state
@@ -52,214 +51,185 @@ struct MainView: View {
             Traducoes.obterStrings(idioma: idiomaAtual)
         }
 
-        // Store screen sub-navigation
-        if selectedItem == .loja && storeScreenState != .list {
-            switch storeScreenState {
-            case .detail:
-                if let product = selectedProduct {
-                    ProductDetailView(
-                        product: product,
-                        onBackClick: {
-                            selectedProduct = nil
-                            storeScreenState = .list
-                        },
-                        onAddToCart: { prod, qty in
-                            storeViewModel.addToCart(product: prod, quantidade: qty)
-                            selectedProduct = nil
-                            storeScreenState = .list
-                        }
-                    )
+        NavigationStack(path: $navigationPath) {
+            Group {
+                if selectedItem == .more && moreSubScreen != .menu {
+                    moreSubScreenView(strings: strings)
+                } else {
+                    mainTabView(strings: strings)
                 }
-            case .cart:
-                CartView(
-                    viewModel: storeViewModel,
-                    onBackClick: {
-                        storeScreenState = .list
-                    },
-                    onCheckout: {
-                        storeViewModel.checkout()
-                        storeScreenState = .orderConfirmation
-                    }
-                )
-            case .orderConfirmation:
-                OrderConfirmationView(
-                    order: storeViewModel.lastOrder,
-                    onBackToStore: {
-                        storeViewModel.resetOrderState()
-                        storeScreenState = .list
-                    }
-                )
-            default:
-                EmptyView()
             }
-        } else if selectedItem == .more && moreSubScreen != .menu {
-            // More screen sub-navigation
-            switch moreSubScreen {
-            case .profile:
-                MeView(
-                    currentScreen: $currentScreen,
-                    strings: strings,
-                    viewModel: loginViewModel
-                )
+            .navigationDestination(for: Event.self) { event in
+                EventDetailScreen(event: event)
+            }
+        }
+        .onAppear {
+            if let user = loginViewModel.currentUser {
+                storeViewModel.setUserId(user.id)
+            }
+        }
+    }
+
+    // MARK: - More Sub Screen View
+    @ViewBuilder
+    private func moreSubScreenView(strings: AppStrings) -> some View {
+        switch moreSubScreen {
+        case .profile:
+            MeView(
+                currentScreen: $currentScreen,
+                strings: strings,
+                viewModel: loginViewModel
+            )
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { moreSubScreen = .menu }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text("Voltar")
+                        }
+                    }
+                }
+            }
+        case .alarms:
+            NotificationView(viewModel: notificationViewModel)
+                .navigationBarBackButtonHidden(true)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button(action: { moreSubScreen = .menu }) {
-                            Image(systemName: "chevron.left")
-                        }
-                    }
-                }
-            case .alarms:
-                NotificationView(viewModel: notificationViewModel)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: { moreSubScreen = .menu }) {
+                            HStack(spacing: 4) {
                                 Image(systemName: "chevron.left")
+                                Text("Voltar")
                             }
                         }
                     }
-            case .contact:
-                HireMeView()
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: { moreSubScreen = .menu }) {
+                }
+        case .contact:
+            HireMeView()
+                .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: { moreSubScreen = .menu }) {
+                            HStack(spacing: 4) {
                                 Image(systemName: "chevron.left")
+                                Text("Voltar")
                             }
                         }
                     }
-            default:
-                EmptyView()
+                }
+        default:
+            EmptyView()
+        }
+    }
+
+    // MARK: - Main Tab View
+    @ViewBuilder
+    private func mainTabView(strings: AppStrings) -> some View {
+        TabView(selection: $selectedItem) {
+            SectionedListView(
+                viewModel: eventViewModel,
+                onItemClick: { event in
+                    navigationPath.append(event)
+                }
+            )
+            .tabItem {
+                Label("Event", systemImage: "calendar")
             }
-        } else {
-            NavigationStack(path: $navigationPath) {
-                TabView(selection: $selectedItem) {
-                    SectionedListView(
-                        viewModel: eventViewModel,
-                        onItemClick: { event in
-                            navigationPath.append(event)
-                        }
-                    )
-                    .tabItem {
-                        Label("Event", systemImage: "calendar")
-                    }
-                    .tag(NavigationItem.evento)
+            .tag(NavigationItem.evento)
 
-                    StoreView(
-                        viewModel: storeViewModel,
-                        onProductClick: { product in
-                            selectedProduct = product
-                            storeScreenState = .detail
-                        },
-                        onCartClick: {
-                            storeScreenState = .cart
-                        }
-                    )
-                    .tabItem {
-                        Label("Store", systemImage: "cart")
-                    }
-                    .tag(NavigationItem.loja)
-
-                    ChatView(
-                        currentUsername: loginViewModel.currentUser?.username ?? "Usuario",
-                        viewModel: chatViewModel
-                    )
-                    .tabItem {
-                        Label("Chat", systemImage: "message")
-                    }
-                    .tag(NavigationItem.chat)
-
-                    MapView(viewModel: mapViewModel)
-                    .tabItem {
-                        Label("Map", systemImage: "map")
-                    }
-                    .tag(NavigationItem.mapa)
-
-                    MoreView(
-                        onProfileClick: { moreSubScreen = .profile },
-                        onAlarmsClick: { moreSubScreen = .alarms },
-                        onContactClick: { moreSubScreen = .contact }
-                    )
-                    .tabItem {
-                        Label("More", systemImage: "ellipsis")
-                    }
-                    .tag(NavigationItem.more)
+            storeTabContent
+                .tabItem {
+                    Label("Store", systemImage: "cart")
                 }
-                .onChange(of: selectedItem) { oldValue, newValue in
-                    if oldValue != newValue {
-                        // Reset sub-navigation states when switching tabs
-                        if oldValue == .loja {
-                            storeScreenState = .list
-                            selectedProduct = nil
-                        }
-                        if oldValue == .more {
-                            moreSubScreen = .menu
-                        }
-                    }
-                }
-                .navigationDestination(for: Event.self) { event in
-                    EventDetailScreen(event: event)
-                }
+                .tag(NavigationItem.loja)
+
+            ChatView(
+                currentUsername: loginViewModel.currentUser?.username ?? "Usuario",
+                viewModel: chatViewModel
+            )
+            .tabItem {
+                Label("Chat", systemImage: "message")
             }
-            .onAppear {
-                // Set user ID for store when user is available
-                if let user = loginViewModel.currentUser {
-                    storeViewModel.setUserId(user.id)
+            .tag(NavigationItem.chat)
+
+            MapView(viewModel: mapViewModel)
+                .tabItem {
+                    Label("Map", systemImage: "map")
+                }
+                .tag(NavigationItem.mapa)
+
+            MoreView(
+                onProfileClick: { moreSubScreen = .profile },
+                onAlarmsClick: { moreSubScreen = .alarms },
+                onContactClick: { moreSubScreen = .contact }
+            )
+            .tabItem {
+                Label("More", systemImage: "ellipsis")
+            }
+            .tag(NavigationItem.more)
+        }
+        .onChange(of: selectedItem) { oldValue, newValue in
+            if oldValue != newValue {
+                if oldValue == .loja {
+                    storeScreen = .list
+                    selectedProduct = nil
+                }
+                if oldValue == .more {
+                    moreSubScreen = .menu
                 }
             }
         }
     }
-}
 
-// MARK: - Order Confirmation View
-struct OrderConfirmationView: View {
-    let order: Order?
-    let onBackToStore: () -> Void
-
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 24) {
-                Spacer()
-
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.green)
-
-                Text("Pedido Confirmado!")
-                    .font(.title)
-                    .fontWeight(.bold)
-
-                if let order = order {
-                    VStack(spacing: 8) {
-                        Text("Pedido: \(order.id)")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-
-                        Text(String(format: "Total: R$ %.2f", order.totalPrice))
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.accentColor)
+    // MARK: - Store Tab Content
+    @ViewBuilder
+    private var storeTabContent: some View {
+        switch storeScreen {
+        case .list:
+            StoreView(
+                viewModel: storeViewModel,
+                onProductClick: { product in
+                    selectedProduct = product
+                    storeScreen = .detail
+                },
+                onCartClick: {
+                    storeScreen = .cart
+                }
+            )
+        case .detail:
+            if let product = selectedProduct {
+                ProductDetailView(
+                    product: product,
+                    onBackClick: {
+                        selectedProduct = nil
+                        storeScreen = .list
+                    },
+                    onAddToCart: { prod, qty in
+                        storeViewModel.addToCart(product: prod, quantidade: qty)
+                        selectedProduct = nil
+                        storeScreen = .list
                     }
-                }
-
-                Text("Obrigado pela sua compra!")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-
-                Spacer()
-
-                Button(action: onBackToStore) {
-                    Text("Voltar para a Loja")
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-                .padding(.horizontal)
-                .padding(.bottom)
+                )
             }
-            .navigationTitle("Confirmação")
-            .navigationBarTitleDisplayMode(.inline)
+        case .cart:
+            CartView(
+                viewModel: storeViewModel,
+                onBackClick: {
+                    storeScreen = .list
+                },
+                onCheckout: {
+                    storeViewModel.checkout()
+                    storeScreen = .orderConfirmation
+                }
+            )
+        case .orderConfirmation:
+            OrderConfirmationView(
+                order: storeViewModel.lastOrder,
+                onBackToStore: {
+                    storeViewModel.resetOrderState()
+                    storeScreen = .list
+                }
+            )
         }
     }
 }
