@@ -32,3 +32,10 @@ sealed class OrderResult {
     data class Success(val order: Order) : OrderResult()
     data class Error(val message: String) : OrderResult()
 }
+
+sealed class OrdersResult {
+    data object Idle : OrdersResult()
+    data object Loading : OrdersResult()
+    data class Success(val orders: List<Order>) : OrdersResult()
+    data class Error(val message: String) : OrdersResult()
+}

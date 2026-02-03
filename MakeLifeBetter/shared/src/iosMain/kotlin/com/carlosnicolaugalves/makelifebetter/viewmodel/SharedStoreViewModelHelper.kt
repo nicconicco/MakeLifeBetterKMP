@@ -1,12 +1,15 @@
 package com.carlosnicolaugalves.makelifebetter.viewmodel
 
+import com.carlosnicolaugalves.makelifebetter.model.Address
 import com.carlosnicolaugalves.makelifebetter.model.Cart
 import com.carlosnicolaugalves.makelifebetter.model.Order
+import com.carlosnicolaugalves.makelifebetter.model.PaymentInfo
 import com.carlosnicolaugalves.makelifebetter.model.Product
 import com.carlosnicolaugalves.makelifebetter.model.ProductCategory
 import com.carlosnicolaugalves.makelifebetter.store.CartResult
 import com.carlosnicolaugalves.makelifebetter.store.CategoriesResult
 import com.carlosnicolaugalves.makelifebetter.store.OrderResult
+import com.carlosnicolaugalves.makelifebetter.store.OrdersResult
 import com.carlosnicolaugalves.makelifebetter.store.ProductsResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +28,8 @@ class SharedStoreViewModelWrapper {
     private var cartStateObserver: Job? = null
     private var cartObserver: Job? = null
     private var orderStateObserver: Job? = null
+    private var ordersStateObserver: Job? = null
+    private var ordersObserver: Job? = null
 
     // MARK: - User
 
@@ -169,8 +174,42 @@ class SharedStoreViewModelWrapper {
         viewModel.checkout()
     }
 
+    fun checkoutWithInfo(address: Address, payment: PaymentInfo) {
+        viewModel.checkoutWithInfo(address, payment)
+    }
+
     fun resetOrderState() {
         viewModel.resetOrderState()
+    }
+
+    // MARK: - Orders List
+
+    fun observeOrdersState(
+        onIdle: () -> Unit,
+        onLoading: () -> Unit,
+        onSuccess: (List<Order>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        ordersStateObserver?.cancel()
+        ordersStateObserver = viewModel.ordersState
+            .onEach { state ->
+                when (state) {
+                    is OrdersResult.Idle -> onIdle()
+                    is OrdersResult.Loading -> onLoading()
+                    is OrdersResult.Success -> onSuccess(state.orders)
+                    is OrdersResult.Error -> onError(state.message)
+                }
+            }
+            .launchIn(scope)
+    }
+
+    fun observeOrders(callback: (List<Order>) -> Unit) {
+        ordersObserver?.cancel()
+        ordersObserver = viewModel.observeOrders(callback)
+    }
+
+    fun loadOrders() {
+        viewModel.loadOrders()
     }
 
     // MARK: - Cleanup
@@ -183,6 +222,8 @@ class SharedStoreViewModelWrapper {
         cartStateObserver?.cancel()
         cartObserver?.cancel()
         orderStateObserver?.cancel()
+        ordersStateObserver?.cancel()
+        ordersObserver?.cancel()
         viewModel.clear()
     }
 }

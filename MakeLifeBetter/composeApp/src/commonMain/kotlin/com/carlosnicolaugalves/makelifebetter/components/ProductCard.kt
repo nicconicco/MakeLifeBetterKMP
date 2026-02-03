@@ -157,7 +157,7 @@ private fun ImagePlaceholderContent(modifier: Modifier = Modifier) {
     }
 }
 
-fun formatPrice(price: Double): String {
+fun     formatPrice(price: Double): String {
     val intPart = price.toLong()
     val decPart = ((price - intPart) * 100).toLong()
     val decStr = if (decPart < 10) "0$decPart" else "$decPart"

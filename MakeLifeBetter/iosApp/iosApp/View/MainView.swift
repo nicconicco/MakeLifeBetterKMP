@@ -13,6 +13,7 @@ private enum StoreScreen {
     case list
     case detail
     case cart
+    case checkout
     case orderConfirmation
 }
 
@@ -22,6 +23,7 @@ private enum MoreSubScreen {
     case profile
     case alarms
     case contact
+    case myOrders
 }
 
 struct MainView: View {
@@ -78,7 +80,8 @@ struct MainView: View {
             MeView(
                 currentScreen: $currentScreen,
                 strings: strings,
-                viewModel: loginViewModel
+                viewModel: loginViewModel,
+                onMyOrdersClick: { moreSubScreen = .myOrders }
             )
             .navigationBarBackButtonHidden(true)
             .toolbar {
@@ -117,6 +120,11 @@ struct MainView: View {
                         }
                     }
                 }
+        case .myOrders:
+            MyOrdersView(
+                viewModel: storeViewModel,
+                onBackClick: { moreSubScreen = .profile }
+            )
         default:
             EmptyView()
         }
@@ -218,7 +226,16 @@ struct MainView: View {
                     storeScreen = .list
                 },
                 onCheckout: {
-                    storeViewModel.checkout()
+                    storeScreen = .checkout
+                }
+            )
+        case .checkout:
+            CheckoutView(
+                viewModel: storeViewModel,
+                onBackClick: {
+                    storeScreen = .cart
+                },
+                onConfirmOrder: {
                     storeScreen = .orderConfirmation
                 }
             )

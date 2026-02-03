@@ -1,8 +1,10 @@
 package com.carlosnicolaugalves.makelifebetter.repository
 
+import com.carlosnicolaugalves.makelifebetter.model.Address
 import com.carlosnicolaugalves.makelifebetter.model.Cart
 import com.carlosnicolaugalves.makelifebetter.model.CartItem
 import com.carlosnicolaugalves.makelifebetter.model.Order
+import com.carlosnicolaugalves.makelifebetter.model.PaymentInfo
 import com.carlosnicolaugalves.makelifebetter.model.Product
 
 interface CartRepository {
@@ -12,4 +14,5 @@ interface CartRepository {
     suspend fun removeFromCart(userId: String, itemId: String): Result<Cart>
     suspend fun clearCart(userId: String): Result<Unit>
     suspend fun checkout(userId: String): Result<Order>
+    suspend fun checkoutWithInfo(userId: String, address: Address, payment: PaymentInfo): Result<Order>
 }

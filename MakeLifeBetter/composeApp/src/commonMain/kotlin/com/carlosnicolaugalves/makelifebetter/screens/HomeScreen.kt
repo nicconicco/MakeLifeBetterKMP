@@ -29,6 +29,7 @@ private enum class StoreScreenState {
     LIST,
     DETAIL,
     CART,
+    CHECKOUT,
     ORDER_CONFIRMATION
 }
 
@@ -37,7 +38,8 @@ private enum class MoreSubScreen {
     MENU,
     PROFILE,
     ALARMS,
-    CONTACT
+    CONTACT,
+    MY_ORDERS
 }
 
 @Composable
@@ -137,6 +139,17 @@ fun MainScreen(
                         storeScreenState = StoreScreenState.LIST
                     },
                     onCheckout = {
+                        storeScreenState = StoreScreenState.CHECKOUT
+                    }
+                )
+            }
+            StoreScreenState.CHECKOUT -> {
+                CheckoutScreen(
+                    viewModel = storeViewModel,
+                    onBackClick = {
+                        storeScreenState = StoreScreenState.CART
+                    },
+                    onConfirmOrder = {
                         storeScreenState = StoreScreenState.ORDER_CONFIRMATION
                     }
                 )
@@ -172,6 +185,9 @@ fun MainScreen(
                         viewModel.logout()
                         onLogout()
                     },
+                    onMyOrdersClick = {
+                        moreSubScreen = MoreSubScreen.MY_ORDERS
+                    },
                     onSecretAccessGranted = {
                         showSecretScreen = true
                     },
@@ -192,6 +208,14 @@ fun MainScreen(
                 HireMeScreen(
                     onBackClick = {
                         moreSubScreen = MoreSubScreen.MENU
+                    }
+                )
+            }
+            MoreSubScreen.MY_ORDERS -> {
+                MyOrdersScreen(
+                    viewModel = storeViewModel,
+                    onBackClick = {
+                        moreSubScreen = MoreSubScreen.PROFILE
                     }
                 )
             }

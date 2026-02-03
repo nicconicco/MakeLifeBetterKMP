@@ -9,6 +9,13 @@ import Foundation
 import Observation
 import ComposeApp
 
+enum OrdersLoadingState: Equatable {
+    case idle
+    case loading
+    case success
+    case error(String)
+}
+
 @Observable
 class StoreViewModel {
     private let sharedViewModel: SharedStoreViewModelWrapper
@@ -23,6 +30,8 @@ class StoreViewModel {
     var isCheckingOut: Bool = false
     var errorMessage: String? = nil
     var lastOrder: Order? = nil
+    var orders: [Order] = []
+    var ordersState: OrdersLoadingState = .idle
 
     init() {
         sharedViewModel = SharedStoreViewModelWrapper()
@@ -129,6 +138,31 @@ class StoreViewModel {
                 }
             }
         )
+
+        // Orders list state
+        sharedViewModel.observeOrdersState(
+            onIdle: { [weak self] in
+                DispatchQueue.main.async { self?.ordersState = .idle }
+            },
+            onLoading: { [weak self] in
+                DispatchQueue.main.async { self?.ordersState = .loading }
+            },
+            onSuccess: { [weak self] _ in
+                DispatchQueue.main.async { self?.ordersState = .success }
+            },
+            onError: { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.ordersState = .error(message)
+                }
+            }
+        )
+
+        // Orders list
+        sharedViewModel.observeOrders { [weak self] kotlinOrders in
+            DispatchQueue.main.async {
+                self?.orders = kotlinOrders
+            }
+        }
     }
 
     // MARK: - Actions
@@ -173,6 +207,14 @@ class StoreViewModel {
     func resetOrderState() {
         lastOrder = nil
         sharedViewModel.resetOrderState()
+    }
+
+    func loadOrders() {
+        sharedViewModel.loadOrders()
+    }
+
+    func checkoutWithInfo(address: Address, payment: PaymentInfo) {
+        sharedViewModel.checkoutWithInfo(address: address, payment: payment)
     }
 
     func clearError() {

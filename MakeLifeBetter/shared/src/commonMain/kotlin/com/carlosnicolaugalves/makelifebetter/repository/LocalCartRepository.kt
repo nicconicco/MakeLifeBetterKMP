@@ -1,9 +1,11 @@
 package com.carlosnicolaugalves.makelifebetter.repository
 
+import com.carlosnicolaugalves.makelifebetter.model.Address
 import com.carlosnicolaugalves.makelifebetter.model.Cart
 import com.carlosnicolaugalves.makelifebetter.model.CartItem
 import com.carlosnicolaugalves.makelifebetter.model.Order
 import com.carlosnicolaugalves.makelifebetter.model.OrderStatus
+import com.carlosnicolaugalves.makelifebetter.model.PaymentInfo
 import com.carlosnicolaugalves.makelifebetter.model.Product
 import kotlin.time.Clock
 import kotlin.random.Random
@@ -82,5 +84,10 @@ class LocalCartRepository : CartRepository {
         carts[userId]?.clear()
 
         return Result.success(order)
+    }
+
+    override suspend fun checkoutWithInfo(userId: String, address: Address, payment: PaymentInfo): Result<Order> {
+        // LocalCartRepository doesn't persist to Firebase, just use regular checkout
+        return checkout(userId)
     }
 }

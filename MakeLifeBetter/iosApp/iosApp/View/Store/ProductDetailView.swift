@@ -36,7 +36,7 @@ struct ProductDetailView: View {
             .ignoresSafeArea(edges: .top)
 
             BottomActionBar(
-                price: product.formattedPrice,
+                unitPrice: product.preco,
                 quantity: quantity,
                 onAddToCart: {
                     onAddToCart(product, quantity)
@@ -222,9 +222,17 @@ private struct QuantityButton: View {
 
 // MARK: - Bottom Action Bar
 private struct BottomActionBar: View {
-    let price: String
+    let unitPrice: Double
     let quantity: Int32
     let onAddToCart: () -> Void
+
+    private var totalPrice: Double {
+        unitPrice * Double(quantity)
+    }
+
+    private var formattedTotal: String {
+        String(format: "R$ %.2f", totalPrice)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -235,7 +243,7 @@ private struct BottomActionBar: View {
                     Text("Total")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text(price)
+                    Text(formattedTotal)
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)

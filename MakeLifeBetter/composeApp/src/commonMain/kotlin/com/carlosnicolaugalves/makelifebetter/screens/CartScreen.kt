@@ -148,10 +148,7 @@ fun CartScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Button(
-                            onClick = {
-                                viewModel.checkout()
-                                onCheckout()
-                            },
+                            onClick = onCheckout,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
@@ -159,7 +156,7 @@ fun CartScreen(
                             )
                         ) {
                             Text(
-                                text = "Finalizar Compra",
+                                text = "Continuar para Pagamento",
                                 modifier = Modifier.padding(vertical = 8.dp)
                             )
                         }

@@ -4,6 +4,7 @@ struct MeView: View {
     @Binding var currentScreen: AppScreen
     let strings: AppStrings
     var viewModel: LoginViewModel
+    var onMyOrdersClick: () -> Void = {}
 
     @State private var username: String = ""
     @State private var email: String = ""
@@ -32,6 +33,32 @@ struct MeView: View {
                 Text("Meu Perfil")
                     .font(.title)
                     .fontWeight(.bold)
+
+                // MARK: - My Orders Button
+                Button(action: onMyOrdersClick) {
+                    HStack(spacing: 16) {
+                        Image(systemName: "bag.fill")
+                            .font(.title2)
+                            .foregroundColor(.blue)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Meus Pedidos")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                            Text("Veja o status dos seus pedidos")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(16)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                    .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+                }
+                .buttonStyle(.plain)
 
                 // MARK: - Profile Form Card
                 VStack(alignment: .leading, spacing: 16) {

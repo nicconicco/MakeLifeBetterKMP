@@ -1,16 +1,21 @@
 package com.carlosnicolaugalves.makelifebetter.viewmodel
 
+import com.carlosnicolaugalves.makelifebetter.model.Address
 import com.carlosnicolaugalves.makelifebetter.model.Cart
 import com.carlosnicolaugalves.makelifebetter.model.Order
+import com.carlosnicolaugalves.makelifebetter.model.PaymentInfo
 import com.carlosnicolaugalves.makelifebetter.model.Product
 import com.carlosnicolaugalves.makelifebetter.model.ProductCategory
 import com.carlosnicolaugalves.makelifebetter.repository.CartRepository
+import com.carlosnicolaugalves.makelifebetter.repository.OrderRepository
 import com.carlosnicolaugalves.makelifebetter.repository.ProductRepository
 import com.carlosnicolaugalves.makelifebetter.repository.createCartRepository
+import com.carlosnicolaugalves.makelifebetter.repository.createOrderRepository
 import com.carlosnicolaugalves.makelifebetter.repository.createProductRepository
 import com.carlosnicolaugalves.makelifebetter.store.CartResult
 import com.carlosnicolaugalves.makelifebetter.store.CategoriesResult
 import com.carlosnicolaugalves.makelifebetter.store.OrderResult
+import com.carlosnicolaugalves.makelifebetter.store.OrdersResult
 import com.carlosnicolaugalves.makelifebetter.store.ProductsResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +30,8 @@ import kotlinx.coroutines.launch
 
 class SharedStoreViewModel(
     private val productRepository: ProductRepository = createProductRepository(),
-    private val cartRepository: CartRepository = createCartRepository()
+    private val cartRepository: CartRepository = createCartRepository(),
+    private val orderRepository: OrderRepository = createOrderRepository()
 ) {
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -56,6 +62,13 @@ class SharedStoreViewModel(
     // Order state
     private val _orderState = MutableStateFlow<OrderResult>(OrderResult.Idle)
     val orderState: StateFlow<OrderResult> = _orderState.asStateFlow()
+
+    // Orders list state
+    private val _ordersState = MutableStateFlow<OrdersResult>(OrdersResult.Idle)
+    val ordersState: StateFlow<OrdersResult> = _ordersState.asStateFlow()
+
+    private val _orders = MutableStateFlow<List<Order>>(emptyList())
+    val orders: StateFlow<List<Order>> = _orders.asStateFlow()
 
     // Selected product for detail screen
     private val _selectedProduct = MutableStateFlow<Product?>(null)
@@ -233,8 +246,43 @@ class SharedStoreViewModel(
         }
     }
 
+    fun checkoutWithInfo(address: Address, payment: PaymentInfo) {
+        viewModelScope.launch {
+            _orderState.value = OrderResult.Loading
+
+            cartRepository.checkoutWithInfo(currentUserId, address, payment)
+                .onSuccess { order ->
+                    _cart.value = Cart()
+                    _cartState.value = CartResult.Success(Cart())
+                    _orderState.value = OrderResult.Success(order)
+                }
+                .onFailure { exception ->
+                    _orderState.value = OrderResult.Error(
+                        exception.message ?: "Erro ao finalizar pedido"
+                    )
+                }
+        }
+    }
+
     fun resetOrderState() {
         _orderState.value = OrderResult.Idle
+    }
+
+    fun loadOrders() {
+        viewModelScope.launch {
+            _ordersState.value = OrdersResult.Loading
+
+            orderRepository.getOrders(currentUserId)
+                .onSuccess { ordersList ->
+                    _orders.value = ordersList
+                    _ordersState.value = OrdersResult.Success(ordersList)
+                }
+                .onFailure { exception ->
+                    _ordersState.value = OrdersResult.Error(
+                        exception.message ?: "Erro ao carregar pedidos"
+                    )
+                }
+        }
     }
 
     // iOS bridge methods
@@ -252,6 +300,14 @@ class SharedStoreViewModel(
 
     fun observeOrderState(callback: (OrderResult) -> Unit): Job {
         return orderState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeOrders(callback: (List<Order>) -> Unit): Job {
+        return orders.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observeOrdersState(callback: (OrdersResult) -> Unit): Job {
+        return ordersState.onEach { callback(it) }.launchIn(viewModelScope)
     }
 
     fun clear() {

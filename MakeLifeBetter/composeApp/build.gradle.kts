@@ -80,6 +80,9 @@ kotlin {
 
             // Ktor client for Coil network
             implementation(libs.ktor.client.core)
+
+            // Date/Time
+            implementation(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
