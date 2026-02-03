@@ -49,6 +49,8 @@ fun MainScreen(
     notificationViewModel: SharedNotificationViewModel = remember { SharedNotificationViewModel() },
     chatViewModel: SharedChatViewModel = remember { SharedChatViewModel() },
     storeViewModel: SharedStoreViewModel = remember { SharedStoreViewModel() },
+    isLoginRequired: Boolean = true,
+    onLoginClick: () -> Unit = {},
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -171,30 +173,41 @@ fun MainScreen(
     if (selectedItem == NavigationItem.MORE && moreSubScreen != MoreSubScreen.MENU) {
         when (moreSubScreen) {
             MoreSubScreen.PROFILE -> {
-                ProfileScreen(
-                    currentUser = currentUser,
-                    profileUpdateState = profileUpdateState,
-                    passwordChangeState = passwordChangeState,
-                    onSaveClick = { username, email ->
-                        viewModel.updateProfile(username, email)
-                    },
-                    onChangePasswordClick = { current, new, confirm ->
-                        viewModel.changePassword(current, new, confirm)
-                    },
-                    onLogoutClick = {
-                        viewModel.logout()
-                        onLogout()
-                    },
-                    onMyOrdersClick = {
-                        moreSubScreen = MoreSubScreen.MY_ORDERS
-                    },
-                    onSecretAccessGranted = {
-                        showSecretScreen = true
-                    },
-                    onBackClick = {
-                        moreSubScreen = MoreSubScreen.MENU
-                    }
-                )
+                if (currentUser == null && !isLoginRequired) {
+                    // Modo visitante: mostra tela para fazer login
+                    GuestProfileScreen(
+                        onLoginClick = onLoginClick,
+                        onBackClick = {
+                            moreSubScreen = MoreSubScreen.MENU
+                        }
+                    )
+                } else {
+                    // Modo normal: mostra perfil completo
+                    ProfileScreen(
+                        currentUser = currentUser,
+                        profileUpdateState = profileUpdateState,
+                        passwordChangeState = passwordChangeState,
+                        onSaveClick = { username, email ->
+                            viewModel.updateProfile(username, email)
+                        },
+                        onChangePasswordClick = { current, new, confirm ->
+                            viewModel.changePassword(current, new, confirm)
+                        },
+                        onLogoutClick = {
+                            viewModel.logout()
+                            onLogout()
+                        },
+                        onMyOrdersClick = {
+                            moreSubScreen = MoreSubScreen.MY_ORDERS
+                        },
+                        onSecretAccessGranted = {
+                            showSecretScreen = true
+                        },
+                        onBackClick = {
+                            moreSubScreen = MoreSubScreen.MENU
+                        }
+                    )
+                }
             }
             MoreSubScreen.ALARMS -> {
                 NotificationScreen(

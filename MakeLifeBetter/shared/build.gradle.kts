@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.firebase.auth)
             implementation(libs.firebase.firestore)
             implementation(libs.firebase.database)
+            implementation(libs.firebase.config)
         }
 
         iosMain.dependencies {
@@ -59,6 +60,7 @@ kotlin {
             implementation(libs.firebase.auth)
             implementation(libs.firebase.firestore)
             implementation(libs.firebase.database)
+            implementation(libs.firebase.config)
         }
 
         commonTest.dependencies {
