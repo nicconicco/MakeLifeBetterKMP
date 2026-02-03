@@ -1,5 +1,6 @@
 package com.carlosnicolaugalves.makelifebetter.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,9 +44,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.SubcomposeAsyncImage
 import com.carlosnicolaugalves.makelifebetter.components.ImagePlaceholder
 import com.carlosnicolaugalves.makelifebetter.components.formatPrice
 import com.carlosnicolaugalves.makelifebetter.model.CartItem
@@ -244,13 +248,29 @@ private fun CartItemCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Product image
-            ImagePlaceholder(
-                contentDescription = item.product.nome,
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
+            if (item.product.imagem.isNotEmpty()) {
+                SubcomposeAsyncImage(
+                    model = item.product.imagem,
+                    contentDescription = item.product.nome,
+                    modifier = modifier,
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    },
+                    error = {
+                        DetailImagePlaceholder()
+                    }
+                )
+            } else {
+                DetailImagePlaceholder(modifier = modifier)
+            }
 
             Spacer(modifier = Modifier.width(12.dp))
 

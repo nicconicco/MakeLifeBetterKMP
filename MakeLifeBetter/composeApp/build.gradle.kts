@@ -58,6 +58,9 @@ kotlin {
             // Apache POI for Excel import
             implementation(libs.apache.poi)
             implementation(libs.apache.poi.ooxml)
+
+            // Ktor client engine for Android
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -70,6 +73,13 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             api(projects.shared)
+
+            // Coil for image loading
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+
+            // Ktor client for Coil network
+            implementation(libs.ktor.client.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -77,6 +87,12 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            // Ktor client engine for JVM/Desktop
+            implementation(libs.ktor.client.okhttp)
+        }
+        iosMain.dependencies {
+            // Ktor client engine for iOS
+            implementation(libs.ktor.client.darwin)
         }
     }
 }
