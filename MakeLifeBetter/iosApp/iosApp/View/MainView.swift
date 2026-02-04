@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import ComposeApp
 
 // Store screen states
@@ -35,6 +36,11 @@ struct MainView: View {
     @State var mapViewModel = MapViewModel()
     @State var notificationViewModel = NotificationViewModel()
     @State var storeViewModel = StoreViewModel()
+
+    @State private var remoteConfig = RemoteConfigRepositoryWrapper()
+    @State private var isLoginRequired: Bool = true
+    @State private var didLoadRemoteConfig: Bool = false
+    @State private var remoteConfigTimer: Timer? = nil
 
     @State private var selectedItem: NavigationItem = .evento
     @State private var navigationPath = NavigationPath()
@@ -66,10 +72,47 @@ struct MainView: View {
             }
         }
         .onAppear {
+            if !didLoadRemoteConfig {
+                didLoadRemoteConfig = true
+                isLoginRequired = remoteConfig.isLoginRequired()
+            }
+            startRemoteConfigSync()
             if let user = loginViewModel.currentUser {
                 storeViewModel.setUserId(user.id)
             }
         }
+        .onDisappear {
+            stopRemoteConfigSync()
+        }
+    }
+
+    // MARK: - Remote Config Sync
+    private func startRemoteConfigSync() {
+        fetchAndApplyRemoteConfig()
+        remoteConfigTimer?.invalidate()
+        remoteConfigTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
+            fetchAndApplyRemoteConfig()
+        }
+    }
+
+    private func stopRemoteConfigSync() {
+        remoteConfigTimer?.invalidate()
+        remoteConfigTimer = nil
+    }
+
+    private func fetchAndApplyRemoteConfig() {
+        remoteConfig.fetchAndActivate(
+            onSuccess: { _ in
+                DispatchQueue.main.async {
+                    isLoginRequired = remoteConfig.isLoginRequired()
+                }
+            },
+            onError: { _ in
+                DispatchQueue.main.async {
+                    isLoginRequired = remoteConfig.isLoginRequired()
+                }
+            }
+        )
     }
 
     // MARK: - More Sub Screen View
@@ -77,19 +120,29 @@ struct MainView: View {
     private func moreSubScreenView(strings: AppStrings) -> some View {
         switch moreSubScreen {
         case .profile:
-            MeView(
-                currentScreen: $currentScreen,
-                strings: strings,
-                viewModel: loginViewModel,
-                onMyOrdersClick: { moreSubScreen = .myOrders }
-            )
+            Group {
+                if loginViewModel.currentUser == nil && isLoginRequired {
+                    GuestProfileView(
+                        strings: strings,
+                        onLoginClick: { currentScreen = .login },
+                        onBackClick: { moreSubScreen = .menu }
+                    )
+                } else {
+                    MeView(
+                        currentScreen: $currentScreen,
+                        strings: strings,
+                        viewModel: loginViewModel,
+                        onMyOrdersClick: { moreSubScreen = .myOrders }
+                    )
+                }
+            }
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { moreSubScreen = .menu }) {
                         HStack(spacing: 4) {
                             Image(systemName: "chevron.left")
-                            Text("Voltar")
+                            Text(strings.voltar)
                         }
                     }
                 }
@@ -102,7 +155,7 @@ struct MainView: View {
                         Button(action: { moreSubScreen = .menu }) {
                             HStack(spacing: 4) {
                                 Image(systemName: "chevron.left")
-                                Text("Voltar")
+                                Text(strings.voltar)
                             }
                         }
                     }
@@ -115,7 +168,7 @@ struct MainView: View {
                         Button(action: { moreSubScreen = .menu }) {
                             HStack(spacing: 4) {
                                 Image(systemName: "chevron.left")
-                                Text("Voltar")
+                                Text(strings.voltar)
                             }
                         }
                     }
@@ -151,10 +204,20 @@ struct MainView: View {
                 }
                 .tag(NavigationItem.loja)
 
-            ChatView(
-                currentUsername: loginViewModel.currentUser?.username ?? "Usuario",
-                viewModel: chatViewModel
-            )
+            Group {
+                if loginViewModel.currentUser == nil && isLoginRequired {
+                    GuestProfileView(
+                        strings: strings,
+                        onLoginClick: { currentScreen = .login },
+                        onBackClick: { selectedItem = .evento }
+                    )
+                } else {
+                    ChatView(
+                        currentUsername: loginViewModel.currentUser?.username ?? "Usuario",
+                        viewModel: chatViewModel
+                    )
+                }
+            }
             .tabItem {
                 Label("Chat", systemImage: "message")
             }
@@ -249,4 +312,5 @@ struct MainView: View {
             )
         }
     }
+
 }

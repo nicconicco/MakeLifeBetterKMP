@@ -64,6 +64,10 @@ struct AppStrings {
     // Home
     let bemVindo: String
     let sair: String
+
+    // Guest
+    let acessoRestritoTitulo: String
+    let acessoRestritoMensagem: String
 }
 
 struct Traducoes {
@@ -107,7 +111,9 @@ struct Traducoes {
         espanhol: "Español",
 
         bemVindo: "Bem-vindo",
-        sair: "Sair"
+        sair: "Sair",
+        acessoRestritoTitulo: "Acesso restrito",
+        acessoRestritoMensagem: "Para acessar esta área, faça login."
     )
 
     static let ingles = AppStrings(
@@ -150,7 +156,9 @@ struct Traducoes {
         espanhol: "Español",
 
         bemVindo: "Welcome",
-        sair: "Logout"
+        sair: "Logout",
+        acessoRestritoTitulo: "Restricted access",
+        acessoRestritoMensagem: "Please sign in to access this area."
     )
 
     static let espanhol = AppStrings(
@@ -193,7 +201,9 @@ struct Traducoes {
         espanhol: "Español",
 
         bemVindo: "Bienvenido",
-        sair: "Salir"
+        sair: "Salir",
+        acessoRestritoTitulo: "Acceso restringido",
+        acessoRestritoMensagem: "Para acceder a esta área, inicia sesión."
     )
 
     static func obterStrings(idioma: Idioma) -> AppStrings {
