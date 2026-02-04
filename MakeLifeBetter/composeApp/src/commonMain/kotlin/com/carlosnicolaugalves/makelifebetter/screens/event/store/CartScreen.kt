@@ -1,4 +1,4 @@
-package com.carlosnicolaugalves.makelifebetter.screens
+package com.carlosnicolaugalves.makelifebetter.screens.event.store
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,13 +43,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
-import com.carlosnicolaugalves.makelifebetter.components.ImagePlaceholder
 import com.carlosnicolaugalves.makelifebetter.components.formatPrice
 import com.carlosnicolaugalves.makelifebetter.model.CartItem
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedStoreViewModel
@@ -329,7 +328,7 @@ private fun CartItemCard(
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.width(24.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
 
                     OutlinedButton(

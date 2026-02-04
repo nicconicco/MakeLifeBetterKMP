@@ -1,4 +1,4 @@
-package com.carlosnicolaugalves.makelifebetter.screens
+package com.carlosnicolaugalves.makelifebetter.screens.login
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -86,80 +85,6 @@ fun ProfileScreen(
     var showSecretDialog by remember { mutableStateOf(false) }
     var secretPassword by remember { mutableStateOf("") }
     var secretPasswordError by remember { mutableStateOf(false) }
-
-    // Secret password dialog
-    if (showSecretDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showSecretDialog = false
-                secretPassword = ""
-                secretPasswordError = false
-            },
-            title = {
-                Text(
-                    text = "Acesso Restrito",
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column {
-                    Text(
-                        text = "Digite a senha para continuar:",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = secretPassword,
-                        onValueChange = {
-                            secretPassword = it
-                            secretPasswordError = false
-                        },
-                        label = { Text("Senha") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                        singleLine = true,
-                        isError = secretPasswordError,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    if (secretPasswordError) {
-                        Text(
-                            text = "Senha incorreta",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        if (secretPassword == SECRET_PASSWORD) {
-                            showSecretDialog = false
-                            secretPassword = ""
-                            secretPasswordError = false
-                            onSecretAccessGranted()
-                        } else {
-                            secretPasswordError = true
-                        }
-                    }
-                ) {
-                    Text("Entrar")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showSecretDialog = false
-                        secretPassword = ""
-                        secretPasswordError = false
-                    }
-                ) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
 
     LaunchedEffect(profileUpdateState) {
         if (profileUpdateState is ProfileUpdateResult.Success) {
@@ -474,88 +399,81 @@ fun ProfileScreen(
     } else {
         content(modifier)
     }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun GuestProfileScreen(
-    onLoginClick: () -> Unit,
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Meu Perfil", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar"
+    // Secret password dialog
+    if (showSecretDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showSecretDialog = false
+                secretPassword = ""
+                secretPasswordError = false
+            },
+            title = {
+                Text(
+                    text = "Acesso Restrito",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Digite a senha para continuar:",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = secretPassword,
+                        onValueChange = {
+                            secretPassword = it
+                            secretPasswordError = false
+                        },
+                        label = { Text("Senha") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        singleLine = true,
+                        isError = secretPasswordError,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (secretPasswordError) {
+                        Text(
+                            text = "Senha incorreta",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-        },
-        modifier = modifier
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Surface(
-                modifier = Modifier.size(100.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (secretPassword == SECRET_PASSWORD) {
+                            showSecretDialog = false
+                            secretPassword = ""
+                            secretPasswordError = false
+                            onSecretAccessGranted()
+                        } else {
+                            secretPasswordError = true
+                        }
+                    }
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(60.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    Text("Entrar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showSecretDialog = false
+                        secretPassword = ""
+                        secretPasswordError = false
+                    }
+                ) {
+                    Text("Cancelar")
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Voce esta como visitante",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Faca login para acessar todas as funcionalidades",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = onLoginClick,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Entrar na conta")
-            }
-        }
+        )
     }
 }
-
 @Preview
 @Composable
 fun ProfileScreenPreview() {
@@ -567,6 +485,7 @@ fun ProfileScreenPreview() {
         PasswordChangeResult.Success("ok"),
         onSaveClick = { _, _ -> },
         onChangePasswordClick = { _, _, _ -> },
-        onLogoutClick = {}
+        onLogoutClick = {},
+        onBackClick = {}
     )
 }

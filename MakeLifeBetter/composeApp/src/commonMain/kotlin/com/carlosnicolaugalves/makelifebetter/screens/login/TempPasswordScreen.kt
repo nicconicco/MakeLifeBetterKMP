@@ -1,4 +1,4 @@
-package com.carlosnicolaugalves.makelifebetter.screens
+package com.carlosnicolaugalves.makelifebetter.screens.login
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

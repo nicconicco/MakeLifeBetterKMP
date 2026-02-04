@@ -1,4 +1,4 @@
-package com.carlosnicolaugalves.makelifebetter.screens
+package com.carlosnicolaugalves.makelifebetter.screens.event
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -21,7 +21,7 @@ import com.carlosnicolaugalves.makelifebetter.repository.getSampleEventSections
  * Follows Material Design 3 guidelines and best practices
  */
 @Composable
-fun SectionedListScreen(
+fun EventListScreen(
     sections: List<EventSection>,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
@@ -144,9 +144,9 @@ private fun EventCard(
  */
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun SectionedListScreenPreview() {
+private fun EventListScreenPreview() {
     MaterialTheme {
-        SectionedListScreen(
+        EventListScreen(
             sections = getSampleEventSections()
         )
     }
@@ -157,11 +157,11 @@ private fun SectionedListScreenPreview() {
  */
 @Preview
 @Composable
-private fun SectionedListScreenDarkPreview() {
+private fun EventListScreenDarkPreview() {
     MaterialTheme(
         colorScheme = darkColorScheme()
     ) {
-        SectionedListScreen(
+        EventListScreen(
             sections = getSampleEventSections()
         )
     }

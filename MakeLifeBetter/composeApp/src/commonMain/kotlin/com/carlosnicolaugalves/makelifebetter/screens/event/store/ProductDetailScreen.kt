@@ -1,9 +1,10 @@
-package com.carlosnicolaugalves.makelifebetter.screens
+package com.carlosnicolaugalves.makelifebetter.screens.event.store
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -44,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import com.carlosnicolaugalves.makelifebetter.components.formatPrice
@@ -186,7 +188,7 @@ fun ProductDetailScreen(
                         onClick = { if (quantity > 1) quantity-- },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.size(48.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Remove,
@@ -199,14 +201,14 @@ fun ProductDetailScreen(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.width(48.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
 
                     OutlinedButton(
                         onClick = { quantity++ },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.size(48.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Add,

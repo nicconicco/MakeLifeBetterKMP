@@ -1,4 +1,4 @@
-package com.carlosnicolaugalves.makelifebetter.screens
+package com.carlosnicolaugalves.makelifebetter.screens.more
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

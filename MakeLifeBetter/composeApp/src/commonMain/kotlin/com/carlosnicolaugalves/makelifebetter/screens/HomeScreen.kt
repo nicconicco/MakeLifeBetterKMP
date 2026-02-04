@@ -18,6 +18,20 @@ import com.carlosnicolaugalves.makelifebetter.event.EventSectionsResult
 import com.carlosnicolaugalves.makelifebetter.model.Event
 import com.carlosnicolaugalves.makelifebetter.model.Product
 import com.carlosnicolaugalves.makelifebetter.navigation.NavigationItem
+import com.carlosnicolaugalves.makelifebetter.repository.createRemoteConfigRepository
+import com.carlosnicolaugalves.makelifebetter.screens.event.EventDetailScreen
+import com.carlosnicolaugalves.makelifebetter.screens.event.EventListScreen
+import com.carlosnicolaugalves.makelifebetter.screens.login.GuestProfileScreen
+import com.carlosnicolaugalves.makelifebetter.screens.login.ProfileScreen
+import com.carlosnicolaugalves.makelifebetter.screens.login.SecretScreen
+import com.carlosnicolaugalves.makelifebetter.screens.event.store.CartScreen
+import com.carlosnicolaugalves.makelifebetter.screens.event.store.CheckoutScreen
+import com.carlosnicolaugalves.makelifebetter.screens.event.store.MyOrdersScreen
+import com.carlosnicolaugalves.makelifebetter.screens.event.store.OrderConfirmationScreen
+import com.carlosnicolaugalves.makelifebetter.screens.event.store.ProductDetailScreen
+import com.carlosnicolaugalves.makelifebetter.screens.event.store.StoreScreen
+import com.carlosnicolaugalves.makelifebetter.screens.more.HireMeScreen
+import com.carlosnicolaugalves.makelifebetter.screens.more.NotificationScreen
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedChatViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedEventViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
@@ -75,6 +89,9 @@ fun MainScreen(
 
     val isLoading = sectionsState is EventSectionsResult.Loading
 
+    val remoteConfigRepository = remember { createRemoteConfigRepository() }
+    var isLoginRequired by remember { mutableStateOf(true) }
+
     // Handle notification permission request
     NotificationPermissionHandler(
         shouldRequest = shouldRequestPermission,
@@ -92,6 +109,11 @@ fun MainScreen(
             val allEvents = eventSections.flatMap { it.eventos }
             notificationViewModel.scheduleNotificationsForEvents(allEvents)
         }
+    }
+
+    // Busca configuracao do Remote Config ao iniciar
+    LaunchedEffect(Unit) {
+        isLoginRequired = remoteConfigRepository.isLoginRequired()
     }
 
     // Se tiver a tela secreta ativa, mostra ela
@@ -134,6 +156,7 @@ fun MainScreen(
                     )
                 }
             }
+
             StoreScreenState.CART -> {
                 CartScreen(
                     viewModel = storeViewModel,
@@ -145,6 +168,7 @@ fun MainScreen(
                     }
                 )
             }
+
             StoreScreenState.CHECKOUT -> {
                 CheckoutScreen(
                     viewModel = storeViewModel,
@@ -156,6 +180,7 @@ fun MainScreen(
                     }
                 )
             }
+
             StoreScreenState.ORDER_CONFIRMATION -> {
                 OrderConfirmationScreen(
                     viewModel = storeViewModel,
@@ -164,6 +189,7 @@ fun MainScreen(
                     }
                 )
             }
+
             else -> {}
         }
         return
@@ -173,7 +199,7 @@ fun MainScreen(
     if (selectedItem == NavigationItem.MORE && moreSubScreen != MoreSubScreen.MENU) {
         when (moreSubScreen) {
             MoreSubScreen.PROFILE -> {
-                if (currentUser == null && !isLoginRequired) {
+                if (currentUser == null && isLoginRequired) {
                     // Modo visitante: mostra tela para fazer login
                     GuestProfileScreen(
                         onLoginClick = onLoginClick,
@@ -209,6 +235,7 @@ fun MainScreen(
                     )
                 }
             }
+
             MoreSubScreen.ALARMS -> {
                 NotificationScreen(
                     viewModel = notificationViewModel,
@@ -217,6 +244,7 @@ fun MainScreen(
                     }
                 )
             }
+
             MoreSubScreen.CONTACT -> {
                 HireMeScreen(
                     onBackClick = {
@@ -224,6 +252,7 @@ fun MainScreen(
                     }
                 )
             }
+
             MoreSubScreen.MY_ORDERS -> {
                 MyOrdersScreen(
                     viewModel = storeViewModel,
@@ -232,6 +261,7 @@ fun MainScreen(
                     }
                 )
             }
+
             else -> {}
         }
         return
@@ -272,13 +302,14 @@ fun MainScreen(
                 .padding(paddingValues)
         ) {
             when (selectedItem) {
-                NavigationItem.EVENTO -> SectionedListScreen(
+                NavigationItem.EVENTO -> EventListScreen(
                     sections = eventSections,
                     isLoading = isLoading,
                     onItemClick = { event ->
                         selectedEvent = event
                     }
                 )
+
                 NavigationItem.LOJA -> StoreScreen(
                     viewModel = storeViewModel,
                     isAdmin = currentUser?.isAdmin ?: false,
@@ -290,10 +321,23 @@ fun MainScreen(
                         storeScreenState = StoreScreenState.CART
                     }
                 )
-                NavigationItem.CHAT -> ChatScreen(
-                    currentUsername = currentUser?.username ?: "Usuario",
-                    chatViewModel = chatViewModel
-                )
+
+                NavigationItem.CHAT -> {
+                    if (currentUser == null && isLoginRequired) {
+                        GuestProfileScreen(
+                            onLoginClick = onLoginClick,
+                            onBackClick = {
+                                moreSubScreen = MoreSubScreen.MENU
+                            }
+                        )
+                    } else {
+                        ChatScreen(
+                            currentUsername = currentUser?.username ?: "Usuario",
+                            chatViewModel = chatViewModel
+                        )
+                    }
+                }
+
                 NavigationItem.MAPA -> MapScreen()
                 NavigationItem.MORE -> MoreScreen(
                     onMenuItemClick = { menuItem ->
