@@ -5,21 +5,16 @@ import com.carlosnicolaugalves.makelifebetter.model.ChatMessage
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.database.DataSnapshot
 import dev.gitlive.firebase.database.database
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
 import kotlin.time.Clock
 
 class FirebaseGeneralChatRepository : GeneralChatRepository {
 
     private val database by lazy { Firebase.database }
     private val messagesRef by lazy { database.reference("lista_geral") }
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private fun parseSnapshot(snapshot: DataSnapshot): List<ChatMessage> {
         val messages = mutableListOf<ChatMessage>()
@@ -85,18 +80,11 @@ class FirebaseGeneralChatRepository : GeneralChatRepository {
         }
     }
 
-    override fun observeMessages(): Flow<List<ChatMessage>> = callbackFlow {
-        scope.launch {
-            try {
-                messagesRef.valueEvents.collect { snapshot ->
-                    val messages = parseSnapshot(snapshot)
-                    trySend(messages)
-                }
-            } catch (e: Exception) {
+    override fun observeMessages(): Flow<List<ChatMessage>> =
+        messagesRef.valueEvents
+            .map { snapshot -> parseSnapshot(snapshot) }
+            .catch { e ->
                 Log.e("FirebaseChatRepo", "Error observing messages: ${e.message}")
+                emit(emptyList())
             }
-        }
-
-        awaitClose { }
-    }
 }

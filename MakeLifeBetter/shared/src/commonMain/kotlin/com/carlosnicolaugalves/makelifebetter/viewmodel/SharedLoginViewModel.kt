@@ -224,10 +224,13 @@ class SharedLoginViewModel(
      * Realiza logout do usuário atual
      */
     fun logout() {
-        _currentUser.value = null
-        _loginState.value = AuthResult.Idle
-        _profileUpdateState.value = ProfileUpdateResult.Idle
-        _passwordChangeState.value = PasswordChangeResult.Idle
+        viewModelScope.launch {
+            repository.logout()
+            _currentUser.value = null
+            _loginState.value = AuthResult.Idle
+            _profileUpdateState.value = ProfileUpdateResult.Idle
+            _passwordChangeState.value = PasswordChangeResult.Idle
+        }
     }
 
     /**

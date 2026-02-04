@@ -147,4 +147,9 @@ class LocalAuthRepository : AuthRepository {
         // Simula sucesso para testes locais
         return Result.success("Senha alterada com sucesso")
     }
+
+    override suspend fun logout(): Result<Unit> {
+        // Nada a fazer no modo local, mas mantemos a assinatura consistente
+        return Result.success(Unit)
+    }
 }

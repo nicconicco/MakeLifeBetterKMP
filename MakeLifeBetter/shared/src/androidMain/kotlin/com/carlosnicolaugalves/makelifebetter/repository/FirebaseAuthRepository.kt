@@ -231,4 +231,13 @@ class FirebaseAuthRepository : AuthRepository {
             Result.failure(Exception(message))
         }
     }
+
+    override suspend fun logout(): Result<Unit> {
+        return try {
+            auth.signOut()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "Erro ao fazer logout"))
+        }
+    }
 }
