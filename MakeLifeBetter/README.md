@@ -79,9 +79,11 @@ A full app demonstration video is available in the repository:
 | SwiftUI | Native iOS UI |
 | MapKit | Native map rendering |
 | UserNotifications | Local notification scheduling |
-| FirebaseCore (CocoaPods) | Firebase configuration |
-| FirebaseAuth (CocoaPods) | Authentication |
-| FirebaseFirestore (CocoaPods) | Database |
+| FirebaseCore (SPM) | Firebase configuration |
+| FirebaseAuth (SPM) | Authentication |
+| FirebaseFirestore (SPM) | Database |
+| FirebaseDatabase (SPM) | Realtime Database |
+| FirebaseRemoteConfig (SPM) | Remote Config |
 
 ### Server
 
@@ -235,7 +237,6 @@ MakeLifeBetter/
 - **Android Studio** Ladybug or newer (with KMP plugin)
 - **Xcode 15+** (for iOS builds)
 - **JDK 17**
-- **CocoaPods** (`gem install cocoapods`)
 
 ### Firebase Setup
 
@@ -265,9 +266,8 @@ MAPS_API_KEY=your_google_maps_api_key_here
 
 **iOS:**
 ```bash
-cd iosApp
-pod install
-open iosApp.xcworkspace
+# Abra no Xcode (SPM resolve as dependencias automaticamente)
+open iosApp/iosApp.xcodeproj
 # Build and run from Xcode
 ```
 

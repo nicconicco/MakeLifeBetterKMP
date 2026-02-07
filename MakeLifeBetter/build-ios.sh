@@ -60,26 +60,6 @@ build_device() {
     print_success "ComposeApp framework compilado"
 }
 
-# Funcao para atualizar CocoaPods
-update_pods() {
-    print_header "Atualizando CocoaPods"
-
-    if [ -d "iosApp" ]; then
-        cd iosApp
-
-        if command -v pod &> /dev/null; then
-            pod install --repo-update
-            print_success "Pods atualizados"
-        else
-            print_warning "CocoaPods nao encontrado. Instale com: sudo gem install cocoapods"
-        fi
-
-        cd "$PROJECT_DIR"
-    else
-        print_warning "Diretorio iosApp nao encontrado"
-    fi
-}
-
 # Funcao para mostrar ajuda
 show_help() {
     echo "Uso: ./build-ios.sh [opcao]"
@@ -88,7 +68,6 @@ show_help() {
     echo "  simulator    Compila apenas para iOS Simulator"
     echo "  device       Compila apenas para iOS Device"
     echo "  all          Compila para Simulator e Device"
-    echo "  pods         Apenas atualiza os CocoaPods"
     echo "  clean        Limpa o build e recompila para simulator"
     echo "  help         Mostra esta ajuda"
     echo ""
@@ -118,9 +97,6 @@ main() {
             build_simulator
             build_device
             ;;
-        pods)
-            update_pods
-            ;;
         clean)
             clean_build
             ;;
@@ -142,7 +118,7 @@ main() {
     echo -e "  ${GREEN}composeApp/build/bin/iosSimulatorArm64/releaseFramework/${NC}"
     echo ""
     echo -e "Para abrir o projeto iOS no Xcode:"
-    echo -e "  ${YELLOW}open iosApp/iosApp.xcworkspace${NC}"
+    echo -e "  ${YELLOW}open iosApp/iosApp.xcodeproj${NC}"
 }
 
 main "$@"
