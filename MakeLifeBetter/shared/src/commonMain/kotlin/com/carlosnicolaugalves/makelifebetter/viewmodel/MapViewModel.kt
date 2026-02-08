@@ -33,7 +33,20 @@ class MapViewModel(
         loadEventLocation()
     }
 
+    /**
+     * Loads event location from repository.
+     * Uses session cache - only fetches from API if data hasn't been loaded yet.
+     */
     fun loadEventLocation() {
+        // Session cache: only load if state is Idle (not loaded yet)
+        // If already loaded (Success) or loading, skip the API call
+        if (_eventLocationState.value is EventLocationState.Success) {
+            return
+        }
+        if (_eventLocationState.value is EventLocationState.Loading) {
+            return
+        }
+
         viewModelScope.launch {
             _eventLocationState.value = EventLocationState.Loading
 
@@ -50,7 +63,11 @@ class MapViewModel(
         }
     }
 
+    /**
+     * Forces a refresh of the event location, bypassing the cache.
+     */
     fun refreshEventLocation() {
+        _eventLocationState.value = EventLocationState.Idle
         loadEventLocation()
     }
 }

@@ -18,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,8 +36,8 @@ const val DEFAULT_LNG = -49.2733
 
 @Composable
 fun MapScreen(
-    modifier: Modifier = Modifier,
-    mapViewModel: MapViewModel = remember { MapViewModel() }
+    mapViewModel: MapViewModel,
+    modifier: Modifier = Modifier
 ) {
     val eventLocation by mapViewModel.eventLocation.collectAsState()
     val eventLocationState by mapViewModel.eventLocationState.collectAsState()

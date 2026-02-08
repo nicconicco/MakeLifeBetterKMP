@@ -36,6 +36,7 @@ import com.carlosnicolaugalves.makelifebetter.screens.event.store.StoreScreen
 import com.carlosnicolaugalves.makelifebetter.screens.more.HireMeScreen
 import com.carlosnicolaugalves.makelifebetter.screens.more.NotificationScreen
 import com.carlosnicolaugalves.makelifebetter.util.PlatformBackHandler
+import com.carlosnicolaugalves.makelifebetter.viewmodel.MapViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedChatViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedEventViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
@@ -67,6 +68,7 @@ fun MainScreen(
     notificationViewModel: SharedNotificationViewModel = remember { SharedNotificationViewModel() },
     chatViewModel: SharedChatViewModel = remember { SharedChatViewModel() },
     storeViewModel: SharedStoreViewModel = remember { SharedStoreViewModel() },
+    mapViewModel: MapViewModel = remember { MapViewModel() },
     isLoginRequired: Boolean = true,
     onLoginClick: () -> Unit = {},
     onLogout: () -> Unit,
@@ -414,6 +416,7 @@ fun MainScreen(
                 }
 
                 NavigationItem.MAPA -> MapScreen(
+                    mapViewModel = mapViewModel,
                     modifier = Modifier
                         .fillMaxSize()
                         .windowInsetsPadding(WindowInsets.statusBars)
