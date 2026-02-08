@@ -1,5 +1,6 @@
 package com.carlosnicolaugalves.makelifebetter.screens.event.store
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +45,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -129,127 +132,147 @@ fun StoreScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Loja",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                actions = {
-                    IconButton(onClick = onCartClick) {
-                        BadgedBox(
-                            badge = {
-                                if (cart.totalItems > 0) {
-                                    Badge(
-                                        containerColor = MaterialTheme.colorScheme.error
-                                    ) {
-                                        Text(
-                                            text = cart.totalItems.toString(),
-                                            color = MaterialTheme.colorScheme.onError
-                                        )
+    val gradient = Brush.verticalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.secondary,
+            MaterialTheme.colorScheme.secondaryContainer
+        )
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(gradient)
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Loja",
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    actions = {
+                        IconButton(onClick = onCartClick) {
+                            BadgedBox(
+                                badge = {
+                                    if (cart.totalItems > 0) {
+                                        Badge(
+                                            containerColor = MaterialTheme.colorScheme.error
+                                        ) {
+                                            Text(
+                                                text = cart.totalItems.toString(),
+                                                color = MaterialTheme.colorScheme.onError
+                                            )
+                                        }
                                     }
                                 }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.ShoppingCart,
-                                contentDescription = "Carrinho"
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-        },
-        modifier = modifier
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            // Category chips
-            if (categories.isNotEmpty()) {
-                CategoryChipsRow(
-                    categories = categories,
-                    selectedCategory = selectedCategory,
-                    onCategorySelected = { category ->
-                        viewModel.selectCategory(category)
-                    }
-                )
-            }
-
-            // Products grid
-            when (productsState) {
-                is ProductsResult.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-                is ProductsResult.Error -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Error,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Erro ao carregar produtos",
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Button(
-                                onClick = {
-                                    viewModel.loadProducts()
-                                    viewModel.loadCategories()
-                                }
                             ) {
-                                Text("Tentar novamente")
+                                Icon(
+                                    imageVector = Icons.Filled.ShoppingCart,
+                                    contentDescription = "Carrinho"
+                                )
                             }
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSecondary,
+                        titleContentColor = MaterialTheme.colorScheme.onSecondary,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSecondary
+                    )
+                )
+            },
+            containerColor = Color.Transparent,
+            modifier = Modifier.fillMaxSize()
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                // Category chips
+                if (categories.isNotEmpty()) {
+                    CategoryChipsRow(
+                        categories = categories,
+                        selectedCategory = selectedCategory,
+                        onCategorySelected = { category ->
+                            viewModel.selectCategory(category)
+                        }
+                    )
                 }
-                else -> {
-                    if (products.isEmpty()) {
+
+                // Products grid
+                when (productsState) {
+                    is ProductsResult.Loading -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "Nenhum produto encontrado",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            CircularProgressIndicator()
                         }
-                    } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            contentPadding = PaddingValues(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.fillMaxSize()
+                    }
+                    is ProductsResult.Error -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            items(products) { product ->
-                                ProductCard(
-                                    product = product,
-                                    onProductClick = onProductClick,
-                                    onAddToCart = { viewModel.addToCart(it) }
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Error,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(48.dp)
                                 )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Erro ao carregar produtos",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    onClick = {
+                                        viewModel.loadProducts()
+                                        viewModel.loadCategories()
+                                    }
+                                ) {
+                                    Text("Tentar novamente")
+                                }
+                            }
+                        }
+                    }
+                    else -> {
+                        if (products.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Nenhum produto encontrado",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                contentPadding = PaddingValues(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.White)
+                            ) {
+                                items(products) { product ->
+                                    ProductCard(
+                                        product = product,
+                                        onProductClick = onProductClick,
+                                        onAddToCart = { viewModel.addToCart(it) }
+                                    )
+                                }
                             }
                         }
                     }

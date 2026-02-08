@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 fun GuestProfileScreen(
     onLoginClick: () -> Unit,
     onBackClick: () -> Unit,
+    topBarInsets: WindowInsets = TopAppBarDefaults.windowInsets,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -49,6 +51,7 @@ fun GuestProfileScreen(
                         )
                     }
                 },
+                windowInsets = topBarInsets,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )

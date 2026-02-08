@@ -22,11 +22,36 @@ import com.carlosnicolaugalves.makelifebetter.navigation.NavigationItem
 fun BottomNavigationBar(
     selectedItem: NavigationItem,
     onItemSelected: (NavigationItem) -> Unit,
+    useSecondaryBackground: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val containerColor = if (useSecondaryBackground) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceContainer
+    }
+
+    val itemColors = if (useSecondaryBackground) {
+        NavigationBarItemDefaults.colors(
+            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+            unselectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+        )
+    } else {
+        NavigationBarItemDefaults.colors(
+            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+
     NavigationBar(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = containerColor
     ) {
         NavigationItem.entries.forEach { navItem ->
             NavigationBarItem(
@@ -44,13 +69,7 @@ fun BottomNavigationBar(
                 },
                 selected = selectedItem == navItem,
                 onClick = { onItemSelected(navItem) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                colors = itemColors
             )
         }
     }

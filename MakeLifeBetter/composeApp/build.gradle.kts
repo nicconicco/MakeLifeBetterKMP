@@ -61,6 +61,9 @@ kotlin {
 
             // Ktor client engine for Android
             implementation(libs.ktor.client.okhttp)
+
+            // Firebase Firestore (Remote Theme)
+            implementation(libs.firebase.firestore)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

@@ -1,9 +1,12 @@
 package com.carlosnicolaugalves.makelifebetter.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -274,6 +277,8 @@ fun MainScreen(
         }
     }
 
+    val useSecondaryBars = selectedItem == NavigationItem.LOJA || selectedItem == NavigationItem.MORE
+
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
@@ -291,9 +296,11 @@ fun MainScreen(
                     }
                     selectedItem = newItem
                 },
+                useSecondaryBackground = useSecondaryBars,
                 modifier = Modifier.fillMaxWidth()
             )
         },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
         Box(
@@ -307,7 +314,10 @@ fun MainScreen(
                     isLoading = isLoading,
                     onItemClick = { event ->
                         selectedEvent = event
-                    }
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.statusBars)
                 )
 
                 NavigationItem.LOJA -> StoreScreen(
@@ -331,14 +341,24 @@ fun MainScreen(
                             }
                         )
                     } else {
-                        ChatScreen(
-                            currentUsername = currentUser?.username ?: "Usuario",
-                            chatViewModel = chatViewModel
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .windowInsetsPadding(WindowInsets.statusBars)
+                        ) {
+                            ChatScreen(
+                                currentUsername = currentUser?.username ?: "Usuario",
+                                chatViewModel = chatViewModel
+                            )
+                        }
                     }
                 }
 
-                NavigationItem.MAPA -> MapScreen()
+                NavigationItem.MAPA -> MapScreen(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.statusBars)
+                )
                 NavigationItem.MORE -> MoreScreen(
                     onMenuItemClick = { menuItem ->
                         when (menuItem) {

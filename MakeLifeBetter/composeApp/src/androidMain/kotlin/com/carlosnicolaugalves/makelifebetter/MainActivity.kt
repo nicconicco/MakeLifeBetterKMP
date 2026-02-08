@@ -5,8 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.carlosnicolaugalves.makelifebetter.notification.AndroidNotificationScheduler
+import com.carlosnicolaugalves.makelifebetter.theme.ThemeDefaults
+import com.carlosnicolaugalves.makelifebetter.theme.rememberRemoteThemePalettes
+import com.carlosnicolaugalves.makelifebetter.theme.toColorScheme
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +25,15 @@ class MainActivity : ComponentActivity() {
         AndroidNotificationScheduler.init(this)
 
         setContent {
-            AppView(viewModel)
+            val palettes by rememberRemoteThemePalettes()
+            val isDark = isSystemInDarkTheme()
+//            val isDark = true
+            val colorScheme = if (isDark) {
+                palettes.dark.toColorScheme(isDark)
+            } else {
+                palettes.light.toColorScheme(isDark)
+            }
+            AppView(viewModel, colorScheme = colorScheme)
         }
     }
 }
@@ -30,5 +43,12 @@ class MainActivity : ComponentActivity() {
 fun AppViewAndroidPreview() {
     val viewModel = SharedLoginViewModel()
 
-    AppView(viewModel)
+    val isDark = true
+    val palettes = ThemeDefaults.palettes
+    val colorScheme = if (isDark) {
+        palettes.dark.toColorScheme(isDark)
+    } else {
+        palettes.light.toColorScheme(isDark)
+    }
+    AppView(viewModel, colorScheme = colorScheme)
 }

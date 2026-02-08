@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,7 +48,10 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 @Preview
-fun AppView(viewModel: SharedLoginViewModel) {
+fun AppView(
+    viewModel: SharedLoginViewModel,
+    colorScheme: ColorScheme? = null
+) {
     var currentScreen by remember { mutableStateOf(Screen.Loading) }
     var termsAccepted by remember { mutableStateOf(false) }
     var currentLanguage by remember { mutableStateOf(Language.PORTUGUESE) }
@@ -87,7 +91,7 @@ fun AppView(viewModel: SharedLoginViewModel) {
         else -> {}
     }
 
-    MaterialTheme {
+    val content: @Composable () -> Unit = {
         val strings = Translations.getStrings(currentLanguage)
 
         Column(
@@ -208,6 +212,12 @@ fun AppView(viewModel: SharedLoginViewModel) {
                 else -> {}
             }
         }
+    }
+
+    if (colorScheme != null) {
+        MaterialTheme(colorScheme = colorScheme, content = content)
+    } else {
+        MaterialTheme(content = content)
     }
 }
 
