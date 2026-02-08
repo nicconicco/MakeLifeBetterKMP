@@ -35,6 +35,7 @@ import com.carlosnicolaugalves.makelifebetter.screens.event.store.ProductDetailS
 import com.carlosnicolaugalves.makelifebetter.screens.event.store.StoreScreen
 import com.carlosnicolaugalves.makelifebetter.screens.more.HireMeScreen
 import com.carlosnicolaugalves.makelifebetter.screens.more.NotificationScreen
+import com.carlosnicolaugalves.makelifebetter.util.PlatformBackHandler
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedChatViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedEventViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
@@ -94,6 +95,64 @@ fun MainScreen(
 
     val remoteConfigRepository = remember { createRemoteConfigRepository() }
     var isLoginRequired by remember { mutableStateOf(true) }
+
+    // Handle system back button - navigate within app instead of going to background
+    PlatformBackHandler(enabled = true) {
+        when {
+            // If showing secret screen, go back to normal
+            showSecretScreen -> {
+                showSecretScreen = false
+                eventViewModel.refreshSections()
+            }
+            // If showing event detail, go back to list
+            selectedEvent != null -> {
+                selectedEvent = null
+            }
+            // If in store sub-screen, navigate back in store hierarchy
+            selectedItem == NavigationItem.LOJA && storeScreenState != StoreScreenState.LIST -> {
+                when (storeScreenState) {
+                    StoreScreenState.DETAIL -> {
+                        selectedProduct = null
+                        storeScreenState = StoreScreenState.LIST
+                    }
+                    StoreScreenState.CART -> {
+                        storeScreenState = StoreScreenState.LIST
+                    }
+                    StoreScreenState.CHECKOUT -> {
+                        storeScreenState = StoreScreenState.CART
+                    }
+                    StoreScreenState.ORDER_CONFIRMATION -> {
+                        storeScreenState = StoreScreenState.LIST
+                    }
+                    else -> {}
+                }
+            }
+            // If in more sub-screen, navigate back in more hierarchy
+            selectedItem == NavigationItem.MORE && moreSubScreen != MoreSubScreen.MENU -> {
+                when (moreSubScreen) {
+                    MoreSubScreen.MY_ORDERS -> {
+                        moreSubScreen = MoreSubScreen.PROFILE
+                    }
+                    else -> {
+                        moreSubScreen = MoreSubScreen.MENU
+                    }
+                }
+            }
+            // If on a non-home tab, go back to home tab (EVENTO)
+            selectedItem != NavigationItem.EVENTO -> {
+                // Reset sub-navigation states when going back
+                if (selectedItem == NavigationItem.LOJA) {
+                    storeScreenState = StoreScreenState.LIST
+                    selectedProduct = null
+                }
+                if (selectedItem == NavigationItem.MORE) {
+                    moreSubScreen = MoreSubScreen.MENU
+                }
+                selectedItem = NavigationItem.EVENTO
+            }
+            // On home tab (EVENTO), do nothing - stay on screen, don't go to background
+        }
+    }
 
     // Handle notification permission request
     NotificationPermissionHandler(

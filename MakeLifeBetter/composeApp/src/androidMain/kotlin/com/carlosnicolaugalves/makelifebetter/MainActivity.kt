@@ -27,7 +27,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             val palettes by rememberRemoteThemePalettes()
             val isDark = isSystemInDarkTheme()
-//            val isDark = true
             val colorScheme = if (isDark) {
                 palettes.dark.toColorScheme(isDark)
             } else {

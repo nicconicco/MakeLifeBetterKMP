@@ -37,6 +37,7 @@ import com.carlosnicolaugalves.makelifebetter.screens.login.LoginScreen
 import com.carlosnicolaugalves.makelifebetter.screens.MainScreen
 import com.carlosnicolaugalves.makelifebetter.screens.login.RegisterFormData
 import com.carlosnicolaugalves.makelifebetter.screens.login.RegisterScreen
+import com.carlosnicolaugalves.makelifebetter.util.PlatformBackHandler
 import com.carlosnicolaugalves.makelifebetter.screens.login.TempPasswordScreen
 import com.carlosnicolaugalves.makelifebetter.screens.login.TermsScreen
 import com.carlosnicolaugalves.makelifebetter.util.Language
@@ -89,6 +90,45 @@ fun AppView(
             ErrorDialog((loginState as AuthResult.Error).message)
         }
         else -> {}
+    }
+
+    // Handle system back button - navigate within app instead of going to background
+    PlatformBackHandler(enabled = true) {
+        when (currentScreen) {
+            // From Register, go back to Login
+            Screen.Register -> {
+                viewModel.resetRegisterState()
+                registerFormData = RegisterFormData()
+                termsAccepted = false
+                currentScreen = Screen.Login
+            }
+            // From Terms, go back to Register
+            Screen.Terms -> {
+                currentScreen = Screen.Register
+            }
+            // From ForgotPassword, go back to Login
+            Screen.ForgotPassword -> {
+                viewModel.resetPasswordRecoveryState()
+                currentScreen = Screen.Login
+            }
+            // From TempPassword, go back to Login
+            Screen.TempPassword -> {
+                viewModel.resetPasswordRecoveryState()
+                currentScreen = Screen.Login
+            }
+            // From Language, go back to Login
+            Screen.Language -> {
+                currentScreen = Screen.Login
+            }
+            // On Login or Home, do nothing - stay on screen, don't go to background
+            Screen.Login, Screen.Home, Screen.Loading -> {
+                // Do nothing - prevent app from going to background
+            }
+            else -> {
+                // For any other screen, go to Login
+                currentScreen = Screen.Login
+            }
+        }
     }
 
     val content: @Composable () -> Unit = {

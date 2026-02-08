@@ -62,6 +62,8 @@ kotlin {
             // Ktor client engine for Android
             implementation(libs.ktor.client.okhttp)
 
+            // Firebase BOM (Bill of Materials) - manages versions for all Firebase dependencies
+            implementation(project.dependencies.platform(libs.firebase.bom))
             // Firebase Firestore (Remote Theme)
             implementation(libs.firebase.firestore)
         }
