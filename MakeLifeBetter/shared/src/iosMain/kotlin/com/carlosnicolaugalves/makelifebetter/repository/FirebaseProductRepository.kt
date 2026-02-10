@@ -27,7 +27,10 @@ class FirebaseProductRepository : ProductRepository {
                         preco = doc.get<Double>("preco"),
                         imagem = doc.get<String>("imagem"),
                         categoria = doc.get<String>("categoria"),
-                        ativo = ativo
+                        ativo = ativo,
+                        caracteristicas = doc.get<String?>("caracteristicas") ?: "",
+                        curiosidades = doc.get<String?>("curiosidades") ?: "",
+                        harmonizacao = doc.get<String?>("harmonizacao") ?: ""
                     )
                 } catch (e: Exception) {
                     null
@@ -52,7 +55,10 @@ class FirebaseProductRepository : ProductRepository {
                     preco = doc.get<Double>("preco"),
                     imagem = doc.get<String>("imagem"),
                     categoria = doc.get<String>("categoria"),
-                    ativo = doc.get<Boolean?>("ativo") ?: true
+                    ativo = doc.get<Boolean?>("ativo") ?: true,
+                    caracteristicas = doc.get<String?>("caracteristicas") ?: "",
+                    curiosidades = doc.get<String?>("curiosidades") ?: "",
+                    harmonizacao = doc.get<String?>("harmonizacao") ?: ""
                 )
                 Result.success(product)
             } else {
@@ -81,7 +87,10 @@ class FirebaseProductRepository : ProductRepository {
                         preco = doc.get<Double>("preco"),
                         imagem = doc.get<String>("imagem"),
                         categoria = doc.get<String>("categoria"),
-                        ativo = ativo
+                        ativo = ativo,
+                        caracteristicas = doc.get<String?>("caracteristicas") ?: "",
+                        curiosidades = doc.get<String?>("curiosidades") ?: "",
+                        harmonizacao = doc.get<String?>("harmonizacao") ?: ""
                     )
                 } catch (e: Exception) {
                     null

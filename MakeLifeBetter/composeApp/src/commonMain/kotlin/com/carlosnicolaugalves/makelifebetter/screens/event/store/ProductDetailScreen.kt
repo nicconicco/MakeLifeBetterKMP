@@ -53,6 +53,10 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import com.carlosnicolaugalves.makelifebetter.components.formatPrice
 import com.carlosnicolaugalves.makelifebetter.model.Product
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.FormatListBulleted
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -239,9 +243,73 @@ fun ProductDetailScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
+                if (product.caracteristicas.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DetailSection(
+                        icon = Icons.Filled.FormatListBulleted,
+                        title = "Características",
+                        content = product.caracteristicas
+                    )
+                }
+
+                if (product.curiosidades.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DetailSection(
+                        icon = Icons.Filled.Lightbulb,
+                        title = "Curiosidades",
+                        content = product.curiosidades
+                    )
+                }
+
+                if (product.harmonizacao.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DetailSection(
+                        icon = Icons.Filled.Restaurant,
+                        title = "Harmonização",
+                        content = product.harmonizacao
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(80.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun DetailSection(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    content: String
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+        Text(
+            text = content,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

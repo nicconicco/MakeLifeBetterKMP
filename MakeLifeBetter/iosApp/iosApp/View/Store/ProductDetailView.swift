@@ -28,6 +28,9 @@ struct ProductDetailView: View {
                         name: product.nome,
                         price: product.formattedPrice,
                         description: product.descricao,
+                        caracteristicas: product.caracteristicas,
+                        curiosidades: product.curiosidades,
+                        harmonizacao: product.harmonizacao,
                         quantity: $quantity
                     )
                 }
@@ -125,6 +128,9 @@ private struct ProductInfoCard: View {
     let name: String
     let price: String
     let description: String
+    let caracteristicas: String
+    let curiosidades: String
+    let harmonizacao: String
     @Binding var quantity: Int32
 
     var body: some View {
@@ -156,6 +162,33 @@ private struct ProductInfoCard: View {
                 }
             }
 
+            if !caracteristicas.isEmpty {
+                Divider()
+                DetailSection(
+                    icon: "list.bullet.rectangle",
+                    title: "Características",
+                    content: caracteristicas
+                )
+            }
+
+            if !curiosidades.isEmpty {
+                Divider()
+                DetailSection(
+                    icon: "lightbulb",
+                    title: "Curiosidades",
+                    content: curiosidades
+                )
+            }
+
+            if !harmonizacao.isEmpty {
+                Divider()
+                DetailSection(
+                    icon: "fork.knife",
+                    title: "Harmonização",
+                    content: harmonizacao
+                )
+            }
+
             Divider()
 
             QuantitySelector(quantity: $quantity)
@@ -165,6 +198,31 @@ private struct ProductInfoCard: View {
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .offset(y: -24)
+    }
+}
+
+// MARK: - Detail Section
+private struct DetailSection: View {
+    let icon: String
+    let title: String
+    let content: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.accentColor)
+                Text(title)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
+
+            Text(content)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .lineSpacing(4)
+        }
     }
 }
 
