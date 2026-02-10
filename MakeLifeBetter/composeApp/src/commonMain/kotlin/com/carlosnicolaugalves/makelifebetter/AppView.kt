@@ -2,6 +2,7 @@ package com.carlosnicolaugalves.makelifebetter
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,10 @@ import com.carlosnicolaugalves.makelifebetter.auth.PasswordRecoveryResult
 import com.carlosnicolaugalves.makelifebetter.auth.RegisterResult
 import com.carlosnicolaugalves.makelifebetter.navigation.Screen
 import com.carlosnicolaugalves.makelifebetter.repository.createRemoteConfigRepository
+import com.carlosnicolaugalves.makelifebetter.theme.ThemeDefaults
+import com.carlosnicolaugalves.makelifebetter.theme.createRemoteThemeRepository
+import com.carlosnicolaugalves.makelifebetter.theme.toDarkColorScheme
+import com.carlosnicolaugalves.makelifebetter.theme.toLightColorScheme
 import com.carlosnicolaugalves.makelifebetter.screens.login.ErrorDialog
 import com.carlosnicolaugalves.makelifebetter.screens.login.ForgotPasswordScreen
 import com.carlosnicolaugalves.makelifebetter.screens.login.LanguageScreen
@@ -54,19 +59,37 @@ fun AppView(viewModel: SharedLoginViewModel) {
     var registerFormData by remember { mutableStateOf(RegisterFormData()) }
     var isLoginRequired by remember { mutableStateOf(true) }
     var validAccessCode by remember { mutableStateOf("") }
+    var themePalettes by remember { mutableStateOf(ThemeDefaults.palettes) }
 
     val remoteConfigRepository = remember { createRemoteConfigRepository() }
+    val remoteThemeRepository = remember { createRemoteThemeRepository() }
 
     val loginState by viewModel.loginState.collectAsState()
     val registerState by viewModel.registerState.collectAsState()
     val passwordRecoveryState by viewModel.passwordRecoveryState.collectAsState()
 
-    // Busca configuracao do Remote Config ao iniciar
+    val isDarkTheme = isSystemInDarkTheme()
+
+    // Busca configuracao do Remote Config e Theme ao iniciar
     LaunchedEffect(Unit) {
+        // Fetch remote config
         remoteConfigRepository.fetchAndActivate()
         isLoginRequired = remoteConfigRepository.isLoginRequired()
         validAccessCode = remoteConfigRepository.getAccessCode()
+
+        // Fetch remote theme
+        remoteThemeRepository.fetchTheme().onSuccess { palettes ->
+            themePalettes = palettes
+        }
+
         currentScreen = if (isLoginRequired) Screen.Login else Screen.Home
+    }
+
+    // Select color scheme based on system theme
+    val colorScheme = if (isDarkTheme) {
+        themePalettes.dark.toDarkColorScheme()
+    } else {
+        themePalettes.light.toLightColorScheme()
     }
 
     val strings = Translations.getStrings(currentLanguage)
@@ -101,8 +124,7 @@ fun AppView(viewModel: SharedLoginViewModel) {
         else -> {}
     }
 
-    MaterialTheme {
-        val strings = Translations.getStrings(currentLanguage)
+    MaterialTheme(colorScheme = colorScheme) {
 
         Column(
             modifier = Modifier

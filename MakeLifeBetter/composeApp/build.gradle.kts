@@ -61,6 +61,9 @@ kotlin {
 
             // Ktor client engine for Android
             implementation(libs.ktor.client.okhttp)
+
+            // Firebase for theme loading
+            implementation(libs.firebase.firestore)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -96,6 +99,9 @@ kotlin {
         iosMain.dependencies {
             // Ktor client engine for iOS
             implementation(libs.ktor.client.darwin)
+
+            // Firebase for theme loading
+            implementation(libs.firebase.firestore)
         }
     }
 }
