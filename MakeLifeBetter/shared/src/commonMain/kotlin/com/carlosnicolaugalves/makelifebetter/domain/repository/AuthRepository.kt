@@ -1,4 +1,4 @@
-package com.carlosnicolaugalves.makelifebetter.repository
+package com.carlosnicolaugalves.makelifebetter.domain.repository
 
 import com.carlosnicolaugalves.makelifebetter.model.User
 

@@ -1,26 +1,33 @@
-package com.carlosnicolaugalves.makelifebetter.repository
+package com.carlosnicolaugalves.makelifebetter.data.repository
 
+import com.carlosnicolaugalves.makelifebetter.domain.repository.AuthRepository
 import com.carlosnicolaugalves.makelifebetter.model.User
 import kotlin.random.Random
 
+/**
+ * LOCAL DEVELOPMENT ONLY - DO NOT USE IN PRODUCTION!
+ *
+ * This repository is for local testing and development purposes only.
+ * For production, use FirebaseAuthRepository which provides secure authentication.
+ *
+ * Security warnings:
+ * - Uses weak hashCode() for password hashing (NOT cryptographically secure)
+ * - Stores passwords in memory (no persistence)
+ * - No rate limiting or brute force protection
+ */
 class LocalAuthRepository : AuthRepository {
 
     private val users = mutableMapOf<String, User>()
 
-    init {
-        // Usuário padrão para testes (admin)
-        val defaultUser = User(
-            id = "1",
-            username = "admin",
-            email = "admin@example.com",
-            passwordHash = hashPassword("password"),
-            isAdmin = true
-        )
-        users[defaultUser.username] = defaultUser
-    }
+    // No default users - users must register first
+    // This prevents hardcoded credentials in the codebase
 
     override suspend fun login(username: String, password: String): Result<User> {
-        val user = users[username]
+        val user = if (username.contains("@")) {
+            users.values.find { it.email == username }
+        } else {
+            users[username]
+        }
 
         return when {
             user == null -> Result.failure(Exception("Usuário não encontrado"))
@@ -42,8 +49,8 @@ class LocalAuthRepository : AuthRepository {
             return Result.failure(Exception("Nome de usuário deve ter pelo menos 3 caracteres"))
         }
 
-        if (password.length < 6) {
-            return Result.failure(Exception("Senha deve ter pelo menos 6 caracteres"))
+        if (password.length < 8) {
+            return Result.failure(Exception("Senha deve ter pelo menos 8 caracteres"))
         }
 
         if (!isValidEmail(email)) {
@@ -65,9 +72,9 @@ class LocalAuthRepository : AuthRepository {
         val user = users.values.find { it.email == email }
             ?: return Result.failure(Exception("Email não encontrado"))
 
-        val newPassword = "123456"
+        // Generate a random temporary password
+        val newPassword = generateTemporaryPassword()
 
-        // Atualiza a senha do usuário para 123456
         val updatedUser = user.copy(passwordHash = hashPassword(newPassword))
         users[user.username] = updatedUser
 
@@ -82,9 +89,13 @@ class LocalAuthRepository : AuthRepository {
         return users[username]
     }
 
+    /**
+     * WARNING: This is NOT a secure password hash!
+     * hashCode() is NOT cryptographically secure and should NEVER be used in production.
+     * For production, use bcrypt, Argon2, PBKDF2, or scrypt.
+     * This implementation is only for local testing purposes.
+     */
     private fun hashPassword(password: String): String {
-        // Implementação simples de hash para demonstração
-        // Em produção, use uma biblioteca de criptografia adequada
         return password.hashCode().toString()
     }
 
@@ -140,8 +151,8 @@ class LocalAuthRepository : AuthRepository {
         // Como nao temos acesso ao usuario atual aqui, vamos apenas simular
         // Em uma implementacao real, isso seria tratado de forma diferente
 
-        if (newPassword.length < 6) {
-            return Result.failure(Exception("Nova senha deve ter pelo menos 6 caracteres"))
+        if (newPassword.length < 8) {
+            return Result.failure(Exception("Nova senha deve ter pelo menos 8 caracteres"))
         }
 
         // Simula sucesso para testes locais

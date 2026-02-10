@@ -1,4 +1,6 @@
-package com.carlosnicolaugalves.makelifebetter.repository
+package com.carlosnicolaugalves.makelifebetter.data.repository
+
+import com.carlosnicolaugalves.makelifebetter.domain.repository.AuthRepository
 
 /**
  * Factory para criar o repositório de autenticação apropriado para cada plataforma.

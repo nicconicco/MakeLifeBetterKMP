@@ -77,7 +77,10 @@ fun AppView(
             currentScreen = Screen.Login
         }
         is RegisterResult.Error -> {
-            ErrorDialog((registerState as RegisterResult.Error).message)
+            ErrorDialog(
+                (registerState as RegisterResult.Error).message,
+                onDismiss = { viewModel.resetRegisterState() }
+            )
         }
         else -> {}
     }
@@ -87,7 +90,10 @@ fun AppView(
             currentScreen = Screen.Home
         }
         is AuthResult.Error -> {
-            ErrorDialog((loginState as AuthResult.Error).message)
+            ErrorDialog(
+                (loginState as AuthResult.Error).message,
+                onDismiss = { viewModel.resetLoginState() }
+            )
         }
         else -> {}
     }

@@ -1,5 +1,6 @@
-package com.carlosnicolaugalves.makelifebetter.repository
+package com.carlosnicolaugalves.makelifebetter.data.repository
 
+import com.carlosnicolaugalves.makelifebetter.domain.repository.AuthRepository
 import com.carlosnicolaugalves.makelifebetter.model.User
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
@@ -15,33 +16,49 @@ class FirebaseAuthRepository : AuthRepository {
 
     override suspend fun login(username: String, password: String): Result<User> {
         return try {
-            // Primeiro, busca o email pelo username no Firestore
-            val querySnapshot = usersCollection
-                .where { "username" equalTo username }
-                .get()
-
-            val userDoc = querySnapshot.documents.firstOrNull()
-
-            if (userDoc == null) {
-                return Result.failure(Exception("Usuario nao encontrado"))
-            }
-
-            val email = userDoc.get<String>("email")
-
-            // Faz login com email e senha no Firebase Auth
-            val authResult = auth.signInWithEmailAndPassword(email, password)
+            // Login direto com email e senha no Firebase Auth
+            val authResult = auth.signInWithEmailAndPassword(username, password)
             val firebaseUser = authResult.user
                 ?: return Result.failure(Exception("Erro ao fazer login"))
 
-            val isAdmin = try {
-                userDoc.get<Boolean>("isAdmin")
-            } catch (e: Exception) {
+            val userDoc = usersCollection.document(firebaseUser.uid).get()
+            val isAdmin = if (userDoc.exists) {
+                try {
+                    userDoc.get<Boolean>("isAdmin")
+                } catch (e: Exception) {
+                    false
+                }
+            } else {
                 false
+            }
+
+            val email = if (userDoc.exists) {
+                userDoc.get<String>("email") ?: (firebaseUser.email ?: "")
+            } else {
+                firebaseUser.email ?: ""
+            }
+            val usernameFromProfile = if (userDoc.exists) {
+                userDoc.get<String>("username")
+                    ?: firebaseUser.email?.substringBefore("@")
+                    ?: ""
+            } else {
+                firebaseUser.email?.substringBefore("@") ?: ""
+            }
+
+            if (!userDoc.exists) {
+                usersCollection.document(firebaseUser.uid).set(
+                    mapOf(
+                        "id" to firebaseUser.uid,
+                        "username" to usernameFromProfile,
+                        "email" to email,
+                        "createdAt" to (NSDate().timeIntervalSince1970 * 1000).toLong()
+                    )
+                )
             }
 
             val user = User(
                 id = firebaseUser.uid,
-                username = userDoc.get<String>("username"),
+                username = usernameFromProfile,
                 email = email,
                 passwordHash = "",
                 isAdmin = isAdmin
@@ -64,8 +81,7 @@ class FirebaseAuthRepository : AuthRepository {
             // Cria usuario no Firebase Auth
             val authResult = auth.createUserWithEmailAndPassword(email, password)
             val firebaseUser = authResult.user
-                ?:
-                return Result.failure(Exception("Erro ao criar usuario"))
+                ?: return Result.failure(Exception("Erro ao criar usuario"))
 
             val user = User(
                 id = firebaseUser.uid,
@@ -98,20 +114,11 @@ class FirebaseAuthRepository : AuthRepository {
 
     override suspend fun recoverPassword(email: String): Result<String> {
         return try {
-            // Verifica se o email existe
-            val userQuery = usersCollection
-                .where { "email" equalTo email }
-                .get()
-
-            if (userQuery.documents.isEmpty()) {
-                return Result.failure(Exception("Email nao encontrado"))
-            }
-
             // Envia email de recuperacao de senha do Firebase
             // O usuario recebera um link para redefinir a senha
             auth.sendPasswordResetEmail(email)
 
-            Result.success("Email de recuperacao enviado para $email. Verifique sua caixa de entrada.")
+            Result.success("Se o email existir, enviaremos um link de recuperacao. Verifique sua caixa de entrada.")
         } catch (e: Exception) {
             Result.failure(Exception(e.message ?: "Erro ao recuperar senha"))
         }
@@ -181,11 +188,23 @@ class FirebaseAuthRepository : AuthRepository {
                 )
             )
 
+            val userDoc = usersCollection.document(userId).get()
+            val isAdmin = if (userDoc.exists) {
+                try {
+                    userDoc.get<Boolean>("isAdmin")
+                } catch (e: Exception) {
+                    false
+                }
+            } else {
+                false
+            }
+
             val updatedUser = User(
                 id = userId,
                 username = username,
                 email = email,
-                passwordHash = ""
+                passwordHash = "",
+                isAdmin = isAdmin
             )
 
             Result.success(updatedUser)
