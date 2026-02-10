@@ -22,7 +22,8 @@
       "Bash(git commit:*)",
       "Bash(chmod:*)",
       "Bash(python3:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(ls:*)"
     ]
   }
 }

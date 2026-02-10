@@ -141,6 +141,12 @@
 			);
 			mainGroup = 1A8B1B70168A91490AD81E48;
 			minimizedProjectReferenceProxies = 1;
+<<<<<<< Updated upstream
+=======
+			packageReferences = (
+				F18B9C0D1E2F3A4B5C6D7E8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
+>>>>>>> Stashed changes
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CBCB0AE8F202A0B945D853F5 /* Products */;
 			projectDirPath = "";
@@ -460,6 +466,45 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F18B9C0D1E2F3A4B5C6D7E8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.8.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1B2C3D4E5F60718293A4B5D /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F18B9C0D1E2F3A4B5C6D7E8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		A1B2C3D4E5F60718293A4B5E /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F18B9C0D1E2F3A4B5C6D7E8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		A1B2C3D4E5F60718293A4B5F /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F18B9C0D1E2F3A4B5C6D7E8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		A1B2C3D4E5F60718293A4B60 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F18B9C0D1E2F3A4B5C6D7E8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		A1B2C3D4E5F60718293A4B61 /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F18B9C0D1E2F3A4B5C6D7E8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2890D0E51A9ECDCC150496D3 /* Project object */;
 }

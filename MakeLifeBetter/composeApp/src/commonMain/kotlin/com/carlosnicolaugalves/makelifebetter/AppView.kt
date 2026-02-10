@@ -53,6 +53,7 @@ fun AppView(viewModel: SharedLoginViewModel) {
     var currentLanguage by remember { mutableStateOf(Language.PORTUGUESE) }
     var registerFormData by remember { mutableStateOf(RegisterFormData()) }
     var isLoginRequired by remember { mutableStateOf(true) }
+    var validAccessCode by remember { mutableStateOf("") }
 
     val remoteConfigRepository = remember { createRemoteConfigRepository() }
 
@@ -64,15 +65,23 @@ fun AppView(viewModel: SharedLoginViewModel) {
     LaunchedEffect(Unit) {
         remoteConfigRepository.fetchAndActivate()
         isLoginRequired = remoteConfigRepository.isLoginRequired()
+        validAccessCode = remoteConfigRepository.getAccessCode()
         currentScreen = if (isLoginRequired) Screen.Login else Screen.Home
     }
+
+    val strings = Translations.getStrings(currentLanguage)
 
     when(registerState) {
         is RegisterResult.Success -> {
             currentScreen = Screen.Login
         }
         is RegisterResult.Error -> {
-            ErrorDialog((registerState as RegisterResult.Error).message)
+            ErrorDialog(
+                title = strings.registerError,
+                message = (registerState as RegisterResult.Error).message + "\n\n" + strings.errorMessage,
+                buttonText = strings.tryAgain,
+                onDismiss = { viewModel.resetRegisterState() }
+            )
         }
         else -> {}
     }
@@ -82,7 +91,12 @@ fun AppView(viewModel: SharedLoginViewModel) {
             currentScreen = Screen.Home
         }
         is AuthResult.Error -> {
-            ErrorDialog((loginState as AuthResult.Error).message)
+            ErrorDialog(
+                title = strings.loginError,
+                message = (loginState as AuthResult.Error).message + "\n\n" + strings.errorMessage,
+                buttonText = strings.tryAgain,
+                onDismiss = { viewModel.resetLoginState() }
+            )
         }
         else -> {}
     }
@@ -104,6 +118,7 @@ fun AppView(viewModel: SharedLoginViewModel) {
                     LoginScreen(
                         strings = strings,
                         language = currentLanguage,
+                        validAccessCode = validAccessCode,
                         onLoginClick = { username, password ->
                             viewModel.login(username, password)
                         },
@@ -123,6 +138,7 @@ fun AppView(viewModel: SharedLoginViewModel) {
                 Screen.Home -> {
                     MainScreen(
                         viewModel = viewModel,
+                        strings = strings,
                         isLoginRequired = isLoginRequired,
                         onLoginClick = {
                             currentScreen = Screen.Login
@@ -138,6 +154,7 @@ fun AppView(viewModel: SharedLoginViewModel) {
                         termsAccepted = termsAccepted,
                         registerState = registerState,
                         initialFormData = registerFormData,
+                        requiredAccessCode = validAccessCode,
                         onRegisterClick = { username, email, password ->
                             viewModel.register(username = username, email = email, password = password, confirmPassword = password)
                         },
@@ -169,6 +186,7 @@ fun AppView(viewModel: SharedLoginViewModel) {
                     ForgotPasswordScreen(
                         strings = strings,
                         passwordRecoveryState = passwordRecoveryState,
+                        requiredAccessCode = validAccessCode,
                         onConfirmClick = { email ->
                             viewModel.recoverPassword(email)
                         },

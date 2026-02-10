@@ -32,11 +32,20 @@ import com.carlosnicolaugalves.makelifebetter.screens.event.store.ProductDetailS
 import com.carlosnicolaugalves.makelifebetter.screens.event.store.StoreScreen
 import com.carlosnicolaugalves.makelifebetter.screens.more.HireMeScreen
 import com.carlosnicolaugalves.makelifebetter.screens.more.NotificationScreen
+<<<<<<< Updated upstream
+=======
+import com.carlosnicolaugalves.makelifebetter.util.PlatformBackHandler
+import com.carlosnicolaugalves.makelifebetter.screens.login.LoginRequiredDialog
+import com.carlosnicolaugalves.makelifebetter.viewmodel.MapViewModel
+>>>>>>> Stashed changes
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedChatViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedEventViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedLoginViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedNotificationViewModel
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedStoreViewModel
+import com.carlosnicolaugalves.makelifebetter.util.AppStrings
+import com.carlosnicolaugalves.makelifebetter.util.Language
+import com.carlosnicolaugalves.makelifebetter.util.Translations
 
 // Store screen states
 private enum class StoreScreenState {
@@ -59,6 +68,7 @@ private enum class MoreSubScreen {
 @Composable
 fun MainScreen(
     viewModel: SharedLoginViewModel,
+    strings: AppStrings = Translations.getStrings(Language.PORTUGUESE),
     eventViewModel: SharedEventViewModel = remember { SharedEventViewModel() },
     notificationViewModel: SharedNotificationViewModel = remember { SharedNotificationViewModel() },
     chatViewModel: SharedChatViewModel = remember { SharedChatViewModel() },
@@ -78,6 +88,9 @@ fun MainScreen(
 
     // More screen navigation state
     var moreSubScreen by remember { mutableStateOf(MoreSubScreen.MENU) }
+
+    // Login required dialog for checkout
+    var showLoginRequiredDialog by remember { mutableStateOf(false) }
 
     val currentUser by viewModel.currentUser.collectAsState()
     val profileUpdateState by viewModel.profileUpdateState.collectAsState()
@@ -123,7 +136,8 @@ fun MainScreen(
                 showSecretScreen = false
                 // Recarregar eventos ao voltar da tela secreta
                 eventViewModel.refreshSections()
-            }
+            },
+            isAdmin = currentUser?.isAdmin == true
         )
         return
     }
@@ -164,7 +178,12 @@ fun MainScreen(
                         storeScreenState = StoreScreenState.LIST
                     },
                     onCheckout = {
-                        storeScreenState = StoreScreenState.CHECKOUT
+                        // Check if user is logged in before allowing checkout
+                        if (currentUser == null && isLoginRequired) {
+                            showLoginRequiredDialog = true
+                        } else {
+                            storeScreenState = StoreScreenState.CHECKOUT
+                        }
                     }
                 )
             }
@@ -192,6 +211,20 @@ fun MainScreen(
 
             else -> {}
         }
+
+        // Login required dialog for checkout (must be before return)
+        if (showLoginRequiredDialog) {
+            LoginRequiredDialog(
+                strings = strings,
+                onLoginClick = {
+                    showLoginRequiredDialog = false
+                    onLoginClick()
+                },
+                onDismiss = {
+                    showLoginRequiredDialog = false
+                }
+            )
+        }
         return
     }
 
@@ -213,6 +246,7 @@ fun MainScreen(
                         currentUser = currentUser,
                         profileUpdateState = profileUpdateState,
                         passwordChangeState = passwordChangeState,
+                        strings = strings,
                         onSaveClick = { username, email ->
                             viewModel.updateProfile(username, email)
                         },
@@ -247,6 +281,7 @@ fun MainScreen(
 
             MoreSubScreen.CONTACT -> {
                 HireMeScreen(
+                    strings = strings,
                     onBackClick = {
                         moreSubScreen = MoreSubScreen.MENU
                     }
@@ -331,10 +366,24 @@ fun MainScreen(
                             }
                         )
                     } else {
+<<<<<<< Updated upstream
                         ChatScreen(
                             currentUsername = currentUser?.username ?: "Usuario",
                             chatViewModel = chatViewModel
                         )
+=======
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .windowInsetsPadding(WindowInsets.statusBars)
+                        ) {
+                            ChatScreen(
+                                strings = strings,
+                                currentUsername = currentUser?.username ?: "Usuario",
+                                chatViewModel = chatViewModel
+                            )
+                        }
+>>>>>>> Stashed changes
                     }
                 }
 

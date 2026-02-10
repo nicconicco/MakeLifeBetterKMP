@@ -1,71 +1,93 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      // Allow authenticated users to read/write their own document
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+<<<<<<< Updated upstream
+=======
+    function isSignedIn() {
+      return request.auth != null;
+    }
 
-      // Allow unauthenticated users to query by username (for login lookup)
-      allow read: if resource.data.username != null;
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /app_config/{docId} {
+      // Public read for remote theme/config, admin writes only
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+>>>>>>> Stashed changes
+    match /users/{userId} {
+      // Only owners (or admins) can read/write their documents
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAdmin() || (isOwner(userId)
+        && !request.resource.data.keys().hasAny(['isAdmin']));
+      allow update: if isAdmin() || (isOwner(userId)
+        && !request.resource.data.diff(resource.data).changedKeys().hasAny(['isAdmin']));
+      allow delete: if isOwner(userId) || isAdmin();
     }
 
     match /eventos/{eventId} {
-      // Allow authenticated users to read events
-      allow read: if request.auth != null;
-      // Allow authenticated users to create and delete events (admin only via secret screen)
-      allow create, delete: if request.auth != null;
+      // Public read, admin write only
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /lista_geral/{messageId} {
-      // Allow authenticated users to read and write chat messages
-      allow read, write: if request.auth != null;
+      // Not used for chat in client (uses Realtime DB). Keep admin-only here.
+      allow read, write: if isAdmin();
     }
 
     match /produtos/{productId} {
       // Allow anyone to read produtos (public store)
       allow read: if true;
-      // Allow authenticated users to write produtos (admin only via secret screen)
-      allow write: if request.auth != null;
+      // Allow admin users to write produtos
+      allow write: if isAdmin();
     }
 
     match /categorias/{categoryId} {
       // Allow anyone to read categories (public store)
       allow read: if true;
-      // Allow authenticated users to write categories (admin only via secret screen)
-      allow write: if request.auth != null;
+      // Allow admin users to write categories
+      allow write: if isAdmin();
     }
 
     match /carrinho/{cartId} {
-      // Allow authenticated users to read and write cart
-      allow read, write: if request.auth != null;
+      // Only the owner can read/write their cart
+      allow read, write: if isOwner(cartId) || isAdmin();
 
       // Subcollection for cart items
       match /items/{itemId} {
-        allow read, write: if request.auth != null;
+        allow read, write: if isOwner(cartId) || isAdmin();
       }
     }
 
     match /pedidos/{orderId} {
-      // Allow authenticated users to read and write orders
-      allow read, write: if request.auth != null;
+      // Users can create and read their own orders; admin can manage all
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
     }
 
     match /duvidas/{questionId} {
-      // Allow authenticated users to read and write questions
-      allow read, write: if request.auth != null;
+      // Authenticated users can read/create; admin can update/delete
+      allow read, create: if isSignedIn();
+      allow update, delete: if isAdmin();
 
       // Subcollection for replies/answers
       match /respostas/{replyId} {
-        // Allow authenticated users to read all replies
-        allow read: if request.auth != null;
-        // Allow authenticated users to create replies
-        allow create: if request.auth != null;
-        // Allow users to delete only their own replies
-        allow delete: if request.auth != null;
+        allow read, create: if isSignedIn();
+        allow update, delete: if isAdmin();
       }
     }
 
     match /event_location/{locationId} {
+<<<<<<< Updated upstream
       // Allow authenticated users to read event location
       allow read: if request.auth != null;
       // Allow authenticated users to create, write and delete event location (admin only via secret screen)
@@ -77,7 +99,25 @@ service cloud.firestore {
         allow read: if request.auth != null;
         // Allow authenticated users to create and delete contacts (admin only via secret screen)
         allow create, delete: if request.auth != null;
+=======
+      // Allow anyone to read event location
+      allow read: if true;
+      // Allow admin users to create/write/delete event location
+      allow write: if isAdmin();
+
+      // Subcollection for contacts
+      match /contacts/{contactId} {
+        // Allow anyone to read contacts
+        allow read: if true;
+        // Allow admin users to create/delete contacts
+        allow write: if isAdmin();
+>>>>>>> Stashed changes
       }
+    }
+
+    // Deny everything else by default
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

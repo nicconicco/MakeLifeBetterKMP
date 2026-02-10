@@ -1,7 +1,5 @@
 package com.carlosnicolaugalves.makelifebetter.screens.login
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,9 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -28,7 +24,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -55,15 +49,17 @@ import androidx.compose.material3.TopAppBarDefaults
 import com.carlosnicolaugalves.makelifebetter.auth.PasswordChangeResult
 import com.carlosnicolaugalves.makelifebetter.auth.ProfileUpdateResult
 import com.carlosnicolaugalves.makelifebetter.model.User
+import com.carlosnicolaugalves.makelifebetter.util.AppStrings
+import com.carlosnicolaugalves.makelifebetter.util.Language
+import com.carlosnicolaugalves.makelifebetter.util.Translations
 
-private const val SECRET_PASSWORD = "0000"
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     currentUser: User?,
     profileUpdateState: ProfileUpdateResult,
     passwordChangeState: PasswordChangeResult,
+    strings: AppStrings = Translations.getStrings(Language.PORTUGUESE),
     onSaveClick: (username: String, email: String) -> Unit,
     onChangePasswordClick: (currentPassword: String, newPassword: String, confirmPassword: String) -> Unit,
     onLogoutClick: () -> Unit,
@@ -81,11 +77,6 @@ fun ProfileScreen(
     var confirmNewPassword by remember { mutableStateOf("") }
     var showPasswordSuccess by remember { mutableStateOf(false) }
 
-    // Secret access dialog state
-    var showSecretDialog by remember { mutableStateOf(false) }
-    var secretPassword by remember { mutableStateOf("") }
-    var secretPasswordError by remember { mutableStateOf(false) }
-
     LaunchedEffect(profileUpdateState) {
         if (profileUpdateState is ProfileUpdateResult.Success) {
             showProfileSuccess = true
@@ -101,26 +92,21 @@ fun ProfileScreen(
         }
     }
 
+    val topContentPadding = if (onBackClick != null) 0.dp else 16.dp
+
     val content: @Composable (Modifier) -> Unit = { contentModifier ->
         Column(
             modifier = contentModifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp),
+                .padding(start = 16.dp, end = 16.dp, top = topContentPadding, bottom = 80.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-        // Avatar com long press para acesso secreto
-        Surface(
-            modifier = Modifier
-                .size(100.dp)
-                .combinedClickable(
-                    onClick = { },
-                    onLongClick = { showSecretDialog = true }
-                ),
-            shape = CircleShape,
+            Surface(
+                modifier = Modifier
+                    .size(100.dp),
+                shape = CircleShape,
             color = MaterialTheme.colorScheme.primaryContainer
         ) {
             Box(
@@ -138,7 +124,7 @@ fun ProfileScreen(
 
 
         Text(
-            text = "Meu Perfil",
+            text = strings.myProfile,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -164,12 +150,12 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Meus Pedidos",
+                        text = strings.myOrders,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Veja o status dos seus pedidos",
+                        text = strings.seeYourOrderStatus,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -189,7 +175,7 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Informacoes pessoais",
+                    text = strings.personalInfo,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -197,7 +183,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Nome de usuario") },
+                    label = { Text(strings.usernameLabel) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     enabled = profileUpdateState !is ProfileUpdateResult.Loading
@@ -206,7 +192,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { Text(strings.email) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     enabled = profileUpdateState !is ProfileUpdateResult.Loading
@@ -222,7 +208,7 @@ fun ProfileScreen(
 
                 if (showProfileSuccess) {
                     Text(
-                        text = "Perfil atualizado com sucesso!",
+                        text = strings.profileUpdated,
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -243,7 +229,7 @@ fun ProfileScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Salvar perfil")
+                        Text(strings.saveProfile)
                     }
                 }
             }
@@ -261,7 +247,7 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Alterar senha",
+                    text = strings.changePassword,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -269,7 +255,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = currentPassword,
                     onValueChange = { currentPassword = it },
-                    label = { Text("Senha atual") },
+                    label = { Text(strings.currentPassword) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
@@ -279,7 +265,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    label = { Text("Nova senha") },
+                    label = { Text(strings.newPassword) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
@@ -289,7 +275,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = confirmNewPassword,
                     onValueChange = { confirmNewPassword = it },
-                    label = { Text("Confirmar nova senha") },
+                    label = { Text(strings.confirmNewPassword) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
@@ -306,7 +292,7 @@ fun ProfileScreen(
 
                 if (showPasswordSuccess) {
                     Text(
-                        text = "Senha alterada com sucesso!",
+                        text = strings.passwordChanged,
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -326,7 +312,7 @@ fun ProfileScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Alterar senha")
+                        Text(strings.changePassword)
                     }
                 }
             }
@@ -346,7 +332,7 @@ fun ProfileScreen(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "ID da conta",
+                        text = strings.accountId,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -359,18 +345,49 @@ fun ProfileScreen(
             }
         }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Logout button
-            Button(
-                onClick = onLogoutClick,
+        if (currentUser?.isAdmin == true) {
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                )
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Text("Sair da conta")
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = strings.adminTools,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = strings.adminOnlyAccess,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(
+                        onClick = onSecretAccessGranted,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(strings.openAdminPanel)
+                    }
+                }
             }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Logout button
+        Button(
+            onClick = onLogoutClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error
+            )
+        ) {
+            Text(strings.signOut)
+        }
         }
     }
 
@@ -378,12 +395,12 @@ fun ProfileScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Meu Perfil", fontWeight = FontWeight.Bold) },
+                    title = { Text(strings.myProfile, fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Voltar"
+                                contentDescription = strings.back
                             )
                         }
                     },
@@ -400,79 +417,6 @@ fun ProfileScreen(
         content(modifier)
     }
 
-    // Secret password dialog
-    if (showSecretDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showSecretDialog = false
-                secretPassword = ""
-                secretPasswordError = false
-            },
-            title = {
-                Text(
-                    text = "Acesso Restrito",
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column {
-                    Text(
-                        text = "Digite a senha para continuar:",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = secretPassword,
-                        onValueChange = {
-                            secretPassword = it
-                            secretPasswordError = false
-                        },
-                        label = { Text("Senha") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                        singleLine = true,
-                        isError = secretPasswordError,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    if (secretPasswordError) {
-                        Text(
-                            text = "Senha incorreta",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        if (secretPassword == SECRET_PASSWORD) {
-                            showSecretDialog = false
-                            secretPassword = ""
-                            secretPasswordError = false
-                            onSecretAccessGranted()
-                        } else {
-                            secretPasswordError = true
-                        }
-                    }
-                ) {
-                    Text("Entrar")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showSecretDialog = false
-                        secretPassword = ""
-                        secretPasswordError = false
-                    }
-                ) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
 }
 @Preview
 @Composable

@@ -57,9 +57,66 @@ import com.carlosnicolaugalves.makelifebetter.viewmodel.PopulateDataState
 @Composable
 fun SecretScreen(
     onBackClick: () -> Unit,
+    isAdmin: Boolean = false,
     adminViewModel: AdminViewModel = remember { AdminViewModel() },
     modifier: Modifier = Modifier
 ) {
+    if (!isAdmin) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Area Administrativa", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Voltar"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            },
+            modifier = modifier
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(56.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Acesso restrito",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Somente administradores podem acessar esta area.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(onClick = onBackClick) {
+                    Text("Voltar")
+                }
+            }
+        }
+        return
+    }
+
     val deleteDataState by adminViewModel.deleteDataState.collectAsState()
     val populateDataState by adminViewModel.populateDataState.collectAsState()
 
@@ -390,7 +447,7 @@ fun SecretScreen(
             )
 
             Text(
-                text = "Voce encontrou a area secreta do aplicativo.",
+                text = "Voce encontrou a area administrativa do aplicativo.",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -565,7 +622,7 @@ fun SecretScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Esta area e restrita. Nao compartilhe a senha de acesso com outras pessoas.",
+                        text = "Esta area e restrita a administradores. Nao compartilhe o acesso com outras pessoas.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -581,6 +638,6 @@ fun SecretScreen(
 @Composable
 fun SecretScreenPreview() {
     MaterialTheme {
-        SecretScreen(onBackClick = {})
+        SecretScreen(onBackClick = {}, isAdmin = true)
     }
 }

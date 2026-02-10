@@ -66,16 +66,20 @@ import com.carlosnicolaugalves.makelifebetter.viewmodel.QuestionsState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.RepliesState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SendMessageState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.SharedChatViewModel
+import com.carlosnicolaugalves.makelifebetter.util.AppStrings
+import com.carlosnicolaugalves.makelifebetter.util.Language
+import com.carlosnicolaugalves.makelifebetter.util.Translations
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun ChatScreen(
+    strings: AppStrings,
     currentUsername: String = "Usuario",
     chatViewModel: SharedChatViewModel = remember { SharedChatViewModel() }
 ) {
     var selectedTab by remember { mutableStateOf(0) }
 
-    val tabs = listOf("Lista Geral", "Duvidas")
+    val tabs = listOf(strings.generalList, strings.questions)
 
     // Chat messages state
     val messages by chatViewModel.messages.collectAsState()
@@ -104,6 +108,7 @@ fun ChatScreen(
     // Se tiver uma pergunta selecionada, mostrar detalhes
     if (selectedQuestion != null) {
         QuestionDetailScreen(
+            strings = strings,
             question = selectedQuestion!!,
             replies = replies,
             currentUsername = currentUsername,
@@ -146,6 +151,7 @@ fun ChatScreen(
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 when (selectedTab) {
                     0 -> GeneralChatContent(
+                        strings = strings,
                         messages = messages,
                         currentUsername = currentUsername,
                         isLoading = chatState is ChatState.Loading,
@@ -156,6 +162,7 @@ fun ChatScreen(
                     )
 
                     1 -> QuestionsContent(
+                        strings = strings,
                         questions = questions,
                         currentUsername = currentUsername,
                         isLoading = questionsState is QuestionsState.Loading,
@@ -179,6 +186,7 @@ fun ChatScreen(
 
 @Composable
 private fun GeneralChatContent(
+    strings: AppStrings,
     messages: List<ChatMessage>,
     currentUsername: String,
     isLoading: Boolean,
@@ -208,6 +216,7 @@ private fun GeneralChatContent(
             ) {
                 items(messages, key = { it.id }) { message ->
                     GeneralMessageItem(
+                        strings = strings,
                         message = message,
                         isCurrentUser = message.author == currentUsername
                     )
@@ -227,7 +236,7 @@ private fun GeneralChatContent(
                 value = messageText,
                 onValueChange = { messageText = it },
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Digite sua mensagem...") },
+                placeholder = { Text(strings.typeYourMessage) },
                 shape = RoundedCornerShape(24.dp),
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Send
@@ -266,7 +275,7 @@ private fun GeneralChatContent(
                 } else {
                     Icon(
                         Icons.Default.Send,
-                        contentDescription = "Enviar",
+                        contentDescription = strings.send,
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -284,6 +293,7 @@ private fun GeneralChatContent(
 
 @Composable
 private fun GeneralMessageItem(
+    strings: AppStrings,
     message: ChatMessage,
     isCurrentUser: Boolean
 ) {
@@ -334,7 +344,7 @@ private fun GeneralMessageItem(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isCurrentUser) "Voce" else message.author,
+                        text = if (isCurrentUser) strings.you else message.author,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -358,6 +368,7 @@ private fun GeneralMessageItem(
 
 @Composable
 private fun QuestionsContent(
+    strings: AppStrings,
     questions: List<Question>,
     currentUsername: String,
     isLoading: Boolean,
@@ -370,6 +381,7 @@ private fun QuestionsContent(
 
     if (showAddQuestionDialog) {
         AddQuestionDialog(
+            strings = strings,
             isAdding = isAdding,
             onDismiss = { showAddQuestionDialog = false },
             onConfirm = { title, description ->
@@ -400,12 +412,13 @@ private fun QuestionsContent(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Fazer uma pergunta")
+                    Text(strings.askQuestion)
                 }
             }
 
             items(questions, key = { it.id }) { question ->
                 QuestionListItem(
+                    strings = strings,
                     question = question,
                     canDelete = question.author == currentUsername,
                     onDelete = { onDeleteQuestion(question.id) },
@@ -418,6 +431,7 @@ private fun QuestionsContent(
 
 @Composable
 private fun AddQuestionDialog(
+    strings: AppStrings,
     isAdding: Boolean,
     onDismiss: () -> Unit,
     onConfirm: (title: String, description: String) -> Unit
@@ -429,7 +443,7 @@ private fun AddQuestionDialog(
         onDismissRequest = { if (!isAdding) onDismiss() },
         title = {
             Text(
-                "Fazer uma pergunta",
+                strings.askQuestion,
                 fontWeight = FontWeight.Bold
             )
         },
@@ -440,7 +454,7 @@ private fun AddQuestionDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Titulo da pergunta") },
+                    label = { Text(strings.questionTitle) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     enabled = !isAdding
@@ -448,7 +462,7 @@ private fun AddQuestionDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Descricao") },
+                    label = { Text(strings.description) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
                     maxLines = 5,
@@ -472,7 +486,7 @@ private fun AddQuestionDialog(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("Publicar")
+                    Text(strings.post)
                 }
             }
         },
@@ -481,7 +495,7 @@ private fun AddQuestionDialog(
                 onClick = onDismiss,
                 enabled = !isAdding
             ) {
-                Text("Cancelar")
+                Text(strings.cancel)
             }
         }
     )
@@ -489,6 +503,7 @@ private fun AddQuestionDialog(
 
 @Composable
 private fun QuestionListItem(
+    strings: AppStrings,
     question: Question,
     canDelete: Boolean = false,
     onDelete: () -> Unit = {},
@@ -499,8 +514,8 @@ private fun QuestionListItem(
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("Excluir pergunta") },
-            text = { Text("Tem certeza que deseja excluir esta pergunta?") },
+            title = { Text(strings.deleteQuestion) },
+            text = { Text(strings.deleteQuestionConfirm) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -511,12 +526,12 @@ private fun QuestionListItem(
                         containerColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Excluir")
+                    Text(strings.delete)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text("Cancelar")
+                    Text(strings.cancel)
                 }
             }
         )
@@ -556,7 +571,7 @@ private fun QuestionListItem(
                     ) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Excluir pergunta",
+                            contentDescription = strings.deleteQuestion,
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
                         )
@@ -578,7 +593,7 @@ private fun QuestionListItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Por ${question.author}",
+                    text = "${strings.by} ${question.author}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -587,7 +602,7 @@ private fun QuestionListItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "${question.replies} respostas",
+                        text = "${question.replies} ${strings.replies}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium
@@ -605,6 +620,7 @@ private fun QuestionListItem(
 
 @Composable
 private fun QuestionDetailScreen(
+    strings: AppStrings,
     question: Question,
     replies: List<QuestionReply>,
     currentUsername: String,
@@ -632,12 +648,12 @@ private fun QuestionDetailScreen(
             IconButton(onClick = onBack) {
                 Icon(
                     Icons.Default.ArrowBack,
-                    contentDescription = "Voltar",
+                    contentDescription = strings.back,
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
             Text(
-                text = "Detalhes da Pergunta",
+                text = strings.questionDetails,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 8.dp)
@@ -685,7 +701,7 @@ private fun QuestionDetailScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Por ${question.author}",
+                                text = "${strings.by} ${question.author}",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.primary
@@ -703,7 +719,7 @@ private fun QuestionDetailScreen(
             // Titulo das respostas
             item(key = "replies_header_${replies.size}") {
                 Text(
-                    text = "Respostas (${replies.size})",
+                    text = "${strings.replies.replaceFirstChar { it.uppercase() }} (${replies.size})",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 8.dp)
@@ -731,7 +747,7 @@ private fun QuestionDetailScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Nenhuma resposta ainda. Seja o primeiro a responder!",
+                            text = strings.noRepliesYet,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -740,6 +756,7 @@ private fun QuestionDetailScreen(
             } else {
                 items(replies, key = { it.id }) { reply ->
                     ReplyItem(
+                        strings = strings,
                         reply = reply,
                         canDelete = reply.author == currentUsername,
                         onDelete = { onDeleteReply(reply.id) }
@@ -760,7 +777,7 @@ private fun QuestionDetailScreen(
                 value = replyText,
                 onValueChange = { replyText = it },
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Escreva sua resposta...") },
+                placeholder = { Text(strings.writeYourReply) },
                 shape = RoundedCornerShape(24.dp),
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Send
@@ -800,7 +817,7 @@ private fun QuestionDetailScreen(
                 } else {
                     Icon(
                         Icons.Default.Send,
-                        contentDescription = "Enviar resposta",
+                        contentDescription = strings.sendReply,
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -819,6 +836,7 @@ private fun QuestionDetailScreen(
 
 @Composable
 private fun ReplyItem(
+    strings: AppStrings,
     reply: QuestionReply,
     canDelete: Boolean,
     onDelete: () -> Unit
@@ -879,7 +897,7 @@ private fun ReplyItem(
                     ) {
                         Icon(
                             Icons.Default.Close,
-                            contentDescription = "Excluir resposta",
+                            contentDescription = strings.deleteReply,
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
                         )
@@ -899,10 +917,12 @@ private fun ReplyItem(
 @Preview
 @Composable
 private fun AddQuestionDialogPreview() {
+    val strings = Translations.getStrings(Language.PORTUGUESE)
     MaterialTheme {
         var showDialog by remember { mutableStateOf(true) }
         if (showDialog) {
             AddQuestionDialog(
+                strings = strings,
                 isAdding = false,
                 onDismiss = { showDialog = false },
                 onConfirm = { _, _ -> showDialog = false }

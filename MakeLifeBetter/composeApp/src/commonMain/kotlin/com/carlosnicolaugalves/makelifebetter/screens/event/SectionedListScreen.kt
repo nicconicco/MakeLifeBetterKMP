@@ -14,7 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.carlosnicolaugalves.makelifebetter.model.Event
 import com.carlosnicolaugalves.makelifebetter.model.EventSection
-import com.carlosnicolaugalves.makelifebetter.repository.getSampleEventSections
+import com.carlosnicolaugalves.makelifebetter.data.event.getSampleEventSections
 
 /**
  * Main screen composable that displays sections with cards

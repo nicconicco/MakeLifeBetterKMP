@@ -2,11 +2,10 @@ package com.carlosnicolaugalves.makelifebetter.viewmodel
 
 import com.carlosnicolaugalves.makelifebetter.event.EventResult
 import com.carlosnicolaugalves.makelifebetter.event.EventSectionsResult
-import com.carlosnicolaugalves.makelifebetter.model.Event
+import com.carlosnicolaugalves.makelifebetter.di.provideEventUseCases
+import com.carlosnicolaugalves.makelifebetter.domain.event.EventUseCases
 import com.carlosnicolaugalves.makelifebetter.model.EventSection
-import com.carlosnicolaugalves.makelifebetter.repository.EventRepository
-import com.carlosnicolaugalves.makelifebetter.repository.createEventRepository
-import com.carlosnicolaugalves.makelifebetter.repository.getSampleEventSections
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -19,9 +18,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class SharedEventViewModel(
-    private val repository: EventRepository = createEventRepository()
+    private val eventUseCases: EventUseCases = provideEventUseCases(),
+    dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) {
-    private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val viewModelScope = CoroutineScope(SupervisorJob() + dispatcher)
 
     private val _eventsState = MutableStateFlow<EventResult>(EventResult.Idle)
     val eventsState: StateFlow<EventResult> = _eventsState.asStateFlow()
@@ -40,7 +40,7 @@ class SharedEventViewModel(
         viewModelScope.launch {
             _eventsState.value = EventResult.Loading
 
-            repository.getEvents()
+            eventUseCases.loadEvents()
                 .onSuccess { events ->
                     _eventsState.value = EventResult.Success(events)
                 }
@@ -54,7 +54,7 @@ class SharedEventViewModel(
         viewModelScope.launch {
             _eventsState.value = EventResult.Loading
 
-            repository.getEventsByCategory(categoria)
+            eventUseCases.loadEventsByCategory(categoria)
                 .onSuccess { events ->
                     _eventsState.value = EventResult.Success(events)
                 }
@@ -68,15 +68,15 @@ class SharedEventViewModel(
         viewModelScope.launch {
             _sectionsState.value = EventSectionsResult.Loading
 
-            repository.getEventSections()
+            eventUseCases.loadEventSections()
                 .onSuccess { sections ->
                     _eventSections.value = sections
                     _sectionsState.value = EventSectionsResult.Success(sections)
                 }
                 .onFailure { exception ->
-                    val fallbackSections = getSampleEventSections()
-                    _eventSections.value = fallbackSections
-                    _sectionsState.value = EventSectionsResult.Success(fallbackSections)
+                    _sectionsState.value = EventSectionsResult.Error(
+                        exception.message ?: "Erro ao carregar secoes"
+                    )
                 }
         }
     }

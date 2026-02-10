@@ -23,6 +23,10 @@ node_modules/
 *.jks
 *.keystore
 
+# Firebase config (contains API keys)
+**/google-services.json
+**/GoogleService-Info.plist
+
 # CocoaPods
 iosApp/Pods/
 iosApp/.symlinks/

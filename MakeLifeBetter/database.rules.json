@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "lista_geral": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$messageId": {
+        ".validate": "newData.hasChildren(['author', 'message', 'timestamp']) && newData.child('author').isString() && newData.child('message').isString() && newData.child('timestamp').isNumber()"
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}

@@ -67,7 +67,9 @@ class SharedChatViewModel(
     private val questionRepository: QuestionRepository = createQuestionRepository()
 ) {
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        println("SharedChatViewModel coroutine exception: ${throwable.message}")
+        // Don't log exception messages - they may contain sensitive information
+        // Update the UI state to show a generic error instead
+        _chatState.value = ChatState.Error("Erro de conexao")
     }
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main + exceptionHandler)
 

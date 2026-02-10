@@ -13,4 +13,8 @@ class LocalRemoteConfigRepository : RemoteConfigRepository {
     override fun isLoginRequired(): Boolean {
         return true // Por padrao, login e requerido
     }
+
+    override fun getAccessCode(): String {
+        return "" // Sem codigo de acesso por padrao
+    }
 }

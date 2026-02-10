@@ -51,6 +51,7 @@ fun RegisterScreen(
     termsAccepted: Boolean = false,
     registerState: RegisterResult = RegisterResult.Idle,
     initialFormData: RegisterFormData = RegisterFormData(),
+    requiredAccessCode: String = "", // From Remote Config - empty means no access code required
     onRegisterClick: (username: String, email: String, password: String) -> Unit = { _, _, _ -> },
     onBackClick: () -> Unit = {},
     onTermsClick: (formData: RegisterFormData) -> Unit = {},
@@ -63,11 +64,18 @@ fun RegisterScreen(
     var accessCode by remember { mutableStateOf("") }
     var accessCodeError by remember { mutableStateOf(false) }
 
+    // Check if access code is required
+    val accessCodeRequired = requiredAccessCode.isNotEmpty()
+
     val fieldsCompleted =
         username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()
     val passwordsMatch = password == confirmPassword
-    val validAccessCode = accessCode == "makelifebetter2026"
-    val canRegister = fieldsCompleted && termsAccepted && passwordsMatch && validAccessCode
+    val passwordLongEnough = password.length >= 8 // Minimum 8 characters for security
+
+    // Access code validation: either not required, or matches the Remote Config value
+    val accessCodeValid = !accessCodeRequired || accessCode == requiredAccessCode
+
+    val canRegister = fieldsCompleted && termsAccepted && passwordsMatch && passwordLongEnough && accessCodeValid
     val isLoading = registerState is RegisterResult.Loading
 
     Column(
@@ -117,8 +125,18 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            enabled = !isLoading
+            enabled = !isLoading,
+            isError = password.isNotBlank() && !passwordLongEnough
         )
+
+        if (password.isNotBlank() && !passwordLongEnough) {
+            Text(
+                text = strings.passwordMinLength,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -136,36 +154,39 @@ fun RegisterScreen(
 
         if (confirmPassword.isNotBlank() && !passwordsMatch) {
             Text(
-                text = "As senhas nao coincidem",
+                text = strings.passwordsDoNotMatch,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.fillMaxWidth()
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Only show access code field if required by Remote Config
+        if (accessCodeRequired) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = accessCode,
-            onValueChange = {
-                accessCode = it
-                accessCodeError = false
-            },
-            label = { Text("${strings.accessCode} *") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            enabled = !isLoading,
-            isError = accessCodeError
-        )
-
-        if (accessCodeError) {
-            Text(
-                text = strings.invalidAccessCode,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.fillMaxWidth()
+            OutlinedTextField(
+                value = accessCode,
+                onValueChange = {
+                    accessCode = it
+                    accessCodeError = false
+                },
+                label = { Text("${strings.accessCode} *") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                enabled = !isLoading,
+                isError = accessCodeError
             )
+
+            if (accessCodeError) {
+                Text(
+                    text = strings.invalidAccessCode,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(4.dp))

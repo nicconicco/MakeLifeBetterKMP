@@ -40,6 +40,7 @@ import org.jetbrains.compose.resources.painterResource
 fun LoginScreen(
     strings: AppStrings,
     language: Language,
+    validAccessCode: String = "", // From Remote Config - empty means no access code required
     onLoginClick: (username: String, password: String) -> Unit = { _, _ -> },
     onForgotPasswordClick: () -> Unit = {},
     onCreateAccountClick: () -> Unit = {},
@@ -47,8 +48,11 @@ fun LoginScreen(
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var accessCode by remember { mutableStateOf("makelifebetter2026") }
+    var accessCode by remember { mutableStateOf("") }
     var accessCodeError by remember { mutableStateOf(false) }
+
+    // Check if access code is required
+    val accessCodeRequired = validAccessCode.isNotEmpty()
 
     Box(
         modifier = Modifier
@@ -108,28 +112,31 @@ fun LoginScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Only show access code field if required by Remote Config
+            if (accessCodeRequired) {
+                Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = accessCode,
-                onValueChange = {
-                    accessCode = it
-                    accessCodeError = false
-                },
-                label = { Text(strings.accessCode) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                isError = accessCodeError
-            )
-
-            if (accessCodeError) {
-                Text(
-                    text = strings.invalidAccessCode,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth()
+                OutlinedTextField(
+                    value = accessCode,
+                    onValueChange = {
+                        accessCode = it
+                        accessCodeError = false
+                    },
+                    label = { Text(strings.accessCode) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = PasswordVisualTransformation(),
+                    isError = accessCodeError
                 )
+
+                if (accessCodeError) {
+                    Text(
+                        text = strings.invalidAccessCode,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -145,11 +152,17 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    if (accessCode == "makelifebetter2026") {
-                        accessCodeError = false
-                        onLoginClick(username, password)
+                    // If access code is required, validate it from Remote Config
+                    if (accessCodeRequired) {
+                        if (accessCode == validAccessCode) {
+                            accessCodeError = false
+                            onLoginClick(username, password)
+                        } else {
+                            accessCodeError = true
+                        }
                     } else {
-                        accessCodeError = true
+                        // No access code required, proceed with login
+                        onLoginClick(username, password)
                     }
                 },
                 modifier = Modifier.fillMaxWidth()

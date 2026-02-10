@@ -34,6 +34,7 @@ import com.carlosnicolaugalves.makelifebetter.util.AppStrings
 fun ForgotPasswordScreen(
     strings: AppStrings,
     passwordRecoveryState: PasswordRecoveryResult,
+    requiredAccessCode: String = "",
     onConfirmClick: (email: String) -> Unit,
     onBackClick: () -> Unit,
     onSuccess: () -> Unit
@@ -43,6 +44,7 @@ fun ForgotPasswordScreen(
     var accessCode by remember { mutableStateOf("") }
     var accessCodeError by remember { mutableStateOf(false) }
 
+    val accessCodeRequired = requiredAccessCode.isNotEmpty()
     val fieldsCompleted = email.isNotBlank() && cpf.isNotBlank()
     val isLoading = passwordRecoveryState is PasswordRecoveryResult.Loading
 
@@ -91,30 +93,32 @@ fun ForgotPasswordScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = accessCode,
-            onValueChange = {
-                accessCode = it
-                accessCodeError = false
-            },
-            label = { Text("${strings.accessCode} *") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            enabled = !isLoading,
-            isError = accessCodeError
-        )
-
-        if (accessCodeError) {
-            Text(
-                text = strings.invalidAccessCode,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.fillMaxWidth()
+        if (accessCodeRequired) {
+            OutlinedTextField(
+                value = accessCode,
+                onValueChange = {
+                    accessCode = it
+                    accessCodeError = false
+                },
+                label = { Text("${strings.accessCode} *") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                enabled = !isLoading,
+                isError = accessCodeError
             )
-        }
 
-        Spacer(modifier = Modifier.height(4.dp))
+            if (accessCodeError) {
+                Text(
+                    text = strings.invalidAccessCode,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+        }
 
         Text(
             text = strings.requiredFields,
@@ -138,11 +142,11 @@ fun ForgotPasswordScreen(
 
         Button(
             onClick = {
-                if (accessCode == "makelifebetter2026") {
+                if (accessCodeRequired && accessCode != requiredAccessCode) {
+                    accessCodeError = true
+                } else {
                     accessCodeError = false
                     onConfirmClick(email)
-                } else {
-                    accessCodeError = true
                 }
             },
             modifier = Modifier.fillMaxWidth(),

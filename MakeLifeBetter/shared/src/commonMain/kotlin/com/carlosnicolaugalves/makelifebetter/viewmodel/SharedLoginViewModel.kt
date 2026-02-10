@@ -5,9 +5,10 @@ import com.carlosnicolaugalves.makelifebetter.auth.PasswordChangeResult
 import com.carlosnicolaugalves.makelifebetter.auth.PasswordRecoveryResult
 import com.carlosnicolaugalves.makelifebetter.auth.ProfileUpdateResult
 import com.carlosnicolaugalves.makelifebetter.auth.RegisterResult
+import com.carlosnicolaugalves.makelifebetter.di.provideAuthUseCases
+import com.carlosnicolaugalves.makelifebetter.domain.auth.AuthUseCases
 import com.carlosnicolaugalves.makelifebetter.model.User
-import com.carlosnicolaugalves.makelifebetter.repository.AuthRepository
-import com.carlosnicolaugalves.makelifebetter.repository.createAuthRepository
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,9 +21,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class SharedLoginViewModel(
-    private val repository: AuthRepository = createAuthRepository()
+    private val authUseCases: AuthUseCases = provideAuthUseCases(),
+    dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) {
-    private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val viewModelScope = CoroutineScope(SupervisorJob() + dispatcher)
 
     // Estado de login
     private val _loginState = MutableStateFlow<AuthResult>(AuthResult.Idle)
@@ -55,15 +57,15 @@ class SharedLoginViewModel(
         // Reseta para Idle primeiro para garantir que a transição seja detectada
         _loginState.value = AuthResult.Idle
 
-        if (username.isBlank() || password.isBlank()) {
-            _loginState.value = AuthResult.Error("Preencha todos os campos")
+        authUseCases.validateLogin(username, password).onFailure { exception ->
+            _loginState.value = AuthResult.Error(exception.message ?: "Preencha todos os campos")
             return
         }
 
         viewModelScope.launch {
             _loginState.value = AuthResult.Loading
 
-            repository.login(username, password)
+            authUseCases.login(username, password)
                 .onSuccess { user ->
                     _currentUser.value = user
                     _loginState.value = AuthResult.Success(user)
@@ -81,21 +83,15 @@ class SharedLoginViewModel(
         // Reseta para Idle primeiro para garantir que a transição seja detectada
         _registerState.value = RegisterResult.Idle
 
-        when {
-            username.isBlank() || email.isBlank() || password.isBlank() -> {
-                _registerState.value = RegisterResult.Error("Preencha todos os campos")
-                return
-            }
-            password != confirmPassword -> {
-                _registerState.value = RegisterResult.Error("As senhas não coincidem")
-                return
-            }
+        authUseCases.validateRegister(username, email, password, confirmPassword).onFailure { exception ->
+            _registerState.value = RegisterResult.Error(exception.message ?: "Erro ao registrar")
+            return
         }
 
         viewModelScope.launch {
             _registerState.value = RegisterResult.Loading
 
-            repository.register(username, email, password)
+            authUseCases.register(username, email, password, confirmPassword)
                 .onSuccess {
                     _registerState.value = RegisterResult.Success
                 }
@@ -106,21 +102,21 @@ class SharedLoginViewModel(
     }
 
     /**
-     * Recupera senha enviando uma senha temporária
+     * Recupera senha enviando um link de redefinicao
      */
     fun recoverPassword(email: String) {
         // Reseta para Idle primeiro para garantir que a transição seja detectada
         _passwordRecoveryState.value = PasswordRecoveryResult.Idle
 
-        if (email.isBlank()) {
-            _passwordRecoveryState.value = PasswordRecoveryResult.Error("Informe o email")
+        authUseCases.validateRecoverPassword(email).onFailure { exception ->
+            _passwordRecoveryState.value = PasswordRecoveryResult.Error(exception.message ?: "Informe o email")
             return
         }
 
         viewModelScope.launch {
             _passwordRecoveryState.value = PasswordRecoveryResult.Loading
 
-            repository.recoverPassword(email)
+            authUseCases.recoverPassword(email)
                 .onSuccess { message ->
                     _passwordRecoveryState.value = PasswordRecoveryResult.Success(message)
                 }
@@ -144,15 +140,15 @@ class SharedLoginViewModel(
             return
         }
 
-        if (username.isBlank() || email.isBlank()) {
-            _profileUpdateState.value = ProfileUpdateResult.Error("Preencha todos os campos")
+        authUseCases.validateProfile(username, email).onFailure { exception ->
+            _profileUpdateState.value = ProfileUpdateResult.Error(exception.message ?: "Preencha todos os campos")
             return
         }
 
         viewModelScope.launch {
             _profileUpdateState.value = ProfileUpdateResult.Loading
 
-            repository.updateProfile(user.id, username, email)
+            authUseCases.updateProfile(user.id, username, email)
                 .onSuccess { updatedUser ->
                     _currentUser.value = updatedUser
                     _profileUpdateState.value = ProfileUpdateResult.Success(updatedUser)
@@ -183,25 +179,17 @@ class SharedLoginViewModel(
             return
         }
 
-        if (currentPassword.isBlank() || newPassword.isBlank() || confirmNewPassword.isBlank()) {
-            _passwordChangeState.value = PasswordChangeResult.Error("Preencha todos os campos")
-            return
-        }
-
-        if (newPassword != confirmNewPassword) {
-            _passwordChangeState.value = PasswordChangeResult.Error("As novas senhas nao coincidem")
-            return
-        }
-
-        if (newPassword.length < 6) {
-            _passwordChangeState.value = PasswordChangeResult.Error("Nova senha deve ter pelo menos 6 caracteres")
+        authUseCases.validateChangePassword(currentPassword, newPassword, confirmNewPassword).onFailure { exception ->
+            _passwordChangeState.value = PasswordChangeResult.Error(
+                exception.message ?: "Erro ao alterar senha"
+            )
             return
         }
 
         viewModelScope.launch {
             _passwordChangeState.value = PasswordChangeResult.Loading
 
-            repository.changePassword(currentPassword, newPassword)
+            authUseCases.changePassword(currentPassword, newPassword, confirmNewPassword)
                 .onSuccess { message ->
                     _passwordChangeState.value = PasswordChangeResult.Success(message)
                 }
@@ -225,7 +213,7 @@ class SharedLoginViewModel(
      */
     fun logout() {
         viewModelScope.launch {
-            repository.logout()
+            authUseCases.logout()
             _currentUser.value = null
             _loginState.value = AuthResult.Idle
             _profileUpdateState.value = ProfileUpdateResult.Idle

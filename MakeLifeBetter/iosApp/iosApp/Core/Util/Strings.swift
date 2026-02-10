@@ -1,0 +1,216 @@
+import Foundation
+
+enum Idioma: String {
+    case portugues = "pt-BR"
+    case ingles = "en-US"
+    case espanhol = "es-ES"
+
+    var bandeira: String {
+        switch self {
+        case .portugues: return "\u{1F1E7}\u{1F1F7}"
+        case .ingles: return "\u{1F1FA}\u{1F1F8}"
+        case .espanhol: return "\u{1F1EA}\u{1F1F8}"
+        }
+    }
+}
+
+struct AppStrings {
+    // Geral
+    let erro: String
+
+    // Login
+    let appName: String
+    let usuario: String
+    let senha: String
+    let esqueciSenha: String
+    let entrar: String
+    let criarNovaConta: String
+
+    // Cadastro
+    let criarConta: String
+    let nome: String
+    let email: String
+    let confirmarSenha: String
+    let senhasNaoCoincidem: String
+    let cadastroSucesso: String
+    let camposObrigatorios: String
+    let aceitoTermos: String
+    let cadastrar: String
+    let voltarLogin: String
+
+    // Termos
+    let termosCompromisso: String
+    let termosTexto: String
+    let concordar: String
+
+    // Esqueci Senha
+    let esqueciSenhaTitulo: String
+    let instrucaoRecuperacao: String
+    let emailEnviado: String
+    let confirmar: String
+    let voltar: String
+
+    // Senha Temporária
+    let senhaTempTitulo: String
+    let suaNovaSenha: String
+    let useSenhaTemp: String
+
+    // Idioma
+    let selecioneIdioma: String
+    let portugues: String
+    let ingles: String
+    let espanhol: String
+
+    // Home
+    let bemVindo: String
+    let sair: String
+
+    // Guest
+    let acessoRestritoTitulo: String
+    let acessoRestritoMensagem: String
+}
+
+struct Traducoes {
+    static let portugues = AppStrings(
+        erro: "Erro",
+        appName: "MakeLifeBetter",
+        usuario: "Email",
+        senha: "Senha",
+        esqueciSenha: "Esqueci a senha",
+        entrar: "Entrar",
+        criarNovaConta: "Criar nova conta",
+
+        criarConta: "Criar Conta",
+        nome: "Nome",
+        email: "Email",
+        confirmarSenha: "Confirmar Senha",
+        senhasNaoCoincidem: "As senhas não coincidem",
+        cadastroSucesso: "Cadastro realizado com sucesso!",
+        camposObrigatorios: "* Campos obrigatórios",
+        aceitoTermos: "Aceito os termos de compromisso",
+        cadastrar: "Cadastrar",
+        voltarLogin: "Voltar ao login",
+
+        termosCompromisso: "Termos de Compromisso",
+        termosTexto: "Ao utilizar este aplicativo, você concorda que o MakeLifeBetter poderá coletar suas informações pessoais para melhorar sua experiência e fornecer nossos serviços.\n\nSuas informações serão tratadas com segurança e não serão compartilhadas com terceiros sem seu consentimento.\n\nAo clicar em \"Concordar\", você declara estar de acordo com estes termos.",
+        concordar: "Concordar",
+
+        esqueciSenhaTitulo: "Esqueci a Senha",
+        instrucaoRecuperacao: "Digite seu email para receber um link de recuperação de senha.",
+        emailEnviado: "Email Enviado",
+        confirmar: "Confirmar",
+        voltar: "Voltar",
+
+        senhaTempTitulo: "Recuperacao de senha",
+        suaNovaSenha: "Confira seu email",
+        useSenhaTemp: "Enviamos um link de redefinicao. Abra o email para continuar.",
+
+        selecioneIdioma: "Selecione o Idioma",
+        portugues: "Português (Brasil)",
+        ingles: "English (US)",
+        espanhol: "Español",
+
+        bemVindo: "Bem-vindo",
+        sair: "Sair",
+        acessoRestritoTitulo: "Acesso restrito",
+        acessoRestritoMensagem: "Para acessar esta área, faça login."
+    )
+
+    static let ingles = AppStrings(
+        erro: "Error",
+        appName: "MakeLifeBetter",
+        usuario: "Email",
+        senha: "Password",
+        esqueciSenha: "Forgot password",
+        entrar: "Sign In",
+        criarNovaConta: "Create new account",
+
+        criarConta: "Create Account",
+        nome: "Name",
+        email: "Email",
+        confirmarSenha: "Confirm Password",
+        senhasNaoCoincidem: "Passwords do not match",
+        cadastroSucesso: "Registration successful!",
+        camposObrigatorios: "* Required fields",
+        aceitoTermos: "I accept the terms and conditions",
+        cadastrar: "Register",
+        voltarLogin: "Back to login",
+
+        termosCompromisso: "Terms and Conditions",
+        termosTexto: "By using this application, you agree that MakeLifeBetter may collect your personal information to improve your experience and provide our services.\n\nYour information will be treated securely and will not be shared with third parties without your consent.\n\nBy clicking \"Agree\", you declare that you agree to these terms.",
+        concordar: "Agree",
+
+        esqueciSenhaTitulo: "Forgot Password",
+        instrucaoRecuperacao: "Enter your email to receive a password reset link.",
+        emailEnviado: "Email Sent",
+        confirmar: "Confirm",
+        voltar: "Back",
+
+        senhaTempTitulo: "Password recovery",
+        suaNovaSenha: "Check your email",
+        useSenhaTemp: "We sent a reset link. Open your email to continue.",
+
+        selecioneIdioma: "Select Language",
+        portugues: "Português (Brasil)",
+        ingles: "English (US)",
+        espanhol: "Español",
+
+        bemVindo: "Welcome",
+        sair: "Logout",
+        acessoRestritoTitulo: "Restricted access",
+        acessoRestritoMensagem: "Please sign in to access this area."
+    )
+
+    static let espanhol = AppStrings(
+        erro: "Error",
+        appName: "MakeLifeBetter",
+        usuario: "Correo electrónico",
+        senha: "Contraseña",
+        esqueciSenha: "Olvidé mi contraseña",
+        entrar: "Iniciar sesión",
+        criarNovaConta: "Crear nueva cuenta",
+
+        criarConta: "Crear Cuenta",
+        nome: "Nombre",
+        email: "Correo electrónico",
+        confirmarSenha: "Confirmar Contraseña",
+        senhasNaoCoincidem: "Las contraseñas no coinciden",
+        cadastroSucesso: "¡Registro exitoso!",
+        camposObrigatorios: "* Campos obligatorios",
+        aceitoTermos: "Acepto los términos y condiciones",
+        cadastrar: "Registrarse",
+        voltarLogin: "Volver al inicio",
+
+        termosCompromisso: "Términos y Condiciones",
+        termosTexto: "Al utilizar esta aplicación, usted acepta que MakeLifeBetter pueda recopilar su información personal para mejorar su experiencia y proporcionar nuestros servicios.\n\nSu información será tratada de forma segura y no será compartida con terceros sin su consentimiento.\n\nAl hacer clic en \"Aceptar\", declara estar de acuerdo con estos términos.",
+        concordar: "Aceptar",
+
+        esqueciSenhaTitulo: "Olvidé mi Contraseña",
+        instrucaoRecuperacao: "Ingrese su correo electrónico para recibir un enlace de recuperación de contraseña.",
+        emailEnviado: "Correo Enviado",
+        confirmar: "Confirmar",
+        voltar: "Volver",
+
+        senhaTempTitulo: "Recuperacion de contraseña",
+        suaNovaSenha: "Revisa tu correo",
+        useSenhaTemp: "Enviamos un enlace de restablecimiento. Abre tu correo para continuar.",
+
+        selecioneIdioma: "Seleccionar Idioma",
+        portugues: "Português (Brasil)",
+        ingles: "English (US)",
+        espanhol: "Español",
+
+        bemVindo: "Bienvenido",
+        sair: "Salir",
+        acessoRestritoTitulo: "Acceso restringido",
+        acessoRestritoMensagem: "Para acceder a esta área, inicia sesión."
+    )
+
+    static func obterStrings(idioma: Idioma) -> AppStrings {
+        switch idioma {
+        case .portugues: return portugues
+        case .ingles: return ingles
+        case .espanhol: return espanhol
+        }
+    }
+}

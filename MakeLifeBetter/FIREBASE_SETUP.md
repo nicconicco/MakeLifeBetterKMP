@@ -25,20 +25,12 @@ Siga os passos abaixo para configurar o Firebase.
 
 ### Regras do Firestore
 
-Configure as regras de seguranca em "Regras":
+Use o arquivo `firestore.rules` deste repositorio e publique no console do Firebase.
+Ele protege dados por usuario e usa a claim de admin (`request.auth.token.admin`) para operacoes administrativas.
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null &&
-        resource.data.username == request.resource.data.username;
-    }
-  }
-}
-```
+### Regras do Realtime Database (chat)
+
+O chat usa o Realtime Database. Publique as regras de `database.rules.json` no console do Firebase.
 
 ## 4. Configurar Android
 
@@ -110,7 +102,13 @@ users/
    - Username
    - Email
    - Senha (minimo 6 caracteres)
-3. Faca login com o username e senha
+3. Faca login com o email e senha
 4. Verifique no Firebase Console:
    - Authentication > Users (usuario criado)
    - Firestore > users (documento criado)
+
+## Admin (custom claims)
+
+Para liberar o painel administrativo, marque um usuario como admin via Firebase Admin SDK,
+definindo a claim `admin = true`. O app usa essa claim para liberar operacoes de escrita
+em colecoes administrativas.

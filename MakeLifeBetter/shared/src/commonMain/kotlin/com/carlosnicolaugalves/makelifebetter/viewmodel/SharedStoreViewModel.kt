@@ -7,6 +7,7 @@ import com.carlosnicolaugalves.makelifebetter.model.PaymentInfo
 import com.carlosnicolaugalves.makelifebetter.model.Product
 import com.carlosnicolaugalves.makelifebetter.model.ProductCategory
 import com.carlosnicolaugalves.makelifebetter.repository.CartRepository
+import com.carlosnicolaugalves.makelifebetter.repository.LocalCartRepository
 import com.carlosnicolaugalves.makelifebetter.repository.OrderRepository
 import com.carlosnicolaugalves.makelifebetter.repository.ProductRepository
 import com.carlosnicolaugalves.makelifebetter.repository.createCartRepository
@@ -30,10 +31,13 @@ import kotlinx.coroutines.launch
 
 class SharedStoreViewModel(
     private val productRepository: ProductRepository = createProductRepository(),
-    private val cartRepository: CartRepository = createCartRepository(),
+    private val firebaseCartRepository: CartRepository = createCartRepository(),
     private val orderRepository: OrderRepository = createOrderRepository()
 ) {
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    // Local cart for guest users
+    private val localCartRepository = LocalCartRepository()
 
     // Products state
     private val _productsState = MutableStateFlow<ProductsResult>(ProductsResult.Idle)
@@ -74,17 +78,55 @@ class SharedStoreViewModel(
     private val _selectedProduct = MutableStateFlow<Product?>(null)
     val selectedProduct: StateFlow<Product?> = _selectedProduct.asStateFlow()
 
-    // User ID (simplified - in real app would come from auth)
+    // User ID - "anonymous" for guests
     private var currentUserId: String = "anonymous"
+
+    // Check if user is a guest (not logged in)
+    private val isGuest: Boolean
+        get() = currentUserId == "anonymous"
+
+    // Get the appropriate cart repository based on login status
+    private val cartRepository: CartRepository
+        get() = if (isGuest) localCartRepository else firebaseCartRepository
 
     init {
         loadCategories()
         loadProducts()
+        // Load local cart for guests on init
+        loadCart()
     }
 
     fun setUserId(userId: String) {
+        val wasGuest = isGuest
+        val previousLocalCart = _cart.value
+
         currentUserId = userId
-        loadCart()
+
+        if (wasGuest && !isGuest && previousLocalCart.items.isNotEmpty()) {
+            // User just logged in and had items in local cart - sync to Firebase
+            syncLocalCartToFirebase(previousLocalCart)
+        } else {
+            loadCart()
+        }
+    }
+
+    private fun syncLocalCartToFirebase(localCart: Cart) {
+        viewModelScope.launch {
+            _cartState.value = CartResult.Loading
+
+            // Add each item from local cart to Firebase cart
+            var currentCart = Cart()
+            for (item in localCart.items) {
+                firebaseCartRepository.addToCart(currentUserId, item.product, item.quantidade)
+                    .onSuccess { cart -> currentCart = cart }
+            }
+
+            // Clear local cart after sync
+            localCartRepository.clearCart("anonymous")
+
+            _cart.value = currentCart
+            _cartState.value = CartResult.Success(currentCart)
+        }
     }
 
     fun loadProducts() {

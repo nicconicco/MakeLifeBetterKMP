@@ -19,10 +19,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.carlosnicolaugalves.makelifebetter.util.AppStrings
+import com.carlosnicolaugalves.makelifebetter.util.Language
+import com.carlosnicolaugalves.makelifebetter.util.Translations
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HireMeScreen(
+    strings: AppStrings,
     onBackClick: (() -> Unit)? = null
 ) {
     val scrollState = rememberScrollState()
@@ -48,7 +52,7 @@ fun HireMeScreen(
 
         // Header Section
         Text(
-            text = "Contrate-me!",
+            text = strings.hireMe,
             fontSize = 36.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -56,7 +60,7 @@ fun HireMeScreen(
         )
 
         Text(
-            text = "Desenvolvedor Mobile iOS e Android Nativos (Swift e Kotlin)",
+            text = strings.mobileDeveloper,
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -108,13 +112,13 @@ fun HireMeScreen(
 
                     Column {
                         Text(
-                            text = "Experiência",
+                            text = strings.experience,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "10 anos",
+                            text = "10 ${strings.years}",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.SemiBold
@@ -125,7 +129,7 @@ fun HireMeScreen(
                 Divider(modifier = Modifier.padding(vertical = 4.dp))
 
                 Text(
-                    text = "Desenvolvedor de aplicativos nativos Android com 10 anos de experiência. Especializado em Kotlin, Jetpack Compose e arquiteturas modernas.",
+                    text = strings.developerDescription,
                     fontSize = 15.sp,
                     lineHeight = 22.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -145,7 +149,7 @@ fun HireMeScreen(
 
         // Contact Section
         Text(
-            text = "Entre em Contato",
+            text = strings.contactMe,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -184,7 +188,7 @@ fun HireMeScreen(
             )
         ) {
             Text(
-                text = "Enviar Email Agora",
+                text = strings.sendEmailNow,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -198,12 +202,12 @@ fun HireMeScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Contato", fontWeight = FontWeight.Bold) },
+                    title = { Text(strings.contact, fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Voltar"
+                                contentDescription = strings.back
                             )
                         }
                     },
@@ -307,7 +311,8 @@ fun SkillChip(text: String) {
 @Preview(showBackground = true)
 @Composable
 fun HireMeScreenPreview() {
+    val strings = Translations.getStrings(Language.PORTUGUESE)
     MaterialTheme {
-        HireMeScreen()
+        HireMeScreen(strings = strings)
     }
 }
