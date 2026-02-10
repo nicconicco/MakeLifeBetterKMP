@@ -45,6 +45,10 @@ build_simulator() {
     echo "Compilando composeApp..."
     ./gradlew :composeApp:iosSimulatorArm64Binaries --no-daemon
     print_success "ComposeApp framework compilado"
+
+    echo "Linkando framework debug (gera headers Swift)..."
+    ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64 --no-daemon
+    print_success "Framework linkado com headers Swift"
 }
 
 # Funcao para compilar frameworks do device
@@ -58,6 +62,10 @@ build_device() {
     echo "Compilando composeApp..."
     ./gradlew :composeApp:iosArm64Binaries --no-daemon
     print_success "ComposeApp framework compilado"
+
+    echo "Linkando framework debug (gera headers Swift)..."
+    ./gradlew :composeApp:linkDebugFrameworkIosArm64 --no-daemon
+    print_success "Framework linkado com headers Swift"
 }
 
 # Funcao para mostrar ajuda

@@ -5,10 +5,12 @@ import UserNotifications
 @main
 struct iOSApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @State private var themeManager = ThemeManager()
 
     var body: some Scene {
         WindowGroup {
             AppView()
+                .environment(themeManager)
         }
     }
 }

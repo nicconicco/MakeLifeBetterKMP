@@ -14,6 +14,8 @@ enum AppScreen {
 }
 
 struct AppView: View {
+    @Environment(ThemeManager.self) private var themeManager
+    @Environment(\.colorScheme) private var colorScheme
     @State private var currentScreen: AppScreen = .loading
     @State private var termosAceitos: Bool = false
     @State private var idiomaAtual: Idioma = .portugues
@@ -48,7 +50,9 @@ struct AppView: View {
                 MainView(currentScreen: $currentScreen, strings: strings, loginViewModel: loginViewModel)
             }
         }
+        .tint(themeManager.primary(for: colorScheme))
         .onAppear {
+            themeManager.loadFromRemote()
             if !didLoadRemoteConfig {
                 didLoadRemoteConfig = true
                 currentScreen = .loading
@@ -73,4 +77,5 @@ struct AppView: View {
 
 #Preview {
     AppView()
+        .environment(ThemeManager())
 }

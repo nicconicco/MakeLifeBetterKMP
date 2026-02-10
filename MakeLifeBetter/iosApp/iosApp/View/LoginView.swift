@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct LoginView: View {
+    @Environment(ThemeManager.self) private var themeManager
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var currentScreen: AppScreen
     @Binding var termosAceitos: Bool
     @Binding var idioma: Idioma
@@ -29,7 +31,7 @@ struct LoginView: View {
                 Text(strings.appName)
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                    .foregroundColor(.blue)
+                    .foregroundColor(themeManager.primary(for: colorScheme))
 
                 Spacer()
                     .frame(height: 32)
@@ -64,13 +66,13 @@ struct LoginView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.gray)
+                            .background(themeManager.outline(for: colorScheme))
                             .cornerRadius(8)
                     } else {
                         Text(strings.entrar)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(canLogin ? Color.blue : Color.gray)
+                            .background(canLogin ? themeManager.primary(for: colorScheme) : themeManager.outline(for: colorScheme))
                             .foregroundColor(.white)
                             .cornerRadius(8)
                     }
@@ -129,4 +131,5 @@ struct LoginView: View {
         strings: Traducoes.portugues,
         viewModel: LoginViewModel()
     )
+    .environment(ThemeManager())
 }
