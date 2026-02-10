@@ -20,6 +20,9 @@ enum OrdersLoadingState: Equatable {
 class StoreViewModel {
     private let sharedViewModel: SharedStoreViewModelWrapper
 
+    private var currentUserId: String? = nil
+    private var guestCartItems: [CartItem] = []
+
     var products: [Product] = []
     var categories: [ProductCategory] = []
     var selectedCategory: ProductCategory? = nil
@@ -32,6 +35,10 @@ class StoreViewModel {
     var lastOrder: Order? = nil
     var orders: [Order] = []
     var ordersState: OrdersLoadingState = .idle
+
+    var isGuestUser: Bool {
+        currentUserId == nil
+    }
 
     init() {
         sharedViewModel = SharedStoreViewModelWrapper()
@@ -168,7 +175,19 @@ class StoreViewModel {
     // MARK: - Actions
 
     func setUserId(_ userId: String) {
+        currentUserId = userId
         sharedViewModel.setUserId(userId: userId)
+        syncGuestCartIfNeeded()
+    }
+
+    func enableGuestMode() {
+        currentUserId = nil
+        isCheckingOut = false
+        lastOrder = nil
+        orders = []
+        ordersState = .idle
+        errorMessage = nil
+        updateGuestCart(items: guestCartItems)
     }
 
     func loadProducts() {
@@ -185,22 +204,42 @@ class StoreViewModel {
     }
 
     func addToCart(product: Product, quantidade: Int32 = 1) {
+        if isGuestUser {
+            addToGuestCart(product: product, quantidade: quantidade)
+            return
+        }
         sharedViewModel.addToCart(product: product, quantidade: quantidade)
     }
 
     func updateQuantity(itemId: String, quantidade: Int32) {
+        if isGuestUser {
+            updateGuestQuantity(itemId: itemId, quantidade: quantidade)
+            return
+        }
         sharedViewModel.updateCartItemQuantity(itemId: itemId, quantidade: quantidade)
     }
 
     func removeFromCart(itemId: String) {
+        if isGuestUser {
+            removeGuestItem(itemId: itemId)
+            return
+        }
         sharedViewModel.removeFromCart(itemId: itemId)
     }
 
     func clearCart() {
+        if isGuestUser {
+            updateGuestCart(items: [])
+            return
+        }
         sharedViewModel.clearCart()
     }
 
     func checkout() {
+        if isGuestUser {
+            errorMessage = "Faca login para finalizar a compra"
+            return
+        }
         sharedViewModel.checkout()
     }
 
@@ -210,15 +249,94 @@ class StoreViewModel {
     }
 
     func loadOrders() {
+        if isGuestUser {
+            orders = []
+            ordersState = .idle
+            errorMessage = "Faca login para ver seus pedidos"
+            return
+        }
         sharedViewModel.loadOrders()
     }
 
     func checkoutWithInfo(address: Address, payment: PaymentInfo) {
+        if isGuestUser {
+            errorMessage = "Faca login para finalizar a compra"
+            return
+        }
         sharedViewModel.checkoutWithInfo(address: address, payment: payment)
     }
 
     func clearError() {
         errorMessage = nil
+    }
+
+    // MARK: - Guest Cart
+
+    private func updateGuestCart(items: [CartItem]) {
+        guestCartItems = items
+        cart = Cart(items: items)
+        isCartLoading = false
+    }
+
+    private func addToGuestCart(product: Product, quantidade: Int32) {
+        var items = guestCartItems
+        if let index = items.firstIndex(where: { $0.productId == product.id }) {
+            let existing = items[index]
+            let newQuantity = existing.quantidade + quantidade
+            items[index] = CartItem(
+                id: existing.id,
+                productId: existing.productId,
+                product: existing.product,
+                quantidade: newQuantity,
+                addedAt: existing.addedAt
+            )
+        } else {
+            let item = CartItem(
+                id: UUID().uuidString,
+                productId: product.id,
+                product: product,
+                quantidade: quantidade,
+                addedAt: Int64(Date().timeIntervalSince1970 * 1000)
+            )
+            items.append(item)
+        }
+        updateGuestCart(items: items)
+    }
+
+    private func updateGuestQuantity(itemId: String, quantidade: Int32) {
+        var items = guestCartItems
+        guard let index = items.firstIndex(where: { $0.id == itemId }) else { return }
+
+        if quantidade <= 0 {
+            items.remove(at: index)
+        } else {
+            let existing = items[index]
+            items[index] = CartItem(
+                id: existing.id,
+                productId: existing.productId,
+                product: existing.product,
+                quantidade: quantidade,
+                addedAt: existing.addedAt
+            )
+        }
+        updateGuestCart(items: items)
+    }
+
+    private func removeGuestItem(itemId: String) {
+        let items = guestCartItems.filter { $0.id != itemId }
+        updateGuestCart(items: items)
+    }
+
+    private func syncGuestCartIfNeeded() {
+        guard !guestCartItems.isEmpty else { return }
+
+        let itemsToSync = guestCartItems
+        guestCartItems = []
+        cart = Cart.companion.empty()
+
+        for item in itemsToSync {
+            sharedViewModel.addToCart(product: item.product, quantidade: item.quantidade)
+        }
     }
 
     deinit {

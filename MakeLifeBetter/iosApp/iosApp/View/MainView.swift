@@ -79,6 +79,15 @@ struct MainView: View {
             startRemoteConfigSync()
             if let user = loginViewModel.currentUser {
                 storeViewModel.setUserId(user.id)
+            } else {
+                storeViewModel.enableGuestMode()
+            }
+        }
+        .onChange(of: loginViewModel.currentUser) { _, newUser in
+            if let user = newUser {
+                storeViewModel.setUserId(user.id)
+            } else {
+                storeViewModel.enableGuestMode()
             }
         }
         .onDisappear {
@@ -121,7 +130,7 @@ struct MainView: View {
         switch moreSubScreen {
         case .profile:
             Group {
-                if loginViewModel.currentUser == nil && isLoginRequired {
+                if loginViewModel.currentUser == nil {
                     GuestProfileView(
                         strings: strings,
                         onLoginClick: { currentScreen = .login },
@@ -205,7 +214,7 @@ struct MainView: View {
                 .tag(NavigationItem.loja)
 
             Group {
-                if loginViewModel.currentUser == nil && isLoginRequired {
+                if loginViewModel.currentUser == nil {
                     GuestProfileView(
                         strings: strings,
                         onLoginClick: { currentScreen = .login },

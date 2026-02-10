@@ -260,6 +260,10 @@ struct CheckoutView: View {
                 }
 
                 Button(action: {
+                    if viewModel.isGuestUser {
+                        viewModel.errorMessage = "Faca login para finalizar a compra"
+                        return
+                    }
                     let address = Address(
                         street: street,
                         number: number,
@@ -293,6 +297,13 @@ struct CheckoutView: View {
             .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: -4)
         }
         .navigationBarHidden(true)
+        .alert("Atencao", isPresented: .constant(viewModel.errorMessage != nil)) {
+            Button("OK") {
+                viewModel.clearError()
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
 
     private func formatCardNumber(_ input: String) -> String {
