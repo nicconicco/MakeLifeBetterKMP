@@ -2,10 +2,22 @@ package com.carlosnicolaugalves.makelifebetter.repository
 
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.firestore
+import dev.gitlive.firebase.functions.functions
 
 class FirebaseAdminRepository : AdminRepository {
 
     private val firestore by lazy { Firebase.firestore }
+    private val functions by lazy { Firebase.functions }
+
+    override suspend fun bootstrapFirstAdmin(): Result<String> {
+        return try {
+            val result = functions.httpsCallable("bootstrapFirstAdmin").invoke()
+            val message = result.data<Map<String, String>>()["message"] ?: "Success"
+            Result.success(message)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     override suspend fun deleteAllEvents(): Result<Unit> {
         return try {
@@ -168,14 +180,9 @@ class FirebaseAdminRepository : AdminRepository {
 
     override suspend fun deleteAllData(): Result<Unit> {
         return try {
-            deleteAllEvents()
-            deleteEventLocation()
-            deleteAllChatMessages()
-            deleteAllQuestions()
-            deleteAllProducts()
-            deleteAllCategories()
-            deleteAllCarts()
-            deleteAllOrders()
+            val result = functions.httpsCallable("adminDeleteAllData").invoke()
+            val message = result.data<Map<String, String>>()["message"] ?: "Success"
+            println("deleteAllData via Cloud Function: $message")
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

@@ -19,6 +19,9 @@ interface AdminRepository {
     suspend fun populateSampleCategories(): Result<Unit>
     suspend fun populateAllSampleData(): Result<Unit>
 
+    // Firebase Functions
+    suspend fun bootstrapFirstAdmin(): Result<String>
+
     // Import from Excel
     suspend fun uploadEvents(events: List<Map<String, String>>): Result<Int>
     suspend fun uploadLocation(location: Map<String, Any>): Result<Boolean>

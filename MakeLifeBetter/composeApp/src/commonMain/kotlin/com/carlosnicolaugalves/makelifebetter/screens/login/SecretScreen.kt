@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.Add
 import com.carlosnicolaugalves.makelifebetter.components.ExcelImportResult
 import com.carlosnicolaugalves.makelifebetter.components.ImportExcelSection
 import com.carlosnicolaugalves.makelifebetter.viewmodel.AdminViewModel
+import com.carlosnicolaugalves.makelifebetter.viewmodel.BootstrapAdminState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.DeleteDataState
 import com.carlosnicolaugalves.makelifebetter.viewmodel.PopulateDataState
 
@@ -60,15 +61,33 @@ fun SecretScreen(
     adminViewModel: AdminViewModel = remember { AdminViewModel() },
     modifier: Modifier = Modifier
 ) {
+    val bootstrapAdminState by adminViewModel.bootstrapAdminState.collectAsState()
     val deleteDataState by adminViewModel.deleteDataState.collectAsState()
     val populateDataState by adminViewModel.populateDataState.collectAsState()
 
+    var showBootstrapConfirmDialog by remember { mutableStateOf(false) }
+    var showBootstrapSuccessDialog by remember { mutableStateOf<String?>(null) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     var showPopulateConfirmDialog by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showPopulateSuccessDialog by remember { mutableStateOf(false) }
     var showImportSuccessDialog by remember { mutableStateOf<ExcelImportResult?>(null) }
     var showErrorDialog by remember { mutableStateOf<String?>(null) }
+
+    // Observar mudanças no estado de bootstrap admin
+    LaunchedEffect(bootstrapAdminState) {
+        when (bootstrapAdminState) {
+            is BootstrapAdminState.Success -> {
+                showBootstrapSuccessDialog = (bootstrapAdminState as BootstrapAdminState.Success).message
+                adminViewModel.resetBootstrapState()
+            }
+            is BootstrapAdminState.Error -> {
+                showErrorDialog = (bootstrapAdminState as BootstrapAdminState.Error).message
+                adminViewModel.resetBootstrapState()
+            }
+            else -> {}
+        }
+    }
 
     // Observar mudanças no estado de deleção
     LaunchedEffect(deleteDataState) {
@@ -98,6 +117,74 @@ fun SecretScreen(
             }
             else -> {}
         }
+    }
+
+    // Dialog de confirmação para bootstrap admin
+    if (showBootstrapConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showBootstrapConfirmDialog = false },
+            icon = {
+                Icon(
+                    Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Tornar-se Admin?",
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Voce sera configurado como o primeiro administrador do app.",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Esta acao so pode ser executada uma vez.")
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showBootstrapConfirmDialog = false
+                        adminViewModel.bootstrapFirstAdmin()
+                    }
+                ) {
+                    Text("Sim, Tornar-me Admin")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBootstrapConfirmDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Dialog de sucesso para bootstrap admin
+    if (showBootstrapSuccessDialog != null) {
+        AlertDialog(
+            onDismissRequest = { showBootstrapSuccessDialog = null },
+            title = {
+                Text(
+                    text = "Sucesso!",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(showBootstrapSuccessDialog ?: "")
+            },
+            confirmButton = {
+                Button(onClick = { showBootstrapSuccessDialog = null }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 
     // Dialog de confirmação para deletar
@@ -422,6 +509,61 @@ fun SecretScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
+                }
+            }
+
+            // Card de bootstrap admin
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Bootstrap Admin",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Configure voce como o primeiro administrador. So funciona uma vez.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { showBootstrapConfirmDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary
+                        ),
+                        enabled = bootstrapAdminState !is BootstrapAdminState.Loading
+                    ) {
+                        if (bootstrapAdminState is BootstrapAdminState.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onTertiary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text("Configurando...")
+                        } else {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text("Tornar-me Admin")
+                        }
+                    }
                 }
             }
 

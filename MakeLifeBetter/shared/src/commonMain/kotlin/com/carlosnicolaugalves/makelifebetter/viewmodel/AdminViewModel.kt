@@ -10,6 +10,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+sealed class BootstrapAdminState {
+    object Idle : BootstrapAdminState()
+    object Loading : BootstrapAdminState()
+    data class Success(val message: String) : BootstrapAdminState()
+    data class Error(val message: String) : BootstrapAdminState()
+}
+
 sealed class DeleteDataState {
     object Idle : DeleteDataState()
     object Deleting : DeleteDataState()
@@ -29,11 +36,34 @@ class AdminViewModel(
 ) {
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    private val _bootstrapAdminState = MutableStateFlow<BootstrapAdminState>(BootstrapAdminState.Idle)
+    val bootstrapAdminState: StateFlow<BootstrapAdminState> = _bootstrapAdminState.asStateFlow()
+
     private val _deleteDataState = MutableStateFlow<DeleteDataState>(DeleteDataState.Idle)
     val deleteDataState: StateFlow<DeleteDataState> = _deleteDataState.asStateFlow()
 
     private val _populateDataState = MutableStateFlow<PopulateDataState>(PopulateDataState.Idle)
     val populateDataState: StateFlow<PopulateDataState> = _populateDataState.asStateFlow()
+
+    fun bootstrapFirstAdmin() {
+        viewModelScope.launch {
+            _bootstrapAdminState.value = BootstrapAdminState.Loading
+
+            adminRepository.bootstrapFirstAdmin()
+                .onSuccess { message ->
+                    _bootstrapAdminState.value = BootstrapAdminState.Success(message)
+                }
+                .onFailure { exception ->
+                    _bootstrapAdminState.value = BootstrapAdminState.Error(
+                        exception.message ?: "Erro ao configurar admin"
+                    )
+                }
+        }
+    }
+
+    fun resetBootstrapState() {
+        _bootstrapAdminState.value = BootstrapAdminState.Idle
+    }
 
     fun deleteAllData() {
         viewModelScope.launch {

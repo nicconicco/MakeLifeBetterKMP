@@ -23,7 +23,15 @@
       "Bash(chmod:*)",
       "Bash(python3:*)",
       "WebSearch",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(firebase:*)",
+      "Bash(node --version:*)",
+      "Bash(npm:*)",
+      "Bash(gcloud services enable:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(git -C /Users/cgalves/Desktop/Github-pessoal-repo/MakeLifeBetterKMP/MakeLifeBetter status functions/)",
+      "Bash(git -C /Users/cgalves/Desktop/Github-pessoal-repo/MakeLifeBetterKMP/MakeLifeBetter add:*)"
     ]
   }
 }

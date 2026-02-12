@@ -4,7 +4,7 @@ service cloud.firestore {
     match /app_config/{docId} {
       // Public read for remote theme/config, admin writes only
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth.token.admin == true;
     }
 
     match /users/{userId} {
@@ -16,10 +16,10 @@ service cloud.firestore {
     }
 
     match /eventos/{eventId} {
-      // Allow authenticated users to read events
-      allow read: if request.auth != null;
-      // Allow authenticated users to create and delete events (admin only via secret screen)
-      allow create, delete: if request.auth != null;
+      // Allow anyone to read events (public)
+      allow read: if true;
+      // Only admin can create, update and delete events
+      allow create, update, delete: if request.auth.token.admin == true;
     }
 
     match /lista_geral/{messageId} {
@@ -30,19 +30,19 @@ service cloud.firestore {
     match /produtos/{productId} {
       // Allow anyone to read produtos (public store)
       allow read: if true;
-      // Allow authenticated users to write produtos (admin only via secret screen)
-      allow write: if request.auth != null;
+      // Only admin can write produtos
+      allow write: if request.auth.token.admin == true;
     }
 
     match /categorias/{categoryId} {
       // Allow anyone to read categories (public store)
       allow read: if true;
-      // Allow authenticated users to write categories (admin only via secret screen)
-      allow write: if request.auth != null;
+      // Only admin can write categories
+      allow write: if request.auth.token.admin == true;
     }
 
     match /carrinho/{cartId} {
-      // Allow authenticated users to read and write cart
+      // Allow authenticated users to read and write their own cart
       allow read, write: if request.auth != null;
 
       // Subcollection for cart items
@@ -62,11 +62,8 @@ service cloud.firestore {
 
       // Subcollection for replies/answers
       match /respostas/{replyId} {
-        // Allow authenticated users to read all replies
         allow read: if request.auth != null;
-        // Allow authenticated users to create replies
         allow create: if request.auth != null;
-        // Allow users to delete only their own replies
         allow delete: if request.auth != null;
       }
     }
@@ -74,16 +71,27 @@ service cloud.firestore {
     match /event_location/{locationId} {
       // Allow anyone to read event location
       allow read: if true;
-      // Allow authenticated users to create, write and delete event location (admin only via secret screen)
-      allow create, write, delete: if request.auth != null;
+      // Only admin can write event location
+      allow write: if request.auth.token.admin == true;
 
       // Subcollection for contacts
       match /contacts/{contactId} {
-        // Allow anyone to read contacts
         allow read: if true;
-        // Allow authenticated users to create and delete contacts (admin only via secret screen)
-        allow create, delete: if request.auth != null;
+        // Only admin can write contacts
+        allow write: if request.auth.token.admin == true;
       }
+    }
+
+    match /banners/{bannerId} {
+      // Allow anyone to read banners
+      allow read: if true;
+      // Only admin can write banners
+      allow write: if request.auth.token.admin == true;
+    }
+
+    // Block direct access to system documents
+    match /_system/{docId} {
+      allow read, write: if false;
     }
   }
 }

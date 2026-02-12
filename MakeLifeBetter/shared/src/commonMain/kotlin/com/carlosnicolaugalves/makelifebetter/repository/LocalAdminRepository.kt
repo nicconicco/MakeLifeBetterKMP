@@ -2,6 +2,10 @@ package com.carlosnicolaugalves.makelifebetter.repository
 
 class LocalAdminRepository : AdminRepository {
 
+    override suspend fun bootstrapFirstAdmin(): Result<String> {
+        return Result.success("Not supported on this platform")
+    }
+
     override suspend fun deleteAllEvents(): Result<Unit> {
         return Result.success(Unit)
     }
