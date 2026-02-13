@@ -1,4 +1,4 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
@@ -6,8 +6,35 @@ import { getFirestore } from "firebase-admin/firestore";
 
 initializeApp();
 
-// --- Secrets (configurados via: firebase functions:secrets:set MAPS_API_KEY) ---
+// --- Secrets (configurados via: firebase functions:secrets:set <NAME>) ---
 const mapsApiKey = defineSecret("MAPS_API_KEY");
+const firebaseWebConfig = defineSecret("WEB_APP_CONFIG");
+
+// =============================================================================
+// 0. GET WEB CONFIG - Retorna Firebase config para o web app (HTTPS, não callable)
+//    Uso: fetch("https://us-central1-makelifebetter-7f3c9.cloudfunctions.net/getWebConfig")
+//    Não precisa de autenticação pois o config é público por natureza.
+// =============================================================================
+export const getWebConfig = onRequest(
+  { secrets: [firebaseWebConfig], cors: true },
+  (req, res) => {
+    try {
+      const raw = firebaseWebConfig.value();
+      // Tenta parsear como JSON, se falhar retorna como string raw
+      try {
+        const config = JSON.parse(raw);
+        res.json(config);
+      } catch {
+        // Se o valor já é um objeto serializado de outra forma, retorna raw
+        console.error("Failed to parse WEB_APP_CONFIG. Raw value length:", raw.length);
+        res.status(500).json({ error: "Invalid config format" });
+      }
+    } catch (e) {
+      console.error("Failed to read WEB_APP_CONFIG secret:", e);
+      res.status(500).json({ error: "Config not available" });
+    }
+  }
+);
 
 // =============================================================================
 // 1. GET SECURE CONFIG - Retorna chaves sensíveis apenas para usuários autenticados

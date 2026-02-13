@@ -31,7 +31,8 @@
       "Bash(gcloud services enable:*)",
       "WebFetch(domain:github.com)",
       "Bash(git -C /Users/cgalves/Desktop/Github-pessoal-repo/MakeLifeBetterKMP/MakeLifeBetter status functions/)",
-      "Bash(git -C /Users/cgalves/Desktop/Github-pessoal-repo/MakeLifeBetterKMP/MakeLifeBetter add:*)"
+      "Bash(git -C /Users/cgalves/Desktop/Github-pessoal-repo/MakeLifeBetterKMP/MakeLifeBetter add:*)",
+      "Bash(curl:*)"
     ]
   }
 }
