@@ -12,29 +12,51 @@ struct ProductDetailView: View {
     let product: Product
     let onBackClick: () -> Void
     let onAddToCart: (Product, Int32) -> Void
+    var allProducts: [Product] = []
+    var onProductClick: (Product) -> Void = { _ in }
 
     @State private var quantity: Int32 = 1
 
+    private var suggestedProducts: [Product] {
+        allProducts.filter { $0.id != product.id }
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
-            ScrollView {
-                VStack(spacing: 0) {
-                    ProductImageSection(
-                        imageUrl: product.imagem,
-                        onBackClick: onBackClick
-                    )
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ProductImageSection(
+                            imageUrl: product.imagem,
+                            onBackClick: onBackClick
+                        )
+                        .id("top")
 
-                    ProductInfoCard(
-                        name: product.nome,
-                        price: product.formattedPrice,
-                        description: product.descricao,
-                        caracteristicas: product.caracteristicas,
-                        curiosidades: product.curiosidades,
-                        harmonizacao: product.harmonizacao,
-                        quantity: $quantity
-                    )
+                        ProductInfoCard(
+                            name: product.nome,
+                            price: product.formattedPrice,
+                            description: product.descricao,
+                            caracteristicas: product.caracteristicas,
+                            curiosidades: product.curiosidades,
+                            harmonizacao: product.harmonizacao,
+                            quantity: $quantity
+                        )
+
+                        if !suggestedProducts.isEmpty {
+                            SuggestionsSection(
+                                products: suggestedProducts,
+                                onProductClick: onProductClick
+                            )
+                        }
+                    }
+                    .padding(.bottom, 100)
                 }
-                .padding(.bottom, 100)
+                .onChange(of: product.id) { _, _ in
+                    quantity = 1
+                    withAnimation {
+                        proxy.scrollTo("top", anchor: .top)
+                    }
+                }
             }
             .ignoresSafeArea(edges: .top)
 
@@ -275,6 +297,104 @@ private struct QuantityButton: View {
                 .frame(width: 44, height: 44)
         }
         .disabled(!isEnabled)
+    }
+}
+
+// MARK: - Suggestions Section
+private struct SuggestionsSection: View {
+    let products: [Product]
+    let onProductClick: (Product) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Divider()
+                .padding(.horizontal, 20)
+
+            HStack(spacing: 6) {
+                Image(systemName: "lightbulb")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.accentColor)
+                Text("Você também pode gostar")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
+            .padding(.horizontal, 20)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(products, id: \.id) { product in
+                        SuggestionCard(
+                            product: product,
+                            onClick: { onProductClick(product) }
+                        )
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+        .padding(.top, 8)
+    }
+}
+
+// MARK: - Suggestion Card
+private struct SuggestionCard: View {
+    let product: Product
+    let onClick: () -> Void
+
+    var body: some View {
+        Button(action: onClick) {
+            VStack(alignment: .leading, spacing: 0) {
+                ZStack {
+                    Color(.systemGray5)
+
+                    if !product.imagem.isEmpty {
+                        AsyncImage(url: URL(string: product.imagem)) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure:
+                                Image(systemName: "photo")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.gray)
+                            @unknown default:
+                                Image(systemName: "photo")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    } else {
+                        Image(systemName: "photo")
+                            .font(.system(size: 24))
+                            .foregroundColor(.gray)
+                    }
+                }
+                .frame(width: 160, height: 160)
+                .clipped()
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(product.nome)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+
+                    Text(product.formattedPrice)
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.accentColor)
+                }
+                .padding(8)
+            }
+            .frame(width: 160)
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+        }
+        .buttonStyle(.plain)
     }
 }
 

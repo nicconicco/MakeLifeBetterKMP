@@ -288,6 +288,10 @@ struct MainView: View {
                         storeViewModel.addToCart(product: prod, quantidade: qty)
                         selectedProduct = nil
                         storeScreen = .list
+                    },
+                    allProducts: storeViewModel.products,
+                    onProductClick: { clickedProduct in
+                        selectedProduct = clickedProduct
                     }
                 )
             }

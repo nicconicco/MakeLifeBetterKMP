@@ -206,6 +206,7 @@ fun MainScreen(
         when (storeScreenState) {
             StoreScreenState.DETAIL -> {
                 selectedProduct?.let { product ->
+                    val allProducts by storeViewModel.products.collectAsState()
                     ProductDetailScreen(
                         product = product,
                         onBackClick = {
@@ -216,6 +217,10 @@ fun MainScreen(
                             storeViewModel.addToCart(prod, qty)
                             selectedProduct = null
                             storeScreenState = StoreScreenState.LIST
+                        },
+                        allProducts = allProducts,
+                        onProductClick = { clickedProduct ->
+                            selectedProduct = clickedProduct
                         }
                     )
                 }
