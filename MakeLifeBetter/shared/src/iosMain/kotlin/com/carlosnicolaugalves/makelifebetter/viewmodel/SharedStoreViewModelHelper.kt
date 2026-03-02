@@ -10,7 +10,9 @@ import com.carlosnicolaugalves.makelifebetter.store.CartResult
 import com.carlosnicolaugalves.makelifebetter.store.CategoriesResult
 import com.carlosnicolaugalves.makelifebetter.store.OrderResult
 import com.carlosnicolaugalves.makelifebetter.store.OrdersResult
+import com.carlosnicolaugalves.makelifebetter.store.PaymentIntentResult
 import com.carlosnicolaugalves.makelifebetter.store.ProductsResult
+import com.carlosnicolaugalves.makelifebetter.repository.PaymentIntentData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,6 +32,7 @@ class SharedStoreViewModelWrapper {
     private var orderStateObserver: Job? = null
     private var ordersStateObserver: Job? = null
     private var ordersObserver: Job? = null
+    private var paymentIntentStateObserver: Job? = null
 
     // MARK: - User
 
@@ -212,6 +215,39 @@ class SharedStoreViewModelWrapper {
         viewModel.loadOrders()
     }
 
+    // MARK: - Payment
+
+    fun observePaymentIntentState(
+        onIdle: () -> Unit,
+        onLoading: () -> Unit,
+        onSuccess: (PaymentIntentData) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        paymentIntentStateObserver?.cancel()
+        paymentIntentStateObserver = viewModel.paymentIntentState
+            .onEach { state ->
+                when (state) {
+                    is PaymentIntentResult.Idle -> onIdle()
+                    is PaymentIntentResult.Loading -> onLoading()
+                    is PaymentIntentResult.Success -> onSuccess(state.data)
+                    is PaymentIntentResult.Error -> onError(state.message)
+                }
+            }
+            .launchIn(scope)
+    }
+
+    fun createPaymentIntent() {
+        viewModel.createPaymentIntent()
+    }
+
+    fun checkoutAfterPayment(address: Address, stripePaymentIntentId: String) {
+        viewModel.checkoutAfterPayment(address, stripePaymentIntentId)
+    }
+
+    fun resetPaymentIntentState() {
+        viewModel.resetPaymentIntentState()
+    }
+
     // MARK: - Cleanup
 
     fun clear() {
@@ -224,6 +260,7 @@ class SharedStoreViewModelWrapper {
         orderStateObserver?.cancel()
         ordersStateObserver?.cancel()
         ordersObserver?.cancel()
+        paymentIntentStateObserver?.cancel()
         viewModel.clear()
     }
 }

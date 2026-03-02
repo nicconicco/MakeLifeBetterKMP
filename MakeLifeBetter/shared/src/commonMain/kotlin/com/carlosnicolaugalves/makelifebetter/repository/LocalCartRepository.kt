@@ -87,7 +87,10 @@ class LocalCartRepository : CartRepository {
     }
 
     override suspend fun checkoutWithInfo(userId: String, address: Address, payment: PaymentInfo): Result<Order> {
-        // LocalCartRepository doesn't persist to Firebase, just use regular checkout
+        return checkout(userId)
+    }
+
+    override suspend fun checkoutWithStripe(userId: String, address: Address, stripePaymentIntentId: String): Result<Order> {
         return checkout(userId)
     }
 }

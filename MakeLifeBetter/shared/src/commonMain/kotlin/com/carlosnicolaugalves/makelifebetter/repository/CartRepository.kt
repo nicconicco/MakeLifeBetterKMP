@@ -15,4 +15,5 @@ interface CartRepository {
     suspend fun clearCart(userId: String): Result<Unit>
     suspend fun checkout(userId: String): Result<Order>
     suspend fun checkoutWithInfo(userId: String, address: Address, payment: PaymentInfo): Result<Order>
+    suspend fun checkoutWithStripe(userId: String, address: Address, stripePaymentIntentId: String): Result<Order>
 }

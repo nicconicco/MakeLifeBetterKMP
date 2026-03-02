@@ -66,6 +66,9 @@ kotlin {
             implementation(project.dependencies.platform(libs.firebase.bom))
             // Firebase Firestore (Remote Theme)
             implementation(libs.firebase.firestore)
+
+            // Stripe Payment Sheet
+            implementation(libs.stripe.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -111,6 +114,10 @@ val localProperties = Properties().apply {
         load(localPropertiesFile.inputStream())
     }
 }
+val stripePublishableKey: String =
+    localProperties.getProperty("STRIPE_PUBLISHABLE_KEY")
+        ?: System.getenv("STRIPE_PUBLISHABLE_KEY")
+        ?: ""
 
 android {
     namespace = "com.carlosnicolaugalves.makelifebetter"
@@ -124,6 +131,11 @@ android {
         versionName = "1.0"
 
         manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY", "")
+
+        buildConfigField("String", "STRIPE_PUBLISHABLE_KEY", "\"$stripePublishableKey\"")
+    }
+    buildFeatures {
+        buildConfig = true
     }
     signingConfigs {
         create("release") {

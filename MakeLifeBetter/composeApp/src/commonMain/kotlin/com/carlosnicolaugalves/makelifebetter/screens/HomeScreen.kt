@@ -227,15 +227,24 @@ fun MainScreen(
             }
 
             StoreScreenState.CART -> {
-                CartScreen(
-                    viewModel = storeViewModel,
-                    onBackClick = {
-                        storeScreenState = StoreScreenState.LIST
-                    },
-                    onCheckout = {
-                        storeScreenState = StoreScreenState.CHECKOUT
-                    }
-                )
+                if (currentUser == null && isLoginRequired) {
+                    GuestProfileScreen(
+                        onLoginClick = onLoginClick,
+                        onBackClick = {
+                            storeScreenState = StoreScreenState.LIST
+                        }
+                    )
+                } else {
+                    CartScreen(
+                        viewModel = storeViewModel,
+                        onBackClick = {
+                            storeScreenState = StoreScreenState.LIST
+                        },
+                        onCheckout = {
+                            storeScreenState = StoreScreenState.CHECKOUT
+                        }
+                    )
+                }
             }
 
             StoreScreenState.CHECKOUT -> {

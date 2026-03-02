@@ -6,7 +6,9 @@ data class Order(
     val items: List<CartItem>,
     val totalPrice: Double,
     val status: OrderStatus,
-    val createdAt: Long
+    val createdAt: Long,
+    val paymentMethod: String = "",
+    val paymentIntentId: String = ""
 )
 
 enum class OrderStatus {

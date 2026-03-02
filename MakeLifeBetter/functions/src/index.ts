@@ -3,12 +3,14 @@ import { defineSecret } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import Stripe from "stripe";
 
 initializeApp();
 
 // --- Secrets (configurados via: firebase functions:secrets:set <NAME>) ---
 const mapsApiKey = defineSecret("MAPS_API_KEY");
 const firebaseWebConfig = defineSecret("WEB_APP_CONFIG");
+const stripeSecretKey = defineSecret("STRIPE_SECRET_KEY");
 
 // =============================================================================
 // 0. GET WEB CONFIG - Retorna Firebase config para o web app (HTTPS, não callable)
@@ -157,6 +159,72 @@ export const checkAdminStatus = onCall(
     return {
       isAdmin: request.auth.token.admin === true,
       email: request.auth.token.email,
+    };
+  }
+);
+
+// =============================================================================
+// 6. CREATE PAYMENT INTENT - Cria PaymentIntent no Stripe para processar pagamento
+//    Requer autenticação. Recebe amount em centavos (ex: R$50.00 = 5000).
+//    Retorna clientSecret, ephemeralKey e customerId para o Payment Sheet.
+// =============================================================================
+export const createPaymentIntent = onCall(
+  { secrets: [stripeSecretKey] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Login required.");
+    }
+
+    const { amount } = request.data;
+
+    if (!amount || typeof amount !== "number" || amount <= 0) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Amount must be a positive number in centavos."
+      );
+    }
+
+    const stripe = new Stripe(stripeSecretKey.value());
+
+    const uid = request.auth.uid;
+    const email = request.auth.token.email || "";
+
+    // Busca ou cria customer no Stripe vinculado ao Firebase UID
+    const existingCustomers = await stripe.customers.list({
+      limit: 1,
+      email: email,
+    });
+
+    let customer: Stripe.Customer;
+
+    if (existingCustomers.data.length > 0) {
+      customer = existingCustomers.data[0];
+    } else {
+      customer = await stripe.customers.create({
+        email: email,
+        metadata: { firebaseUid: uid },
+      });
+    }
+
+    // Cria EphemeralKey para o customer (necessário para o Payment Sheet)
+    const ephemeralKey = await stripe.ephemeralKeys.create(
+      { customer: customer.id },
+      { apiVersion: "2025-04-30.basil" }
+    );
+
+    // Cria PaymentIntent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount),
+      currency: "brl",
+      customer: customer.id,
+      automatic_payment_methods: { enabled: true },
+      metadata: { firebaseUid: uid },
+    });
+
+    return {
+      paymentIntent: paymentIntent.client_secret,
+      ephemeralKey: ephemeralKey.secret,
+      customer: customer.id,
     };
   }
 );

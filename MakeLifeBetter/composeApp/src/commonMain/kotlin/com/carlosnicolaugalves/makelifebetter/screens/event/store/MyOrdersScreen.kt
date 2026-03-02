@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -179,6 +181,10 @@ private fun OrderCard(
                 StatusChip(status = order.status)
             }
 
+            Spacer(modifier = Modifier.height(4.dp))
+
+            PaymentMethodBadge(paymentMethod = order.paymentMethod)
+
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
@@ -284,6 +290,49 @@ private fun StatusChip(
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
         )
+    }
+}
+
+@Composable
+private fun PaymentMethodBadge(
+    paymentMethod: String,
+    modifier: Modifier = Modifier
+) {
+    val (backgroundColor, textColor, text) = when (paymentMethod) {
+        "stripe" -> Triple(
+            Color(0xFFE8F5E9),
+            Color(0xFF2E7D32),
+            "Pago via Stripe"
+        )
+        else -> Triple(
+            Color(0xFFF5F5F5),
+            Color(0xFF757575),
+            "Pagamento manual"
+        )
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+        ) {
+            Icon(
+                imageVector = if (paymentMethod == "stripe") Icons.Filled.Lock else Icons.Filled.CreditCard,
+                contentDescription = null,
+                tint = textColor,
+                modifier = Modifier.size(12.dp)
+            )
+            Spacer(modifier = Modifier.size(4.dp))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelSmall,
+                color = textColor,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 

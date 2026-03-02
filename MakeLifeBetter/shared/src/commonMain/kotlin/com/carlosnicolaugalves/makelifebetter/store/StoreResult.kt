@@ -4,6 +4,7 @@ import com.carlosnicolaugalves.makelifebetter.model.Cart
 import com.carlosnicolaugalves.makelifebetter.model.Order
 import com.carlosnicolaugalves.makelifebetter.model.Product
 import com.carlosnicolaugalves.makelifebetter.model.ProductCategory
+import com.carlosnicolaugalves.makelifebetter.repository.PaymentIntentData
 
 sealed class ProductsResult {
     data object Idle : ProductsResult()
@@ -38,4 +39,11 @@ sealed class OrdersResult {
     data object Loading : OrdersResult()
     data class Success(val orders: List<Order>) : OrdersResult()
     data class Error(val message: String) : OrdersResult()
+}
+
+sealed class PaymentIntentResult {
+    data object Idle : PaymentIntentResult()
+    data object Loading : PaymentIntentResult()
+    data class Success(val data: PaymentIntentData) : PaymentIntentResult()
+    data class Error(val message: String) : PaymentIntentResult()
 }

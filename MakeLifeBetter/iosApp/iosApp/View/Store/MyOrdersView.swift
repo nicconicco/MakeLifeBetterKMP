@@ -63,6 +63,8 @@ struct OrderCardView: View {
                 StatusChipView(status: order.status)
             }
 
+            PaymentMethodBadge(paymentMethod: order.paymentMethod)
+
             Text("Itens:")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -177,6 +179,29 @@ struct StatusChipView: View {
             .padding(.vertical, 6)
             .background(backgroundColor)
             .cornerRadius(8)
+    }
+}
+
+struct PaymentMethodBadge: View {
+    let paymentMethod: String
+
+    var isStripe: Bool {
+        paymentMethod == "stripe"
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: isStripe ? "lock.fill" : "creditcard")
+                .font(.system(size: 10))
+            Text(isStripe ? "Pago via Stripe" : "Pagamento manual")
+                .font(.caption2)
+                .fontWeight(.medium)
+        }
+        .foregroundColor(isStripe ? Color(red: 0.18, green: 0.49, blue: 0.20) : Color.gray)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(isStripe ? Color.green.opacity(0.15) : Color.gray.opacity(0.12))
+        .cornerRadius(6)
     }
 }
 

@@ -8,14 +8,17 @@ import com.carlosnicolaugalves.makelifebetter.model.Product
 import com.carlosnicolaugalves.makelifebetter.model.ProductCategory
 import com.carlosnicolaugalves.makelifebetter.repository.CartRepository
 import com.carlosnicolaugalves.makelifebetter.repository.OrderRepository
+import com.carlosnicolaugalves.makelifebetter.repository.PaymentRepository
 import com.carlosnicolaugalves.makelifebetter.repository.ProductRepository
 import com.carlosnicolaugalves.makelifebetter.repository.createCartRepository
 import com.carlosnicolaugalves.makelifebetter.repository.createOrderRepository
+import com.carlosnicolaugalves.makelifebetter.repository.createPaymentRepository
 import com.carlosnicolaugalves.makelifebetter.repository.createProductRepository
 import com.carlosnicolaugalves.makelifebetter.store.CartResult
 import com.carlosnicolaugalves.makelifebetter.store.CategoriesResult
 import com.carlosnicolaugalves.makelifebetter.store.OrderResult
 import com.carlosnicolaugalves.makelifebetter.store.OrdersResult
+import com.carlosnicolaugalves.makelifebetter.store.PaymentIntentResult
 import com.carlosnicolaugalves.makelifebetter.store.ProductsResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +34,8 @@ import kotlinx.coroutines.launch
 class SharedStoreViewModel(
     private val productRepository: ProductRepository = createProductRepository(),
     private val cartRepository: CartRepository = createCartRepository(),
-    private val orderRepository: OrderRepository = createOrderRepository()
+    private val orderRepository: OrderRepository = createOrderRepository(),
+    private val paymentRepository: PaymentRepository = createPaymentRepository()
 ) {
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -69,6 +73,10 @@ class SharedStoreViewModel(
 
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
     val orders: StateFlow<List<Order>> = _orders.asStateFlow()
+
+    // Payment intent state
+    private val _paymentIntentState = MutableStateFlow<PaymentIntentResult>(PaymentIntentResult.Idle)
+    val paymentIntentState: StateFlow<PaymentIntentResult> = _paymentIntentState.asStateFlow()
 
     // Selected product for detail screen
     private val _selectedProduct = MutableStateFlow<Product?>(null)
@@ -308,6 +316,58 @@ class SharedStoreViewModel(
 
     fun observeOrdersState(callback: (OrdersResult) -> Unit): Job {
         return ordersState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    fun observePaymentIntentState(callback: (PaymentIntentResult) -> Unit): Job {
+        return paymentIntentState.onEach { callback(it) }.launchIn(viewModelScope)
+    }
+
+    // --- Payment methods ---
+
+    fun createPaymentIntent() {
+        viewModelScope.launch {
+            _paymentIntentState.value = PaymentIntentResult.Loading
+
+            val currentCart = _cart.value
+            if (currentCart.items.isEmpty()) {
+                _paymentIntentState.value = PaymentIntentResult.Error("Carrinho vazio")
+                return@launch
+            }
+
+            val amountInCentavos = (currentCart.totalPrice * 100).toInt()
+
+            paymentRepository.createPaymentIntent(amountInCentavos)
+                .onSuccess { data ->
+                    _paymentIntentState.value = PaymentIntentResult.Success(data)
+                }
+                .onFailure { exception ->
+                    _paymentIntentState.value = PaymentIntentResult.Error(
+                        exception.message ?: "Erro ao criar pagamento"
+                    )
+                }
+        }
+    }
+
+    fun checkoutAfterPayment(address: Address, stripePaymentIntentId: String) {
+        viewModelScope.launch {
+            _orderState.value = OrderResult.Loading
+
+            cartRepository.checkoutWithStripe(currentUserId, address, stripePaymentIntentId)
+                .onSuccess { order ->
+                    _cart.value = Cart()
+                    _cartState.value = CartResult.Success(Cart())
+                    _orderState.value = OrderResult.Success(order)
+                }
+                .onFailure { exception ->
+                    _orderState.value = OrderResult.Error(
+                        exception.message ?: "Erro ao finalizar pedido"
+                    )
+                }
+        }
+    }
+
+    fun resetPaymentIntentState() {
+        _paymentIntentState.value = PaymentIntentResult.Idle
     }
 
     fun clear() {

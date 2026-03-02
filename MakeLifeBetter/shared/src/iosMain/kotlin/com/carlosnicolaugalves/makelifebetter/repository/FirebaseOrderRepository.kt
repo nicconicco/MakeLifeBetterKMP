@@ -57,13 +57,23 @@ class FirebaseOrderRepository : OrderRepository {
                         OrderStatus.PENDING
                     }
 
+                    val paymentMap = try {
+                        doc.get<Map<String, Any>>("payment")
+                    } catch (e: Exception) {
+                        null
+                    }
+                    val paymentMethod = paymentMap?.get("method") as? String ?: ""
+                    val paymentIntentId = paymentMap?.get("paymentIntentId") as? String ?: ""
+
                     Order(
                         id = doc.id,
                         userId = orderUserId,
                         items = items,
                         totalPrice = totalPrice,
                         status = status,
-                        createdAt = createdAt
+                        createdAt = createdAt,
+                        paymentMethod = paymentMethod,
+                        paymentIntentId = paymentIntentId
                     )
                 } catch (e: Exception) {
                     null
@@ -108,13 +118,21 @@ class FirebaseOrderRepository : OrderRepository {
                 )
             }
 
+            val paymentMap = try {
+                doc.get<Map<String, Any>>("payment")
+            } catch (e: Exception) {
+                null
+            }
+
             val order = Order(
                 id = doc.id,
                 userId = doc.get<String>("userId"),
                 items = items,
                 totalPrice = doc.get<Double>("totalPrice"),
                 status = OrderStatus.valueOf(doc.get<String>("status")),
-                createdAt = doc.get<Long>("createdAt")
+                createdAt = doc.get<Long>("createdAt"),
+                paymentMethod = paymentMap?.get("method") as? String ?: "",
+                paymentIntentId = paymentMap?.get("paymentIntentId") as? String ?: ""
             )
 
             Result.success(order)
