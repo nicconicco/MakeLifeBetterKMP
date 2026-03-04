@@ -34,7 +34,15 @@
       "Bash(git -C /Users/cgalves/Desktop/Github-pessoal-repo/MakeLifeBetterKMP/MakeLifeBetter add:*)",
       "Bash(curl:*)",
       "Bash(git checkout:*)",
-      "Bash(date:*)"
+      "Bash(date:*)",
+      "Bash(cat:*)",
+      "Bash(/dev/null -exec cat {} ;)",
+      "Bash(/dev/null -exec echo \"=== {} ===\" ; -exec cat {} ;)",
+      "Bash(open:*)",
+      "Bash(pod --version:*)",
+      "Bash(pod deintegrate:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(test:*)"
     ]
   }
 }

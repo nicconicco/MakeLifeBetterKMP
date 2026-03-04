@@ -1,6 +1,7 @@
 import SwiftUI
 import FirebaseCore
 import UserNotifications
+import StripePaymentSheet
 
 @main
 struct iOSApp: App {
@@ -19,6 +20,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         FirebaseApp.configure()
         UNUserNotificationCenter.current().delegate = self
+
+        // Initialize Stripe
+        STPAPIClient.shared.publishableKey = "pk_test_51T2Z3YRslXggpQQoHnqTXWQJGZLZnS6cgvBg3i2SzjxSeDH1ZU74gTrAIwEVFPfr1FSjzIZ2uoEET4rsd8hTWvit00GJcrsmKR"
+
         return true
     }
 

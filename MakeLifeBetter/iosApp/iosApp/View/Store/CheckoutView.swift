@@ -1,5 +1,6 @@
 import SwiftUI
 import ComposeApp
+import StripePaymentSheet
 
 struct CheckoutView: View {
     var viewModel: StoreViewModel
@@ -15,11 +16,9 @@ struct CheckoutView: View {
     @State private var state: String = ""
     @State private var zipCode: String = ""
 
-    // Payment state
-    @State private var cardNumber: String = ""
-    @State private var cardHolder: String = ""
-    @State private var expiryDate: String = ""
-    @State private var cvv: String = ""
+    // Stripe Payment Sheet
+    @State private var paymentSheet: PaymentSheet?
+    @State private var pendingPaymentIntentId: String?
 
     private var isAddressValid: Bool {
         !street.isEmpty &&
@@ -28,17 +27,6 @@ struct CheckoutView: View {
         !city.isEmpty &&
         !state.isEmpty &&
         zipCode.count >= 8
-    }
-
-    private var isPaymentValid: Bool {
-        cardNumber.replacingOccurrences(of: " ", with: "").count == 16 &&
-        !cardHolder.isEmpty &&
-        expiryDate.count == 5 &&
-        cvv.count >= 3
-    }
-
-    private var isFormValid: Bool {
-        isAddressValid && isPaymentValid
     }
 
     var body: some View {
@@ -147,55 +135,49 @@ struct CheckoutView: View {
                     .cornerRadius(16)
                     .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
 
-                    // Payment Section
+                    // Payment Section (Stripe)
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
                             Image(systemName: "creditcard.fill")
                                 .foregroundColor(.blue)
-                            Text("Dados do Cartao")
+                            Text("Pagamento")
                                 .font(.headline)
                                 .fontWeight(.bold)
                         }
 
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Numero do Cartao").font(.caption).foregroundColor(.secondary)
-                            TextField("0000 0000 0000 0000", text: $cardNumber)
-                                .textFieldStyle(.roundedBorder)
-                                .keyboardType(.numberPad)
-                                .onChange(of: cardNumber) { _, newValue in
-                                    cardNumber = formatCardNumber(newValue)
+                        Button(action: {
+                            viewModel.createPaymentIntent()
+                        }) {
+                            HStack {
+                                if viewModel.paymentIntentState == .loading {
+                                    ProgressView()
+                                        .tint(.white)
+                                    Text("Processando...")
+                                } else {
+                                    Image(systemName: "lock.fill")
+                                    Text("Pagar com Cartao")
                                 }
-                        }
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Nome no Cartao").font(.caption).foregroundColor(.secondary)
-                            TextField("NOME COMO ESTA NO CARTAO", text: $cardHolder)
-                                .textFieldStyle(.roundedBorder)
-                                .textCase(.uppercase)
-                        }
-
-                        HStack(spacing: 12) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Validade").font(.caption).foregroundColor(.secondary)
-                                TextField("MM/AA", text: $expiryDate)
-                                    .textFieldStyle(.roundedBorder)
-                                    .keyboardType(.numberPad)
-                                    .onChange(of: expiryDate) { _, newValue in
-                                        expiryDate = formatExpiryDate(newValue)
-                                    }
                             }
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("CVV").font(.caption).foregroundColor(.secondary)
-                                SecureField("***", text: $cvv)
-                                    .textFieldStyle(.roundedBorder)
-                                    .keyboardType(.numberPad)
-                                    .onChange(of: cvv) { _, newValue in
-                                        cvv = String(newValue.filter { $0.isNumber }.prefix(4))
-                                    }
-                            }
-                            .frame(width: 100)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
                         }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!isAddressValid || viewModel.paymentIntentState == .loading)
+
+                        if case .error(let message) = viewModel.paymentIntentState {
+                            Text(message)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+
+                        HStack(spacing: 4) {
+                            Image(systemName: "lock.fill")
+                                .font(.caption2)
+                            Text("Pagamento seguro via Stripe")
+                                .font(.caption)
+                        }
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity)
                     }
                     .padding(16)
                     .background(Color(.systemBackground))
@@ -246,7 +228,7 @@ struct CheckoutView: View {
                 .padding(16)
             }
 
-            // Bottom bar
+            // Bottom bar - total only
             VStack(spacing: 16) {
                 HStack {
                     Text("Total")
@@ -258,45 +240,17 @@ struct CheckoutView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.blue)
                 }
-
-                Button(action: {
-                    if viewModel.isGuestUser {
-                        viewModel.errorMessage = "Faca login para finalizar a compra"
-                        return
-                    }
-                    let address = Address(
-                        street: street,
-                        number: number,
-                        complement: complement,
-                        neighborhood: neighborhood,
-                        city: city,
-                        state: state,
-                        zipCode: zipCode
-                    )
-                    let payment = PaymentInfo(
-                        cardNumber: cardNumber,
-                        cardHolder: cardHolder,
-                        expiryDate: expiryDate,
-                        cvv: cvv
-                    )
-                    viewModel.checkoutWithInfo(address: address, payment: payment)
-                    onConfirmOrder()
-                }) {
-                    HStack {
-                        Image(systemName: "lock.fill")
-                        Text("Confirmar Pagamento")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(!isFormValid)
             }
             .padding(16)
             .background(Color(.systemBackground))
             .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: -4)
         }
         .navigationBarHidden(true)
+        .onChange(of: viewModel.paymentIntentState) { _, newState in
+            if newState == .success, let info = viewModel.paymentIntentInfo {
+                presentPaymentSheet(info: info)
+            }
+        }
         .alert("Atencao", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("OK") {
                 viewModel.clearError()
@@ -306,26 +260,48 @@ struct CheckoutView: View {
         }
     }
 
-    private func formatCardNumber(_ input: String) -> String {
-        let digitsOnly = input.filter { $0.isNumber }
-        let limited = String(digitsOnly.prefix(16))
-        var result = ""
-        for (index, char) in limited.enumerated() {
-            if index > 0 && index % 4 == 0 {
-                result += " "
-            }
-            result.append(char)
-        }
-        return result
-    }
+    private func presentPaymentSheet(info: PaymentIntentInfo) {
+        var configuration = PaymentSheet.Configuration()
+        configuration.merchantDisplayName = "Make Life Better"
+        configuration.customer = .init(
+            id: info.customerId,
+            ephemeralKeySecret: info.ephemeralKey
+        )
+        configuration.allowsDelayedPaymentMethods = false
 
-    private func formatExpiryDate(_ input: String) -> String {
-        let digitsOnly = input.filter { $0.isNumber }
-        let limited = String(digitsOnly.prefix(4))
-        if limited.count <= 2 {
-            return limited
-        } else {
-            return "\(limited.prefix(2))/\(limited.dropFirst(2))"
+        let sheet = PaymentSheet(
+            paymentIntentClientSecret: info.clientSecret,
+            configuration: configuration
+        )
+
+        pendingPaymentIntentId = info.clientSecret
+
+        sheet.present(from: UIApplication.shared.topViewController()) { result in
+            switch result {
+            case .completed:
+                let address = Address(
+                    street: street,
+                    number: number,
+                    complement: complement,
+                    neighborhood: neighborhood,
+                    city: city,
+                    state: state,
+                    zipCode: zipCode
+                )
+                if let intentId = pendingPaymentIntentId {
+                    viewModel.checkoutAfterPayment(address: address, stripePaymentIntentId: intentId)
+                    onConfirmOrder()
+                }
+                viewModel.resetPaymentIntentState()
+                pendingPaymentIntentId = nil
+            case .canceled:
+                viewModel.resetPaymentIntentState()
+                pendingPaymentIntentId = nil
+            case .failed(let error):
+                viewModel.errorMessage = error.localizedDescription
+                viewModel.resetPaymentIntentState()
+                pendingPaymentIntentId = nil
+            }
         }
     }
 
@@ -337,6 +313,27 @@ struct CheckoutView: View {
         } else {
             return "\(limited.prefix(5))-\(limited.dropFirst(5))"
         }
+    }
+}
+
+// MARK: - UIApplication extension to get top view controller
+extension UIApplication {
+    func topViewController(base: UIViewController? = nil) -> UIViewController {
+        let base = base ?? connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first(where: { $0.isKeyWindow })?.rootViewController
+
+        if let nav = base as? UINavigationController {
+            return topViewController(base: nav.visibleViewController)
+        }
+        if let tab = base as? UITabBarController, let selected = tab.selectedViewController {
+            return topViewController(base: selected)
+        }
+        if let presented = base?.presentedViewController {
+            return topViewController(base: presented)
+        }
+        return base ?? UIViewController()
     }
 }
 

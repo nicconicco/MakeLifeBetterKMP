@@ -10,6 +10,21 @@ struct MyOrdersView: View {
             if viewModel.ordersState == .loading {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if case .error(let message) = viewModel.ordersState {
+                VStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 64))
+                        .foregroundColor(.red)
+                    Text(message)
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                    Button("Tentar novamente") {
+                        viewModel.loadOrders()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 16)
             } else if viewModel.orders.isEmpty {
                 VStack(spacing: 16) {
                     Image(systemName: "bag")

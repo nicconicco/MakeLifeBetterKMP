@@ -16,6 +16,19 @@ enum OrdersLoadingState: Equatable {
     case error(String)
 }
 
+enum PaymentIntentState: Equatable {
+    case idle
+    case loading
+    case success
+    case error(String)
+}
+
+struct PaymentIntentInfo {
+    let clientSecret: String
+    let ephemeralKey: String
+    let customerId: String
+}
+
 @Observable
 class StoreViewModel {
     private let sharedViewModel: SharedStoreViewModelWrapper
@@ -35,6 +48,8 @@ class StoreViewModel {
     var lastOrder: Order? = nil
     var orders: [Order] = []
     var ordersState: OrdersLoadingState = .idle
+    var paymentIntentState: PaymentIntentState = .idle
+    var paymentIntentInfo: PaymentIntentInfo? = nil
 
     var isGuestUser: Bool {
         currentUserId == nil
@@ -170,6 +185,35 @@ class StoreViewModel {
                 self?.orders = kotlinOrders
             }
         }
+
+        // Payment intent state
+        sharedViewModel.observePaymentIntentState(
+            onIdle: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.paymentIntentState = .idle
+                }
+            },
+            onLoading: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.paymentIntentState = .loading
+                }
+            },
+            onSuccess: { [weak self] data in
+                DispatchQueue.main.async {
+                    self?.paymentIntentInfo = PaymentIntentInfo(
+                        clientSecret: data.paymentIntentClientSecret,
+                        ephemeralKey: data.ephemeralKey,
+                        customerId: data.customerId
+                    )
+                    self?.paymentIntentState = .success
+                }
+            },
+            onError: { [weak self] message in
+                DispatchQueue.main.async {
+                    self?.paymentIntentState = .error(message)
+                }
+            }
+        )
     }
 
     // MARK: - Actions
@@ -264,6 +308,24 @@ class StoreViewModel {
             return
         }
         sharedViewModel.checkoutWithInfo(address: address, payment: payment)
+    }
+
+    func createPaymentIntent() {
+        if isGuestUser {
+            errorMessage = "Faca login para finalizar a compra"
+            return
+        }
+        sharedViewModel.createPaymentIntent()
+    }
+
+    func checkoutAfterPayment(address: Address, stripePaymentIntentId: String) {
+        sharedViewModel.checkoutAfterPayment(address: address, stripePaymentIntentId: stripePaymentIntentId)
+    }
+
+    func resetPaymentIntentState() {
+        paymentIntentState = .idle
+        paymentIntentInfo = nil
+        sharedViewModel.resetPaymentIntentState()
     }
 
     func clearError() {

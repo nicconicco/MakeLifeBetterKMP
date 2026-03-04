@@ -20,6 +20,7 @@ import com.carlosnicolaugalves.makelifebetter.store.OrderResult
 import com.carlosnicolaugalves.makelifebetter.store.OrdersResult
 import com.carlosnicolaugalves.makelifebetter.store.PaymentIntentResult
 import com.carlosnicolaugalves.makelifebetter.store.ProductsResult
+import com.carlosnicolaugalves.makelifebetter.model.CartItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,6 +31,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlin.random.Random
+import kotlin.time.Clock
 
 class SharedStoreViewModel(
     private val productRepository: ProductRepository = createProductRepository(),
@@ -82,8 +85,14 @@ class SharedStoreViewModel(
     private val _selectedProduct = MutableStateFlow<Product?>(null)
     val selectedProduct: StateFlow<Product?> = _selectedProduct.asStateFlow()
 
-    // User ID (simplified - in real app would come from auth)
+    // User ID
     private var currentUserId: String = "anonymous"
+
+    // Guest cart (in-memory, used when not logged in)
+    private var guestCartItems = mutableListOf<CartItem>()
+
+    private val isGuestUser: Boolean
+        get() = currentUserId == "anonymous"
 
     init {
         loadCategories()
@@ -91,8 +100,31 @@ class SharedStoreViewModel(
     }
 
     fun setUserId(userId: String) {
+        val previousUserId = currentUserId
         currentUserId = userId
+        if (previousUserId == "anonymous" && userId != "anonymous") {
+            syncGuestCartToFirebase()
+        }
         loadCart()
+    }
+
+    private fun syncGuestCartToFirebase() {
+        if (guestCartItems.isEmpty()) return
+        val itemsToSync = guestCartItems.toList()
+        guestCartItems.clear()
+        viewModelScope.launch {
+            for (item in itemsToSync) {
+                cartRepository.addToCart(currentUserId, item.product, item.quantidade)
+            }
+            loadCart()
+        }
+    }
+
+    private fun updateGuestCart(items: List<CartItem>) {
+        guestCartItems = items.toMutableList()
+        val cart = Cart(items = items)
+        _cart.value = cart
+        _cartState.value = CartResult.Success(cart)
     }
 
     fun loadProducts() {
@@ -160,6 +192,10 @@ class SharedStoreViewModel(
     }
 
     fun loadCart() {
+        if (isGuestUser) {
+            updateGuestCart(guestCartItems)
+            return
+        }
         viewModelScope.launch {
             _cartState.value = CartResult.Loading
 
@@ -177,6 +213,26 @@ class SharedStoreViewModel(
     }
 
     fun addToCart(product: Product, quantidade: Int = 1) {
+        if (isGuestUser) {
+            val items = guestCartItems.toMutableList()
+            val existing = items.indexOfFirst { it.productId == product.id }
+            if (existing != -1) {
+                val item = items[existing]
+                items[existing] = item.copy(quantidade = item.quantidade + quantidade)
+            } else {
+                items.add(
+                    CartItem(
+                        id = Random.nextLong().toString(),
+                        productId = product.id,
+                        product = product,
+                        quantidade = quantidade,
+                        addedAt = Clock.System.now().toEpochMilliseconds()
+                    )
+                )
+            }
+            updateGuestCart(items)
+            return
+        }
         viewModelScope.launch {
             cartRepository.addToCart(currentUserId, product, quantidade)
                 .onSuccess { cartData ->
@@ -192,6 +248,19 @@ class SharedStoreViewModel(
     }
 
     fun updateCartItemQuantity(itemId: String, quantidade: Int) {
+        if (isGuestUser) {
+            val items = guestCartItems.toMutableList()
+            val index = items.indexOfFirst { it.id == itemId }
+            if (index != -1) {
+                if (quantidade <= 0) {
+                    items.removeAt(index)
+                } else {
+                    items[index] = items[index].copy(quantidade = quantidade)
+                }
+            }
+            updateGuestCart(items)
+            return
+        }
         viewModelScope.launch {
             cartRepository.updateQuantity(currentUserId, itemId, quantidade)
                 .onSuccess { cartData ->
@@ -207,6 +276,11 @@ class SharedStoreViewModel(
     }
 
     fun removeFromCart(itemId: String) {
+        if (isGuestUser) {
+            val items = guestCartItems.filter { it.id != itemId }
+            updateGuestCart(items)
+            return
+        }
         viewModelScope.launch {
             cartRepository.removeFromCart(currentUserId, itemId)
                 .onSuccess { cartData ->
@@ -222,6 +296,10 @@ class SharedStoreViewModel(
     }
 
     fun clearCart() {
+        if (isGuestUser) {
+            updateGuestCart(emptyList())
+            return
+        }
         viewModelScope.launch {
             cartRepository.clearCart(currentUserId)
                 .onSuccess {
